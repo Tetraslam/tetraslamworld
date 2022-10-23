@@ -439,6 +439,8 @@ section {
 .portfolios .portfolio-item .hover-items {
   width: 100%;
   height: 100%;
+  border-width: 5px;
+  border-color: var(--color-secondary);
   background-color: var(--color-secondary);
   position: absolute;
   left: 0;
