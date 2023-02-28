@@ -782,7 +782,7 @@ section {
   }
 
   .timeline {
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: repeat(0, 1fr);
     padding-bottom: 6rem;
   }
 
@@ -970,7 +970,7 @@ section {
   }
 
   .timeline {
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: repeat(0, 1fr);
   }
 
   .main-title h2 {
