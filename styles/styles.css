@@ -275,6 +275,47 @@ section {
   height: 2px;
   background-color: var(--color-grey-5);
 }
+
+.about-item {
+  border: 1px solid var(--color-grey-5);
+  border-radius: 5px;
+  transition: all 0.4s ease-in-out;
+  box-shadow: 1px 2px 15px rgba(0, 0, 0, 0.1);
+}
+.about-item:hover {
+  cursor: default;
+  transform: translateY(-5px);
+  border: 1px solid var(--color-secondary);
+  box-shadow: 1px 4px 15px rgba(0, 0, 0, 0.32);
+}
+.about-item .abt-text {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+.about-item .abt-text .large-text {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--color-secondary);
+}
+.about-item .abt-text .small-text {
+  padding-left: 3rem;
+  position: relative;
+  text-transform: uppercase;
+  font-size: 1.2rem;
+  color: var(--color-grey-1);
+  letter-spacing: 2px;
+}
+.about-item .abt-text .small-text::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 15px;
+  width: 2rem;
+  height: 2px;
+  background-color: var(--color-grey-5);
+}
+
 .about-container .left-about {
   padding-right: 5rem;
 }
@@ -327,23 +368,23 @@ section {
   transition: all 0.4s ease-in-out;
   width: 60%;
 }
-.about-stats .progress-bars .progress-bar .progress-con .progress .html {
+.about-stats .progress-bars .progress-bar .progress-con .progress .python {
   width: 95%;
 }
-.about-stats .progress-bars .progress-bar .progress-con .progress .css {
-  width: 70%;
+.about-stats .progress-bars .progress-bar .progress-con .progress .flet {
+  width: 80%;
 }
-.about-stats .progress-bars .progress-bar .progress-con .progress .js {
-  width: 85%;
+.about-stats .progress-bars .progress-bar .progress-con .progress .rust {
+  width: 75%;
 }
-.about-stats .progress-bars .progress-bar .progress-con .progress .csharp {
+.about-stats .progress-bars .progress-bar .progress-con .progress .go {
   width: 65%;
 }
-.about-stats .progress-bars .progress-bar .progress-con .progress .sonicpi {
-  width: 50%;
+.about-stats .progress-bars .progress-bar .progress-con .progress .js {
+  width: 80%;
 }
-.about-stats .progress-bars .progress-bar .progress-con .progress .python {
-  width: 90%;
+.about-stats .progress-bars .progress-bar .progress-con .progress .cpp {
+  width: 70%;
 }
 
 .stat-title {
