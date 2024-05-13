@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Image</title>
+</head>
+<body>
+    <img id="randomImage" src="" alt="Random Image">
+    <script>
+        function getRandomDigits() {
+            return Math.floor(1000 + Math.random()*9000);
+        }
+
+        function setRandomImage() {
+            const randomDigits = getRandomDigits();
+            const imageUrl = `https://cdn.waifu.im/${randomDigits}.jpeg`;
+            document.getElementById('randomImage').src = imageUrl;
+        }
+
+        window.onload = setRandomImage;
+    </script>
+</body>
+</html>
