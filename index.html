@@ -24,7 +24,7 @@
 <body class="main-content">
     <header class="container header active" id="home">
       <!-- Trigger/Open The Popup -->
-    <button id="openPopupBtn">Sign Up for Our Newsletter</button>
+    
 
     <!-- The Popup -->
     <div id="newsletterPopup" class="popup">
@@ -39,14 +39,11 @@
       // Get the modal
       var popup = document.getElementById("newsletterPopup");
 
-      // Get the button that opens the modal
-      var btn = document.getElementById("openPopupBtn");
-
       // Get the <span> element that closes the modal
       var closeBtn = document.getElementById("closePopupBtn");
 
       // When the user clicks the button, open the modal 
-      btn.onclick = function() {
+      document.onload = function() {
           popup.style.visibility = "visible";
           popup.style.opacity = "1";
       }
