@@ -23,6 +23,94 @@
   </head>
 <body class="main-content">
     <header class="container header active" id="home">
+      <!-- Trigger/Open The Popup -->
+    <button id="openPopupBtn">Sign Up for Our Newsletter</button>
+
+    <!-- The Popup -->
+    <div id="newsletterPopup" class="popup">
+        <!-- Popup content -->
+        <div class="popup-content">
+            <button class="close-btn" id="closePopupBtn">&times;</button>
+            <h2>Subscribe to our Newsletter</h2>
+            <iframe src="https://embeds.beehiiv.com/836c8a14-2b82-447a-80e8-d419a489ff75" data-test-id="beehiiv-embed" frameborder="0" scrolling="no"></iframe>
+        </div>
+    </div>
+    <script>
+      // Get the modal
+      var popup = document.getElementById("newsletterPopup");
+
+      // Get the button that opens the modal
+      var btn = document.getElementById("openPopupBtn");
+
+      // Get the <span> element that closes the modal
+      var closeBtn = document.getElementById("closePopupBtn");
+
+      // When the user clicks the button, open the modal 
+      btn.onclick = function() {
+          popup.style.visibility = "visible";
+          popup.style.opacity = "1";
+      }
+
+      // When the user clicks on <span> (x), close the modal
+      closeBtn.onclick = function() {
+          popup.style.visibility = "hidden";
+          popup.style.opacity = "0";
+      }
+
+      // When the user clicks anywhere outside of the modal, close it
+      window.onclick = function(event) {
+          if (event.target == popup) {
+              popup.style.visibility = "hidden";
+              popup.style.opacity = "0";
+          }
+      }
+  </script>
+  <style>
+    /* Popup container - can be anything you want */
+    .popup {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        visibility: hidden; /* Initially hidden */
+        opacity: 0;
+        transition: visibility 0s, opacity 0.3s;
+    }
+    .popup-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        text-align: center;
+        position: relative;
+    }
+    .popup-content iframe {
+        width: 100%;
+        height: 320px;
+        border-radius: 4px;
+        border: 2px solid #e5e7eb;
+        background-color: transparent;
+    }
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #f44336;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+</style>
         <div class="header-content">
             <div class="left-header">
                 <div class="h-shape"></div>
