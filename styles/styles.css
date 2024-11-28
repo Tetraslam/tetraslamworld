@@ -686,6 +686,11 @@ section {
 .btn-con {
   display: flex;
   align-self: flex-start;
+  gap: 0.5rem;
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .main-btn {
