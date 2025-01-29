@@ -3,13 +3,12 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tweet, getLatestTweets } from '@/lib/integrations/twitter';
-import { BlogPost, getBlogPosts } from '@/lib/integrations/blog';
 import { initSpotifyEmbed, createSpotifyEmbed } from '@/lib/integrations/spotify';
 import { LeaderboardEntry, getLeaderboard } from '@/lib/integrations/leaderboard';
+import { getBlogPosts } from '@/lib/integrations/blog';
 
 export function DynamicContent() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
 
   useEffect(() => {
@@ -20,7 +19,6 @@ export function DynamicContent() {
 
       // Fetch blog posts
       const posts = await getBlogPosts(3);
-      setBlogPosts(posts);
 
       // Initialize Spotify embed
       await initSpotifyEmbed();
@@ -67,12 +65,7 @@ export function DynamicContent() {
       >
         <h2 className="text-2xl font-bold mb-4">Latest Blog Posts</h2>
         <div className="space-y-4">
-          {blogPosts.map((post) => (
-            <div key={post.id} className="border-b border-border pb-4">
-              <h3 className="text-lg font-semibold">{post.title}</h3>
-              <p className="text-sm text-muted-foreground mt-2">{post.date}</p>
-            </div>
-          ))}
+          
         </div>
       </motion.section>
 
