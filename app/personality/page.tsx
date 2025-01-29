@@ -1,11 +1,14 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { DecisionTree } from "@/components/ui/decision-tree";
-import { TravelMap } from "@/components/ui/travel-map";
-import { ThoughtGenerator } from "@/components/ui/thought-generator";
-import { WaifuRankings } from "@/components/ui/waifu-rankings";
-import { Oomfboard } from "@/components/ui/oomfboard";
+import dynamic from "next/dynamic";
+
+// Dynamically import client-only components
+const DecisionTree = dynamic(() => import("@/components/ui/decision-tree"), { ssr: false });
+const TravelMap = dynamic(() => import("@/components/ui/travel-map"), { ssr: false });
+const ThoughtGenerator = dynamic(() => import("@/components/ui/thought-generator"), { ssr: false });
+const WaifuRankings = dynamic(() => import("@/components/ui/waifu-rankings"), { ssr: false });
+const Oomfboard = dynamic(() => import("@/components/ui/oomfboard"), { ssr: false });
 
 export default function PersonalityPage() {
   return (
@@ -39,7 +42,9 @@ export default function PersonalityPage() {
         <section className="relative space-y-6">
           <div className="relative">
             <h2 className="text-2xl font-pixel text-primary mb-3">Monthly Anime Character Rankings</h2>
-            <p className="text-foreground/80">My current top picks from seasonal anime/manga and the ones I'm watching/reading right now.</p>
+            <p className="text-foreground/80">
+              My current top picks from seasonal anime/manga and the ones I'm watching/reading right now.
+            </p>
           </div>
           <div className="relative z-0">
             <WaifuRankings />
@@ -131,4 +136,4 @@ export default function PersonalityPage() {
       </div>
     </main>
   );
-} 
+}
