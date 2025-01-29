@@ -58,6 +58,15 @@ export default function SupportPage() {
               target="_blank"
               className="block group"
             >
+                  <span className="text-primary">Email:</span>{' '}
+                  I usually reply quickly :D
+                </Link></li>
+                <li><Link
+
+              href="mailto:shresht@mit.edu"
+              target="_blank"
+              className="block group"
+            >
                   <span className="text-primary">Twitter:</span>{' '}
                   Regular updates and tech discussions
                 </Link></li>
