@@ -79,7 +79,7 @@ export default function PersonalityPage() {
           >
             <h2 className="text-4xl font-bold mb-4">What Would Shresht Do?</h2>
             <p className="text-xl text-muted-foreground">
-            Navigate through different scenarios and see what I would pick.
+              Navigate through different scenarios and see what I would pick.
             </p>
           </motion.div>
 
@@ -121,7 +121,7 @@ export default function PersonalityPage() {
           >
             <div className="prose prose-invert max-w-none mb-8">
               <p className="text-muted-foreground text-center">
-                Click on markers to learn more about each location.
+                Click &apos;Generate New Thought&apos; to see what&apos;s on my mind
               </p>
             </div>
 

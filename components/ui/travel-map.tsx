@@ -5,6 +5,8 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet'
 import { Icon, LatLngExpression } from 'leaflet';
 import { motion, AnimatePresence } from 'framer-motion';
 import { locations, paths, getPathCoordinates, type Location } from '@/lib/travel-data';
+import L from 'leaflet';
+import Image from 'next/image';
 
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css';
@@ -40,7 +42,6 @@ export function TravelMap() {
 
   useEffect(() => {
     // Fix for map container in Next.js
-    const L = require('leaflet');
     delete L.Icon.Default.prototype._getIconUrl;
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: '/marker.svg',

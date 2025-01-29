@@ -7,13 +7,25 @@ export interface SpotifyTrack {
   spotifyUrl: string;
 }
 
+interface SpotifyEmbedAPI {
+  createIframedEmbed: (
+    uri: string,
+    options: {
+      width: string;
+      height: string;
+      theme: string;
+    },
+    element: HTMLElement | null
+  ) => void;
+}
+
 declare global {
   interface Window {
-    onSpotifyIframeApiReady: (IFrameAPI: any) => void;
+    onSpotifyIframeApiReady: (IFrameAPI: SpotifyEmbedAPI) => void;
   }
 }
 
-let spotifyEmbedAPI: any = null;
+let spotifyEmbedAPI: SpotifyEmbedAPI | null = null;
 
 export function initSpotifyEmbed() {
   return new Promise((resolve) => {

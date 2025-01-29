@@ -1,9 +1,17 @@
-export interface BlogPost {
+interface BlogPost {
   id: string;
   title: string;
   content: string;
   date: string;
   slug: string;
+}
+
+interface BlogPostResponse {
+  id: string;
+  title: string;
+  content_html: string;
+  date_published: string;
+  url: string;
 }
 
 export async function getBlogPosts(count: number = 5): Promise<BlogPost[]> {
@@ -14,12 +22,12 @@ export async function getBlogPosts(count: number = 5): Promise<BlogPost[]> {
     
     const posts: BlogPost[] = data.items
       .slice(0, count)
-      .map((post: any) => ({
+      .map((post: BlogPostResponse) => ({
         id: post.id,
         title: post.title,
         content: post.content_html,
         date: post.date_published,
-        slug: post.url.split('/').pop()
+        slug: post.url.split('/').pop() || ''
       }));
     
     return posts;

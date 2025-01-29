@@ -19,7 +19,7 @@ export default function SupportPage() {
             <h1 className="text-4xl font-bold mb-4">Support & Connect</h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Whether you want to support my work, discuss opportunities, or contribute to my projects,
-              here's how you can get involved.
+              here&apos;s how you can get involved.
             </p>
           </motion.div>
         </section>

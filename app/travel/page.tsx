@@ -15,7 +15,7 @@ export default function TravelPage() {
         >
           <h1 className="text-4xl font-bold mb-4">Travel Map</h1>
           <p className="text-xl text-muted-foreground">
-            Explore the places I've visited, the people I've met, and the experiences I've had
+            Explore the places I&apos;ve visited, the people I&apos;ve met, and the experiences I&apos;ve had
           </p>
         </motion.div>
 

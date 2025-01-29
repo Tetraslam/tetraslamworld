@@ -27,7 +27,7 @@ export function ThoughtGenerator() {
 
   useEffect(() => {
     generateThought();
-  }, [filter]);
+  }, [filter, generateThought]);
 
   return (
     <div className="space-y-6">

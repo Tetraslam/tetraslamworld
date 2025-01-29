@@ -8,7 +8,7 @@ interface Node {
   id: string;
   group: number;
   label: string;
-  description: string;
+  details: string;
 }
 
 interface Link {
@@ -17,82 +17,97 @@ interface Link {
   value: number;
 }
 
+interface SimulationNode extends d3.SimulationNodeDatum {
+  id: string;
+  group: number;
+  label: string;
+  details: string;
+  x?: number;
+  y?: number;
+}
+
+interface SimulationLink extends d3.SimulationLinkDatum<SimulationNode> {
+  source: string | SimulationNode;
+  target: string | SimulationNode;
+  value: number;
+}
+
 const nodes: Node[] = [
-  { id: "core", group: 1, label: "Core", description: "CS + Linguistics @ Northeastern" },
-  { id: "tech", group: 2, label: "Tech", description: "Python, Nim, C++, TypeScript, ML/AI" },
-  { id: "projects", group: 2, label: "Projects", description: "SHFLA, Sapientia, Oomfboard" },
-  { id: "languages", group: 3, label: "Languages", description: "English, French, Japanese, Korean" },
-  { id: "interests", group: 3, label: "Interests", description: "Bonsai, Scuba, Worldbuilding" },
-  { id: "values", group: 4, label: "Values", description: "Open Source, Innovation, Education" },
+  { id: "core", group: 1, label: "Core", details: "CS + Linguistics @ Northeastern" },
+  { id: "tech", group: 2, label: "Tech", details: "Python, Nim, C++, TypeScript, ML/AI" },
+  { id: "projects", group: 2, label: "Projects", details: "SHFLA, Sapientia, Oomfboard" },
+  { id: "languages", group: 3, label: "Languages", details: "English, French, Japanese, Korean" },
+  { id: "interests", group: 3, label: "Interests", details: "Bonsai, Scuba, Worldbuilding" },
+  { id: "values", group: 4, label: "Values", details: "Open Source, Innovation, Education" },
 
   // Deeper Tech & Research
-  { id: "ml", group: 2, label: "Machine Learning", description: "LLMs, Reinforcement Learning, Vector DBs" },
-  { id: "biocomputing", group: 2, label: "Biocomputing", description: "Neuron-based computers, MEAs, Homomorphic Encryption" },
-  { id: "cybersec", group: 2, label: "Cybersecurity", description: "Red Teaming, Reinforcement Learning in Security" },
-  { id: "game-dev", group: 2, label: "Game Development", description: "Godot, Roguelikes, Procedural Generation" },
+  { id: "ml", group: 2, label: "Machine Learning", details: "LLMs, Reinforcement Learning, Vector DBs" },
+  { id: "biocomputing", group: 2, label: "Biocomputing", details: "Neuron-based computers, MEAs, Homomorphic Encryption" },
+  { id: "cybersec", group: 2, label: "Cybersecurity", details: "Red Teaming, Reinforcement Learning in Security" },
+  { id: "game-dev", group: 2, label: "Game Development", details: "Godot, Roguelikes, Procedural Generation" },
 
   // Specific Projects
-  { id: "shfla", group: 2, label: "SHFLA", description: "Turing-complete fractal language for music" },
-  { id: "sapientia", group: 2, label: "Sapientia Research", description: "Emergent Tech, Applied Math, Patents" },
-  { id: "oomfboard", group: 2, label: "Oomfboard", description: "High-signal, invite-only social board" },
-  { id: "fiberfinder", group: 2, label: "Photonics", description: "Topological frequency comb research" },
+  { id: "shfla", group: 2, label: "SHFLA", details: "Turing-complete fractal language for music" },
+  { id: "sapientia", group: 2, label: "Sapientia Research", details: "Emergent Tech, Applied Math, Patents" },
+  { id: "oomfboard", group: 2, label: "Oomfboard", details: "High-signal, invite-only social board" },
+  { id: "fiberfinder", group: 2, label: "Photonics", details: "Topological frequency comb research" },
 
   // Linguistics
-  { id: "morpho", group: 3, label: "Morphology", description: "Algorithmic analysis, language construction" },
-  { id: "phonology", group: 3, label: "Phonology", description: "Corpus analysis, Kansai dialect research" },
-  { id: "pragmatics", group: 3, label: "Pragmatics", description: "Conversational AI, sociolinguistics" },
+  { id: "morpho", group: 3, label: "Morphology", details: "Algorithmic analysis, language construction" },
+  { id: "phonology", group: 3, label: "Phonology", details: "Corpus analysis, Kansai dialect research" },
+  { id: "pragmatics", group: 3, label: "Pragmatics", details: "Conversational AI, sociolinguistics" },
 
   // Personal Interests
-  { id: "anime", group: 3, label: "Anime", description: "Kill la Kill, Mushoku Tensei, Frieren" },
-  { id: "travel", group: 3, label: "Travel", description: "30+ countries, deep culture immersion" },
-  { id: "fashion", group: 3, label: "Fashion", description: "Superdry, functional + aesthetic design" },
-  { id: "core", group: 1, label: "Core", description: "CS + Linguistics @ Northeastern" },
-  { id: "tech", group: 2, label: "Tech", description: "Python, Nim, C++, TypeScript, ML/AI" },
-  { id: "projects", group: 2, label: "Projects", description: "SHFLA, Sapientia, Oomfboard" },
-  { id: "languages", group: 3, label: "Languages", description: "English, French, Japanese, Korean" },
-  { id: "interests", group: 3, label: "Interests", description: "Bonsai, Scuba, Worldbuilding" },
-  { id: "values", group: 4, label: "Values", description: "Open Source, Innovation, Education" },
+  { id: "anime", group: 3, label: "Anime", details: "Kill la Kill, Mushoku Tensei, Frieren" },
+  { id: "travel", group: 3, label: "Travel", details: "30+ countries, deep culture immersion" },
+  { id: "fashion", group: 3, label: "Fashion", details: "Superdry, functional + aesthetic design" },
+  { id: "core", group: 1, label: "Core", details: "CS + Linguistics @ Northeastern" },
+  { id: "tech", group: 2, label: "Tech", details: "Python, Nim, C++, TypeScript, ML/AI" },
+  { id: "projects", group: 2, label: "Projects", details: "SHFLA, Sapientia, Oomfboard" },
+  { id: "languages", group: 3, label: "Languages", details: "English, French, Japanese, Korean" },
+  { id: "interests", group: 3, label: "Interests", details: "Bonsai, Scuba, Worldbuilding" },
+  { id: "values", group: 4, label: "Values", details: "Open Source, Innovation, Education" },
 
   // Deeper Tech & Research
-  { id: "ml", group: 2, label: "Machine Learning", description: "LLMs, Reinforcement Learning, Vector DBs" },
-  { id: "biocomputing", group: 2, label: "Biocomputing", description: "Neuron-based computers, MEAs, Homomorphic Encryption" },
-  { id: "cybersec", group: 2, label: "Cybersecurity", description: "Red Teaming, Reinforcement Learning in Security" },
-  { id: "game-dev", group: 2, label: "Game Development", description: "Godot, Roguelikes, Procedural Generation" },
+  { id: "ml", group: 2, label: "Machine Learning", details: "LLMs, Reinforcement Learning, Vector DBs" },
+  { id: "biocomputing", group: 2, label: "Biocomputing", details: "Neuron-based computers, MEAs, Homomorphic Encryption" },
+  { id: "cybersec", group: 2, label: "Cybersecurity", details: "Red Teaming, Reinforcement Learning in Security" },
+  { id: "game-dev", group: 2, label: "Game Development", details: "Godot, Roguelikes, Procedural Generation" },
 
   // Specific Projects
-  { id: "shfla", group: 2, label: "SHFLA", description: "Turing-complete fractal language for music" },
-  { id: "sapientia", group: 2, label: "Sapientia Research", description: "Emergent Tech, Applied Math, Patents" },
-  { id: "oomfboard", group: 2, label: "Oomfboard", description: "High-signal, invite-only social board" },
-  { id: "fiberfinder", group: 2, label: "FiberFinder", description: "Topological frequency comb research" },
+  { id: "shfla", group: 2, label: "SHFLA", details: "Turing-complete fractal language for music" },
+  { id: "sapientia", group: 2, label: "Sapientia Research", details: "Emergent Tech, Applied Math, Patents" },
+  { id: "oomfboard", group: 2, label: "Oomfboard", details: "High-signal, invite-only social board" },
+  { id: "fiberfinder", group: 2, label: "FiberFinder", details: "Topological frequency comb research" },
 
   // Linguistics
-  { id: "morpho", group: 3, label: "Morphology", description: "Algorithmic analysis, language construction" },
-  { id: "phonology", group: 3, label: "Phonology", description: "Corpus analysis, Kansai dialect research" },
-  { id: "pragmatics", group: 3, label: "Pragmatics", description: "Conversational AI, sociolinguistics" },
+  { id: "morpho", group: 3, label: "Morphology", details: "Algorithmic analysis, language construction" },
+  { id: "phonology", group: 3, label: "Phonology", details: "Corpus analysis, Kansai dialect research" },
+  { id: "pragmatics", group: 3, label: "Pragmatics", details: "Conversational AI, sociolinguistics" },
 
   // Personal Interests
-  { id: "anime", group: 3, label: "Anime", description: "Kill la Kill, Mushoku Tensei, Frieren" },
-  { id: "travel", group: 3, label: "Travel", description: "30+ countries, deep culture immersion" },
-  { id: "fashion", group: 3, label: "Fashion", description: "Superdry, functional + aesthetic design" },
+  { id: "anime", group: 3, label: "Anime", details: "Kill la Kill, Mushoku Tensei, Frieren" },
+  { id: "travel", group: 3, label: "Travel", details: "30+ countries, deep culture immersion" },
+  { id: "fashion", group: 3, label: "Fashion", details: "Superdry, functional + aesthetic design" },
 
   // Future Goals
-  { id: "neuro-labs", group: 4, label: "Neuro Labs", description: "Building secure neuro research infrastructure" },
-  { id: "fintech", group: 4, label: "Fintech", description: "Destroying Visa, rethinking credit systems" },
-  { id: "education", group: 4, label: "Education", description: "Redefining university models" },
-  { id: "ai-governance", group: 4, label: "AI Governance", description: "Aligning AI incentives at scale" },
-  { id: "digital-twins", group: 4, label: "Digital Twins", description: "Simulating real-world economies & people" },
+  { id: "neuro-labs", group: 4, label: "Neuro Labs", details: "Building secure neuro research infrastructure" },
+  { id: "fintech", group: 4, label: "Fintech", details: "Destroying Visa, rethinking credit systems" },
+  { id: "education", group: 4, label: "Education", details: "Redefining university models" },
+  { id: "ai-governance", group: 4, label: "AI Governance", details: "Aligning AI incentives at scale" },
+  { id: "digital-twins", group: 4, label: "Digital Twins", details: "Simulating real-world economies & people" },
 
   // Economic & Philosophical Views
-  { id: "accelerationism", group: 4, label: "Accelerationism", description: "Technology must move faster, not slower" },
-  { id: "privacy", group: 4, label: "Privacy", description: "Decentralized identity, post-surveillance world" },
-  { id: "ai-labor", group: 4, label: "AI & Labor", description: "Optimizing humans out of repetitive tasks" },
-  { id: "cryptoeconomics", group: 4, label: "Crypto Economics", description: "Rethinking financial sovereignty" },
+  { id: "accelerationism", group: 4, label: "Accelerationism", details: "Technology must move faster, not slower" },
+  { id: "privacy", group: 4, label: "Privacy", details: "Decentralized identity, post-surveillance world" },
+  { id: "ai-labor", group: 4, label: "AI & Labor", details: "Optimizing humans out of repetitive tasks" },
+  { id: "cryptoeconomics", group: 4, label: "Crypto Economics", details: "Rethinking financial sovereignty" },
 
   // Niche Interests & Fun
-  { id: "culinary", group: 3, label: "Culinary", description: "Baking + cooking thanks to a Cordon Bleu mom" },
-  { id: "karaoke", group: 3, label: "Karaoke", description: "J-rock & K-pop, high-energy or sentimental" },
-  { id: "esports", group: 3, label: "Esports", description: "Dream of running an org, deep game theory" },
-  { id: "scuba-tech", group: 3, label: "Scuba Tech", description: "Shipwreck diving + autonomous underwater drones" }
+  { id: "culinary", group: 3, label: "Culinary", details: "Baking + cooking thanks to a Cordon Bleu mom" },
+  { id: "karaoke", group: 3, label: "Karaoke", details: "J-rock & K-pop, high-energy or sentimental" },
+  { id: "esports", group: 3, label: "Esports", details: "Dream of running an org, deep game theory" },
+  { id: "scuba-tech", group: 3, label: "Scuba Tech", details: "Shipwreck diving + autonomous underwater drones" }
 ];
 
 
@@ -295,7 +310,7 @@ export function NeuralNetwork() {
           className="mt-6 p-6 relative bg-card/30 backdrop-blur-md border-2 border-primary/20 rounded-none"
         >
           <h3 className="text-xl font-pixel text-primary mb-3">{selectedNode.label}</h3>
-          <p className="text-sm text-foreground/80 leading-relaxed">{selectedNode.description}</p>
+          <p className="text-sm text-foreground/80 leading-relaxed">{selectedNode.details}</p>
         </motion.div>
       )}
     </div>

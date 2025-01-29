@@ -15,7 +15,9 @@ export function generateSparkles(event: MouseEvent, element: HTMLElement) {
   setTimeout(() => sparkle.remove(), 1000);
 }
 
-export function debounce<T extends (...args: any[]) => any>(
+type AnyFunction = (...args: unknown[]) => unknown;
+
+export function debounce<T extends AnyFunction>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {

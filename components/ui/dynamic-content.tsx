@@ -10,7 +10,6 @@ import { LeaderboardEntry, getLeaderboard } from '@/lib/integrations/leaderboard
 export function DynamicContent() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  const [currentTrack, setCurrentTrack] = useState<SpotifyTrack | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
 
   useEffect(() => {
