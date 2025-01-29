@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tweet, getLatestTweets } from '@/lib/integrations/twitter';
 import { BlogPost, getBlogPosts } from '@/lib/integrations/blog';
-import { SpotifyTrack, initSpotifyEmbed, createSpotifyEmbed } from '@/lib/integrations/spotify';
+import { initSpotifyEmbed, createSpotifyEmbed } from '@/lib/integrations/spotify';
 import { LeaderboardEntry, getLeaderboard } from '@/lib/integrations/leaderboard';
 
 export function DynamicContent() {

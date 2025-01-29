@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Thought, getRandomThought, getThoughtsByCategory, getThoughtsByMood } from '@/lib/integrations/thoughts';
 
@@ -11,7 +11,7 @@ export function ThoughtGenerator() {
     value: string | null;
   }>({ type: null, value: null });
 
-  const generateThought = () => {
+  const generateThought = useCallback(() => {
     let newThought: Thought;
     if (filter.type === 'category') {
       const thoughts = getThoughtsByCategory(filter.value as Thought['category']);
@@ -23,11 +23,11 @@ export function ThoughtGenerator() {
       newThought = getRandomThought();
     }
     setCurrentThought(newThought);
-  };
+  }, [filter]);
 
   useEffect(() => {
     generateThought();
-  }, [filter, generateThought]);
+  }, [generateThought]);
 
   return (
     <div className="space-y-6">

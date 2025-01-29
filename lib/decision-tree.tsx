@@ -50,7 +50,7 @@ export function DecisionTree() {
     >
       <div className="relative bg-card/30 backdrop-blur-md rounded-lg p-6 shadow-xl border border-accent/20">
         <h3 className="text-xl font-semibold mb-4 text-primary">
-          {outcome ? "Shresht's Decision:" : currentNode.question}
+          {outcome ? "Shresht&apos;s Decision:" : currentNode.question}
         </h3>
 
         <div className="space-y-4">

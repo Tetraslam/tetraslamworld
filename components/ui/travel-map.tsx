@@ -79,21 +79,18 @@ export function TravelMap() {
           />
           
           {/* Travel paths */}
-          {paths.map((path, index) => {
-            const coordinates = getPathCoordinates(path);
-            return (
-              <Polyline
-                key={`${path.from}-${path.to}`}
-                positions={coordinates}
-                pathOptions={{
-                  color: 'hsl(34, 100%, 65%)',
-                  weight: 3,
-                  opacity: 0.4,
-                  dashArray: '6, 12',
-                }}
-              />
-            );
-          })}
+          {paths.map((path) => (
+            <Polyline
+              key={`${path.from}-${path.to}`}
+              positions={getPathCoordinates(path)}
+              pathOptions={{
+                color: 'hsl(34, 100%, 65%)',
+                weight: 2,
+                dashArray: '5, 10',
+                opacity: 0.7
+              }}
+            />
+          ))}
 
           {/* Location markers */}
           {locations.map((location) => (

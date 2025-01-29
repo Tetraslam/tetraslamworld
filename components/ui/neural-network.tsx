@@ -26,11 +26,10 @@ interface SimulationNode extends d3.SimulationNodeDatum {
   y?: number;
 }
 
-interface SimulationLink extends d3.SimulationLinkDatum<SimulationNode> {
-  source: string | SimulationNode;
-  target: string | SimulationNode;
-  value: number;
-}
+type D3Selection = d3.Selection<SVGGElement, SimulationNode, null, undefined>;
+type D3Simulation = d3.Simulation<SimulationNode, undefined>;
+type D3DragBehavior = d3.DragBehavior<Element, SimulationNode, SimulationNode>;
+type D3ZoomBehavior = d3.ZoomBehavior<Element, unknown>;
 
 const nodes: Node[] = [
   { id: "core", group: 1, label: "Core", details: "CS + Linguistics @ Northeastern" },
