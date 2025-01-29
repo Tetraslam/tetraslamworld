@@ -3,12 +3,14 @@
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 
-// Dynamically import client-only components
-const DecisionTree = dynamic(() => import("@/components/ui/decision-tree"), { ssr: false });
-const TravelMap = dynamic(() => import("@/components/ui/travel-map"), { ssr: false });
-const ThoughtGenerator = dynamic(() => import("@/components/ui/thought-generator"), { ssr: false });
-const WaifuRankings = dynamic(() => import("@/components/ui/waifu-rankings"), { ssr: false });
-const Oomfboard = dynamic(() => import("@/components/ui/oomfboard"), { ssr: false });
+
+// Dynamically import client-only components with correct type handling
+const DecisionTree = dynamic(() => import("@/components/ui/decision-tree").then((mod) => mod.DecisionTree), { ssr: false });
+const TravelMap = dynamic(() => import("@/components/ui/travel-map").then((mod) => mod.TravelMap), { ssr: false });
+const ThoughtGenerator = dynamic(() => import("@/components/ui/thought-generator").then((mod) => mod.ThoughtGenerator), { ssr: false });
+const WaifuRankings = dynamic(() => import("@/components/ui/waifu-rankings").then((mod) => mod.WaifuRankings), { ssr: false });
+const Oomfboard = dynamic(() => import("@/components/ui/oomfboard").then((mod) => mod.Oomfboard), { ssr: false });
+
 
 export default function PersonalityPage() {
   return (
