@@ -1,7 +1,10 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { TravelMap } from "@/components/ui/travel-map";
+import dynamic from "next/dynamic";
+
+const TravelMap = dynamic(() => import("@/components/ui/travel-map").then((mod) => mod.TravelMap), { ssr: false });
+
 
 export default function TravelPage() {
   return (

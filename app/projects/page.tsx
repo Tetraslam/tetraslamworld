@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from "next/dynamic";
 import { projects, sortProjects, filterProjects, type Project } from '@/lib/project-data';
-import { ProjectCard } from '@/components/ui/project-card';
-import { ProjectDetails } from '@/components/ui/project-details';
+
+const ProjectCard = dynamic(() => import("@/components/ui/project-card").then((mod) => mod.ProjectCard), { ssr: false });
+const ProjectDetails = dynamic(() => import("@/components/ui/project-details").then((mod) => mod.ProjectDetails), { ssr: false });
+
 
 type SortOption = 'date' | 'stars' | 'title';
 type FilterOption = 'all' | 'software' | 'hardware' | 'research' | 'creative';

@@ -1,7 +1,10 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { SupportLinks } from "@/components/ui/support-links";
+import dynamic from "next/dynamic";
+
+const SupportLinks = dynamic(() => import("@/components/ui/support-links").then((mod) => mod.SupportLinks), { ssr: false });
+
 import Link from "next/link";
 
 export default function SupportPage() {

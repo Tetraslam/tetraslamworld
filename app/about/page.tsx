@@ -1,7 +1,10 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { NeuralNetwork } from "@/components/ui/neural-network";
+import dynamic from "next/dynamic";
+
+const NeuralNetwork = dynamic(() => import("@/components/ui/neural-network").then((mod) => mod.NeuralNetwork), { ssr: false });
+
 
 export default function AboutPage() {
   return (
