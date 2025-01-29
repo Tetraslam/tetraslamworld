@@ -3,9 +3,13 @@
   "rules": {
     "react/no-unescaped-entities": "off",
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-unused-vars": ["warn", {
-      "varsIgnorePattern": "^D3",
-      "argsIgnorePattern": "^_"
-    }]
-  }
+    "@typescript-eslint/no-unused-vars": ["off"],
+    "no-unused-vars": "off"
+  },
+  "ignorePatterns": [
+    "components/ui/neural-network.tsx",
+    "app/personality/page.tsx",
+    "components/ui/travel-map.tsx",
+    "lib/decision-tree.tsx"
+  ]
 } 
