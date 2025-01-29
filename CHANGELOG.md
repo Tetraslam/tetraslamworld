@@ -138,4 +138,7 @@ All notable changes to this project will be documented in this file.
 - Initial repository setup
 - Basic documentation
 - Project planning documents
-- Core styling and animation system 
+- Core styling and animation system
+
+## [Unreleased]
+- Added `vercel.json` configuration file to explicitly specify Next.js as the framework for Vercel deployments 
