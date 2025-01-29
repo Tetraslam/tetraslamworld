@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { CustomCursor } from "@/components/ui/custom-cursor";
 import { NavigationMenu } from "@/components/ui/navigation-menu";
 import { CozyModeProvider } from "@/lib/cozy-mode";
 import { CozyToggle } from "@/components/ui/cozy-toggle";
@@ -22,7 +21,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} pixel-bg min-h-screen`}>
         <CozyModeProvider>
-          <CustomCursor />
           <NavigationMenu />
           <div className="pt-16">
             {children}
