@@ -42,7 +42,6 @@ export function TravelMap() {
 
   useEffect(() => {
     // Fix for map container in Next.js
-    delete L.Icon.Default.prototype._getIconUrl;
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: '/marker.svg',
       iconUrl: '/marker.svg',
