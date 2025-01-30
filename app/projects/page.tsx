@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from "next/dynamic";
 import { projects, sortProjects, filterProjects, type Project } from '@/lib/project-data';
@@ -12,7 +12,7 @@ const ProjectDetails = dynamic(() => import("@/components/ui/project-details").t
 type SortOption = 'date' | 'stars' | 'title';
 type FilterOption = 'all' | 'software' | 'hardware' | 'research' | 'creative';
 
-export default function ProjectsPage() {
+function ProjectsContent() {
   const searchParams = useSearchParams();
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('date');
@@ -106,5 +106,24 @@ export default function ProjectsPage() {
         />
       </div>
     </main>
+  );
+}
+
+export default function ProjectsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen p-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-12 text-center">
+            <h1 className="text-4xl font-bold mb-4">Projects</h1>
+            <p className="text-xl text-muted-foreground">
+              Loading projects...
+            </p>
+          </div>
+        </div>
+      </div>
+    }>
+      <ProjectsContent />
+    </Suspense>
   );
 } 

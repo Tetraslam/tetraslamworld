@@ -14,6 +14,17 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [hasStarred, setHasStarred] = useState(false);
   const [starCount, setStarCount] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const fetchStars = async () => {
@@ -23,7 +34,8 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
     fetchStars();
   }, [project.id]);
 
-  const handleStar = async () => {
+  const handleStar = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!hasStarred) {
       try {
         await starProject(project.id);
@@ -36,10 +48,8 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
   };
 
   const handleInteraction = () => {
-    // Check if device is touch-enabled
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    if (isTouchDevice) {
-      setIsHovered(!isHovered); // Toggle on touch
+    if (isMobile) {
+      setIsHovered(!isHovered);
     }
   };
 
@@ -50,8 +60,8 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       whileHover={{ y: -5 }}
-      onHoverStart={() => !('ontouchstart' in window) && setIsHovered(true)}
-      onHoverEnd={() => !('ontouchstart' in window) && setIsHovered(false)}
+      onHoverStart={() => !isMobile && setIsHovered(true)}
+      onHoverEnd={() => !isMobile && setIsHovered(false)}
       onClick={handleInteraction}
       id={`project-${project.id}`}
       className="group relative bg-card/30 backdrop-blur-md border-2 border-primary/20 rounded-none overflow-hidden before:absolute before:inset-0 before:border-2 before:border-primary/10 before:m-1 after:absolute after:inset-0 after:border-2 after:border-primary/5 after:m-2"
@@ -99,7 +109,14 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
 
         {/* Star Count */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <div 
+            className={`flex items-center space-x-2 ${!isMobile && !hasStarred ? 'cursor-pointer hover:opacity-80' : ''}`}
+            onClick={(e) => {
+              if (!isMobile && !hasStarred) {
+                handleStar(e);
+              }
+            }}
+          >
             <span className="text-lg font-pixel text-primary">⭐</span>
             <span className="text-sm font-pixel text-foreground/60">
               {starCount}
@@ -123,6 +140,7 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 font-pixel bg-primary/10 border-2 border-primary/30 text-primary hover:bg-primary/20 hover:text-accent transition-all duration-300"
+              onClick={(e) => e.stopPropagation()}
             >
               GitHub
             </a>
@@ -133,6 +151,7 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 font-pixel bg-primary/20 border-2 border-primary/30 text-primary hover:bg-primary/30 hover:text-accent transition-all duration-300"
+              onClick={(e) => e.stopPropagation()}
             >
               Demo
             </a>
@@ -143,6 +162,7 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 font-pixel bg-primary/20 border-2 border-primary/30 text-primary hover:bg-primary/30 hover:text-accent transition-all duration-300"
+              onClick={(e) => e.stopPropagation()}
             >
               Website
             </a>
@@ -153,6 +173,7 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 font-pixel bg-primary/20 border-2 border-primary/30 text-primary hover:bg-primary/30 hover:text-accent transition-all duration-300"
+              onClick={(e) => e.stopPropagation()}
             >
               Blog
             </a>
@@ -163,6 +184,7 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 font-pixel bg-primary/20 border-2 border-primary/30 text-primary hover:bg-primary/30 hover:text-accent transition-all duration-300"
+              onClick={(e) => e.stopPropagation()}
             >
               Coming Soon
             </a>
@@ -170,7 +192,10 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
         </div>
         <div className="flex items-center gap-4">
           <button
-            onClick={() => onSelect(project)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(project);
+            }}
             className="px-6 py-3 font-pixel bg-secondary/20 border-2 border-secondary/30 text-secondary hover:bg-secondary/30 hover:text-accent transition-all duration-300"
           >
             Details
