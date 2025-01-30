@@ -128,7 +128,7 @@ export default function PersonalityPage() {
           >
             <div className="prose prose-invert max-w-none mb-8">
               <p className="text-muted-foreground text-center">
-                Click &apos;Generate New Thought&apos; to see what&apos;s on my mind
+                Click on markers to learn more about each location. Dashed lines show travel paths.
               </p>
             </div>
 

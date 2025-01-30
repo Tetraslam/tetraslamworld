@@ -133,6 +133,36 @@ All notable changes to this project will be documented in this file.
 ### In Progress
 - 🎯 Final testing and deployment preparation
 
+### Planned Improvements
+
+#### UX Enhancements
+- [x] Project Details Navigation Enhancement
+  - Implemented scroll-to-project functionality when clicking "Learn more"
+  - Added auto-open project details modal after navigation
+  - Added smooth scroll animation for better user experience
+
+- [x] Resume Download Behavior
+  - Modified resume download to open in new tab without switching focus
+  - Updated anchor tag with target="_blank" and rel attributes
+  - Maintained current tab focus after clicking download
+
+#### Mobile Responsiveness Improvements
+- [x] Button Consistency
+  - Standardized mobile button widths
+  - Fixed Download Resume button width to match other buttons
+
+- [x] Touch Interaction Improvements
+  - Converted hover cards to click/touch events on mobile for projects
+  - Implemented touch-friendly interaction for OOMF cards
+  - Added touch feedback indicators for better UX
+
+- [x] Mobile Layout Optimizations
+  - Adjusted anime character rankings layout for mobile
+  - Removed expanded image view on mobile
+  - Optimized text and traits display for full component width
+  - Increased neural network component height on mobile for better node spacing
+  - Preserved node count while improving readability
+
 ## [0.0.1] - 2024-01-24
 ### Added
 - Initial repository setup

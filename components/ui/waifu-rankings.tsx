@@ -119,7 +119,7 @@ export function WaifuRankings() {
                     transition={{ duration: 0.3 }}
                     className="mt-6 overflow-hidden relative z-20"
                   >
-                    <div className="flex gap-6">
+                    <div className="flex flex-col md:flex-row gap-6">
                       <div className="flex-1 select-text space-y-4">
                         <h4 className="font-pixel text-xl text-primary glow-text-primary">{waifu.name}</h4>
                         <p className="text-sm text-foreground/80 leading-relaxed font-pixel">
@@ -136,7 +136,7 @@ export function WaifuRankings() {
                           ))}
                         </div>
                       </div>
-                      <div className="relative w-64 h-64 shrink-0 border-2 border-primary/30 overflow-hidden">
+                      <div className="relative w-64 h-64 shrink-0 border-2 border-primary/30 overflow-hidden hidden md:block">
                         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent pointer-events-none z-10" />
                         <Image
                           src={waifu.image}

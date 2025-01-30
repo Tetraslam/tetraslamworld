@@ -119,22 +119,22 @@ export function TravelMap() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="absolute top-6 right-6 w-96 bg-background/95 backdrop-blur-md border-2 border-primary/20 rounded-none shadow-[0_0_15px_rgba(0,0,0,0.3)] before:absolute before:inset-0 before:border-2 before:border-primary/10 before:m-1"
+            className="absolute bottom-0 left-0 right-0 md:bottom-auto md:left-auto md:right-6 md:top-6 w-full md:w-96 bg-background/95 backdrop-blur-md border-2 border-primary/20 rounded-none shadow-[0_0_15px_rgba(0,0,0,0.3)] before:absolute before:inset-0 before:border-2 before:border-primary/10 before:m-1 max-h-[60vh] md:max-h-[80vh] overflow-y-auto"
           >
-            <div className="relative p-6">
+            <div className="relative p-4 md:p-6">
               <button
                 onClick={() => setSelectedLocation(null)}
-                className="absolute top-4 right-4 w-8 h-8 font-pixel text-primary hover:text-accent transition-colors duration-300"
+                className="absolute top-2 right-2 md:top-4 md:right-4 w-8 h-8 font-pixel text-primary hover:text-accent transition-colors duration-300"
               >
                 ×
               </button>
-              <h3 className="text-xl font-pixel text-primary mb-3">{selectedLocation.name}</h3>
-              <p className="text-sm text-foreground/80 mb-6 leading-relaxed">{selectedLocation.description}</p>
+              <h3 className="text-lg md:text-xl font-pixel text-primary mb-2 md:mb-3 pr-8">{selectedLocation.name}</h3>
+              <p className="text-sm text-foreground/80 mb-4 md:mb-6 leading-relaxed">{selectedLocation.description}</p>
               
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 <div>
-                  <h4 className="text-sm font-pixel text-primary/90 mb-3">Activities</h4>
-                  <ul className="space-y-2">
+                  <h4 className="text-sm font-pixel text-primary/90 mb-2 md:mb-3">Activities</h4>
+                  <ul className="space-y-1.5 md:space-y-2">
                     {selectedLocation.activities.map((activity, i) => (
                       <li key={i} className="flex items-center text-sm text-foreground/80">
                         <span className="inline-block w-2 h-2 bg-primary/50 mr-2" />
@@ -145,8 +145,8 @@ export function TravelMap() {
                 </div>
                 
                 <div>
-                  <h4 className="text-sm font-pixel text-primary/90 mb-3">People Met</h4>
-                  <ul className="space-y-2">
+                  <h4 className="text-sm font-pixel text-primary/90 mb-2 md:mb-3">People Met</h4>
+                  <ul className="space-y-1.5 md:space-y-2">
                     {selectedLocation.peopleMet.map((person, i) => (
                       <li key={i} className="flex items-center text-sm text-foreground/80">
                         <span className="inline-block w-2 h-2 bg-primary/50 mr-2" />

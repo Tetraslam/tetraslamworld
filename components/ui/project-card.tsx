@@ -35,6 +35,14 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
     }
   };
 
+  const handleInteraction = () => {
+    // Check if device is touch-enabled
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isTouchDevice) {
+      setIsHovered(!isHovered); // Toggle on touch
+    }
+  };
+
   return (
     <motion.div
       layout
@@ -42,8 +50,10 @@ export function ProjectCard({ project, onSelect }: ProjectCardProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       whileHover={{ y: -5 }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
+      onHoverStart={() => !('ontouchstart' in window) && setIsHovered(true)}
+      onHoverEnd={() => !('ontouchstart' in window) && setIsHovered(false)}
+      onClick={handleInteraction}
+      id={`project-${project.id}`}
       className="group relative bg-card/30 backdrop-blur-md border-2 border-primary/20 rounded-none overflow-hidden before:absolute before:inset-0 before:border-2 before:border-primary/10 before:m-1 after:absolute after:inset-0 after:border-2 after:border-primary/5 after:m-2"
     >
       {/* Project Image */}

@@ -183,9 +183,12 @@ export function NeuralNetwork() {
       if (svgRef.current) {
         const container = svgRef.current.parentElement;
         if (container) {
+          const isMobile = window.innerWidth <= 768;
           setDimensions({
             width: container.clientWidth,
-            height: Math.min(container.clientWidth * 0.75, window.innerHeight * 0.7),
+            height: isMobile 
+              ? Math.min(container.clientWidth * 1.5, window.innerHeight * 0.9) // Taller on mobile
+              : Math.min(container.clientWidth * 0.75, window.innerHeight * 0.7),
           });
         }
       }

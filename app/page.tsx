@@ -50,30 +50,29 @@ export default function Home() {
           >
             I build robots, turing machines, ML models, fantasy worlds, and other cool stuff!
           </motion.p>
-          <motion.div variants={item}>
+          <motion.div variants={item} className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
               href="/projects"
-              className="inline-block px-6 py-3 bg-primary/10 hover:bg-primary/20 text-primary border-2 border-primary/30 transition-colors font-pixel"
+              className="w-full sm:w-auto inline-block px-6 py-3 bg-primary/10 hover:bg-primary/20 text-primary border-2 border-primary/30 transition-colors font-pixel text-center"
             >
               Explore My Work
             </Link>
             <Link 
-  href="/resume.pdf"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="inline-block px-6 py-3 bg-primary/10 hover:bg-primary/20 text-primary border-2 border-primary/30 transition-colors font-pixel"
->
-  Download Resume
-</Link>
-<Link 
-  href="https://buymeacoffee.com/tetraslam"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="inline-block px-6 py-3 bg-primary/10 hover:bg-primary/20 text-primary border-2 border-primary/30 transition-colors font-pixel"
-
-    >
-  Buy Me a Coffee
-</Link>
+              href="/resume.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-block px-6 py-3 bg-primary/10 hover:bg-primary/20 text-primary border-2 border-primary/30 transition-colors font-pixel text-center"
+            >
+              Download Resume
+            </Link>
+            <Link 
+              href="https://buymeacoffee.com/tetraslam"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-block px-6 py-3 bg-primary/10 hover:bg-primary/20 text-primary border-2 border-primary/30 transition-colors font-pixel text-center"
+            >
+              Buy Me a Coffee
+            </Link>
           </motion.div>
           <br></br>
           <motion.div variants={item}>
@@ -124,7 +123,7 @@ export default function Home() {
                   ))}
                 </div>
                 <Link
-                  href={`/projects?id=${project?.id}`}
+                  href={`/projects?project=${project?.id}`}
                   className="inline-block text-sm text-primary hover:text-accent transition-colors"
                 >
                   Learn more →

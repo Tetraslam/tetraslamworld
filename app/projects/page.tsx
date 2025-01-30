@@ -1,21 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from "next/dynamic";
 import { projects, sortProjects, filterProjects, type Project } from '@/lib/project-data';
+import { useSearchParams } from 'next/navigation';
 
 const ProjectCard = dynamic(() => import("@/components/ui/project-card").then((mod) => mod.ProjectCard), { ssr: false });
 const ProjectDetails = dynamic(() => import("@/components/ui/project-details").then((mod) => mod.ProjectDetails), { ssr: false });
-
 
 type SortOption = 'date' | 'stars' | 'title';
 type FilterOption = 'all' | 'software' | 'hardware' | 'research' | 'creative';
 
 export default function ProjectsPage() {
+  const searchParams = useSearchParams();
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('date');
   const [filterBy, setFilterBy] = useState<FilterOption>('all');
+
+  // Handle project query parameter
+  useEffect(() => {
+    const projectId = searchParams.get('project');
+    if (projectId) {
+      const project = projects.find(p => p.id === projectId);
+      if (project) {
+        setSelectedProject(project);
+        // Scroll to the project card
+        const projectElement = document.getElementById(`project-${projectId}`);
+        if (projectElement) {
+          projectElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+  }, [searchParams]);
 
   const filteredProjects = filterProjects(
     projects,
