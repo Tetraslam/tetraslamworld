@@ -118,7 +118,7 @@ const FRIENDS: Friend[] = [
     avatar: '/friends/lucas.png',
     role: 'CS @ Northeastern | SWE @ Agency.inc',
     connection: 'Pookie & hackathon buddy!',
-    interests: ['Esoteric programming languages', 'DSLs', 'NixOS', 'Kim Minji Fanboy', 'Matcha Enthusiast'],
+    interests: ['Compilers', 'DSLs', 'NixOS', 'Kim Minji Fanboy', 'Matcha Enthusiast'],
     projects: [
       {
         name: 'NixOS and Emacs config',
@@ -280,8 +280,45 @@ const FRIENDS: Friend[] = [
     },
     lastInteraction: '2025-01-19',
     vibeScore: 94
+  },
+  {
+    id: '13',
+    name: 'Shruti Karandikar',
+    avatar: '/friends/shruti.png',
+    role: 'Astrophysics @ ?',
+    connection: 'Friend',
+    interests: ['Physics', 'Math', 'Astronomy', 'Art'],
+    projects: [
+    ],
+
+    links: {
+      instagram: '@shrutiisnotshruti',
+      website: 'https://shruti.karandikar.org/'
+    },
+    lastInteraction: '2025-01-19',
+    vibeScore: 94
+  },
+  {
+    id: '14',
+    name: 'Tyler Dong',
+    avatar: '/friends/tyler.png',
+    role: 'CS & CE @ Northeastern',
+    connection: 'Friend & dormmate!',
+    interests: ['EE', 'Game dev', 'ML'],
+    projects: [
+      {
+        name: 'SVS Lunar Client (Boston Hacks 1st Place)',
+        url: 'https://devpost.com/software/jtr'
+      }
+    ],
+    links: {
+      instagram: '@tylerdong_'
+    },
+    lastInteraction: '2025-01-19',
+    vibeScore: 94
   }
 ];
+
 
 export async function getFriends(): Promise<Friend[]> {
   // In a real implementation, this would fetch from an API
