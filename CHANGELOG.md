@@ -171,4 +171,6 @@ All notable changes to this project will be documented in this file.
 - Core styling and animation system
 
 ## [Unreleased]
-- Added `vercel.json` configuration file to explicitly specify Next.js as the framework for Vercel deployments 
+- Added `vercel.json` configuration file to explicitly specify Next.js as the framework for Vercel deployments
+### Fixed
+- Removed a trailing comma in the `projects` array in `lib/project-data.ts` to resolve a TypeScript type error. 

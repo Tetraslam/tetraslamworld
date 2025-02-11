@@ -353,7 +353,6 @@ export const projects: Project[] = [
     date: "2025-02",
     stars: 0
   },
-  ,
   {
     id: "perry",
     title: "Perry The Platypus???",
