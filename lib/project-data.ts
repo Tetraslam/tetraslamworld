@@ -334,6 +334,44 @@ export const projects: Project[] = [
     category: "software",
     date: "2025-01",
     stars: 0
+  },
+  {
+    id: "roami",
+    title: "Roami: Your Roadtrip Companion",
+    description: "Built for HackBeanpot 2025",
+    longDescription: "Play geoguessr, get location-specific music recs, customized tours, travel challenges, and more!",
+    image: "/projects/roami.png", 
+    techStack: ["Next.js", "Tailwind", "Firebase", "Moondream", "Cerebras"],
+
+    links: {
+      demo: "https://devpost.com/software/roami"
+    },
+    achievements: [
+      
+    ],
+    category: "software",
+    date: "2025-02",
+    stars: 0
+  },
+  ,
+  {
+    id: "perry",
+    title: "Perry The Platypus???",
+    description: "Make customized secret agent profiles from pics of your pet.",
+    longDescription: "A fun project I built using Moondream and Cerebras for my 'building a side project a day until I get an internship' challenge.",
+    image: "/projects/perry.png", 
+    techStack: ["Next.js", "Tailwind", "Firebase"],
+    links: {
+      website: "https://perry-the-platypus.vercel.app/",
+      github: "https://github.com/tetraslam/perry-the-platypus"
+    },
+    achievements: [
+      "Fun project!",
+      "Got noticed by Moondream team!"
+    ],
+    category: "software",
+    date: "2025-02",
+    stars: 0
   }
 ];
 
