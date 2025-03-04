@@ -38,66 +38,54 @@ const THOUGHTS: Thought[] = [
   },
   {
     id: '6',
-    text: "People don't realize why LLMs are so useful. It's now cheaper, and faster, to generate a 3D model using an LLM writing code than it is to run a text-to-3D model.",
-    category: 'tech',
-    mood: 'analytical'
-  },
-  {
-    id: '7',
     text: "When I pack up my things and move to the Japanese countryside, you'll know I've made it.",
     category: 'misc.',
     mood: 'thoughtful'
   },
   {
-    id: '8',
+    id: '7',
     text: "Probability isn't real but it describes everything that is.",
     category: 'philosophy',
     mood: 'analytical'
   },
   {
-    id: '9',
+    id: '8',
     text: "Every game is a roguelike if you refuse to save.",
     category: 'gaming',
     mood: 'playful'
   },
   {
-    id: '10',
+    id: '9',
     text: "Nobody actually likes democracy, they just hate the alternatives.",
     category: 'misc.',
     mood: 'thoughtful'
   },
   {
-    id: '11',
-    text: "Most tech 'geniuses' are just good at resource allocation. Why else would Factorio be so successful? Everyone in the field wants to feel like they're building an empire.",
-    category: 'tech',
-    mood: 'thoughtful'
-  },
-  {
-    id: '12',
+    id: '10',
     text: "Shoegaze is depressed teenage girl music but the lyrics are undiscernible so nobody knows what it's about.",
     category: 'misc.',
     mood: 'thoughtful'
   },
   {
-    id: '13',
+    id: '11',
     text: "The most horrifying thing about dystopias is how boring they are.",
     category: 'misc.',
     mood: 'thoughtful'
   },
   {
-    id: '14',
+    id: '12',
     text: "Every programming language is bad, but some are bad in a way that makes them fun to use.",
     category: 'tech',
     mood: 'thoughtful'
   },
   {
-    id: '15',
+    id: '13',
     text: "Fishing minigames will sell me on any game.",
     category: 'gaming',
     mood: 'playful'
   },
   {
-    id: '16',
+    id: '14',
     text: "No don't shut up keep yapping",
     category: 'misc.',
     mood: 'playful'

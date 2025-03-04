@@ -15,7 +15,7 @@ const WAIFU_RANKINGS = [
     name: "Ryuuko Matoi",
     characterId: 83797,
     ranking: 1,
-    lastWeekRanking: 1,
+    lastWeekRanking: 3,
     description: "Hilariously funny and a bit of a jerk to Mako but also very caring and protective of her. 10/10 would recommend Kill La Kill.",
     traits: ["Funny", "Protective", "Just like me fr", "Overkill"]
   },
@@ -23,7 +23,7 @@ const WAIFU_RANKINGS = [
     name: "Kyoko Hori",
     characterId: 66171,
     ranking: 2,
-    lastWeekRanking: 2,
+    lastWeekRanking: 1,
     description: "I LOVE HORIMIYA THIS IS MY COMFORT SHOW AND HORI IS MY COMFORT CHARACTER I WILL NEVER UNIRONICALLY WATCH SHONEN THERE IS ONLY SLICE OF LIFE AND ROMANCE AND HORIMIYA STANDS AT THE TOP OF THE HILL",
     traits: ["Adorable", "Cute", "Romantic", "Down bad"]
   },
@@ -31,7 +31,7 @@ const WAIFU_RANKINGS = [
     name: "Mai Sakurajima",
     characterId: 127222,
     ranking: 3,
-    lastWeekRanking: 3,
+    lastWeekRanking: 2,
     description: "Mai fans rise up (new season of bunny girl senpai in 2025 lfg)",
     traits: ["Adorable", "Older Woman™️", "Level-headed", "Best girl"]
   },
@@ -39,7 +39,7 @@ const WAIFU_RANKINGS = [
     name: "Yuki Suou",
     characterId: 243404,
     ranking: 4,
-    lastWeekRanking: 4,
+    lastWeekRanking: 5,
     description: "She was too strong so they gave her the imouto debuff",
     traits: ["Schemer", "Imouto", "Better than alya", "Best girl"]
   },
@@ -47,9 +47,17 @@ const WAIFU_RANKINGS = [
     name: "Holo",
     characterId: 7373,
     ranking: 5,
-    lastWeekRanking: 5,
+    lastWeekRanking: 4,
     description: "Holo is the best girl we all love holo all hail wheat fields",
     traits: ["Intelligent", "Like really smart", "Foxgirl", "Literal goddess"]
+  },
+  {
+    name: "Maomao",
+    characterId: 126824,
+    ranking: 6,
+    lastWeekRanking: 6,
+    description: "cat",
+    traits: ["drug addict", "cat", "jesse we need to cook", "cat"]
   }
 ];
 

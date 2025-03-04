@@ -184,6 +184,7 @@ const FRIENDS: Friend[] = [
     projects: [
     ],
     links: {
+      website: 'https://bensenwang.dev',
       instagram: '@bensenwang8'
     },
     lastInteraction: '2025-01-19',
