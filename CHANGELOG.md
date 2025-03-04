@@ -129,6 +129,12 @@ All notable changes to this project will be documented in this file.
   - Responsive grid layout
   - Hover animations and transitions
   - Additional connection information
+- Auto-scrolling image gallery on the About page featuring:
+  - Smooth horizontal scrolling animation
+  - Pause-on-hover interaction
+  - Randomized image order for variety
+  - Responsive image sizing and loading optimizations
+  - Image hover effects with subtle scaling
 
 ### In Progress
 - 🎯 Final testing and deployment preparation

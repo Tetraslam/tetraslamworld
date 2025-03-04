@@ -79,6 +79,10 @@ const config: Config = {
           "50%": { transform: "translate(calc(random() * 20px - 10px), -20px) scale(0.5)", opacity: "0.5" },
           "100%": { transform: "translate(calc(random() * 40px - 20px), -40px) scale(0)", opacity: "0" },
         },
+        "scroll": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(calc(-50% - 0.75rem))" },
+        },
       },
       animation: {
         "glitch-hover": "glitch-hover 0.3s ease-in-out",
@@ -87,6 +91,7 @@ const config: Config = {
         "fire-left": "fire-left 1.5s ease-in-out infinite",
         "fire-right": "fire-right 1.5s ease-in-out infinite",
         "spark": "spark 2s ease-out infinite",
+        "scroll": "scroll var(--duration, 40s) linear infinite",
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
