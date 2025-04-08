@@ -54,7 +54,7 @@ export default function SupportPage() {
             <div className="prose prose-invert max-w-none">
               <ul className="list-none p-0 space-y-2">
                 <li><Link
-              href="https://x.com/tetraslam"
+              href="mailto:shresht@mit.edu"
               target="_blank"
               className="block group"
             >
@@ -63,12 +63,12 @@ export default function SupportPage() {
                 </Link></li>
                 <li><Link
 
-              href="mailto:shresht@mit.edu"
+              href="https://x.com/tetraslam"
               target="_blank"
               className="block group"
             >
                   <span className="text-primary">Twitter:</span>{' '}
-                  Regular updates and tech discussions
+                  Shitposts and updates
                 </Link></li>
                 <li><Link
               href="https://blog.tetraslam.world"

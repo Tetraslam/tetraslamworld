@@ -62,23 +62,6 @@ const config: Config = {
           "50%": { opacity: "1", transform: "scale(1)" },
           "100%": { opacity: "0", transform: "scale(1.5)" },
         },
-        "fire-main": {
-          "0%, 100%": { transform: "translateX(-0.5px) scale(1)" },
-          "50%": { transform: "translateX(0.5px) scale(1.1)" },
-        },
-        "fire-left": {
-          "0%, 100%": { transform: "translate(-1px, 0) scale(1.1)" },
-          "50%": { transform: "translate(0, -1px) scale(0.9)" },
-        },
-        "fire-right": {
-          "0%, 100%": { transform: "translate(1px, 0) scale(1.1)" },
-          "50%": { transform: "translate(0, -1px) scale(0.9)" },
-        },
-        "spark": {
-          "0%": { transform: "translate(0, 0) scale(1)", opacity: "1" },
-          "50%": { transform: "translate(calc(random() * 20px - 10px), -20px) scale(0.5)", opacity: "0.5" },
-          "100%": { transform: "translate(calc(random() * 40px - 20px), -40px) scale(0)", opacity: "0" },
-        },
         "scroll": {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(calc(-50% - 0.75rem))" },
@@ -87,10 +70,6 @@ const config: Config = {
       animation: {
         "glitch-hover": "glitch-hover 0.3s ease-in-out",
         "sparkle": "sparkle 0.8s ease-in-out forwards",
-        "fire-main": "fire-main 2s ease-in-out infinite",
-        "fire-left": "fire-left 1.5s ease-in-out infinite",
-        "fire-right": "fire-right 1.5s ease-in-out infinite",
-        "spark": "spark 2s ease-out infinite",
         "scroll": "scroll var(--duration, 40s) linear infinite",
       },
       backgroundImage: {

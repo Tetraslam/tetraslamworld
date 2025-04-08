@@ -237,6 +237,11 @@ body {
   }
 }
 
+@keyframes orbiting-dot {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* Dungeon Component Styles */
 .card-base {
   @apply pixel-corners pixel-border bg-card;
@@ -251,6 +256,7 @@ body {
     transparent 50%,
     rgba(157, 51, 234, 0.05)
   );
+  opacity: 1;
 }
 
 .card-base::before {
@@ -291,6 +297,36 @@ body {
 .card-base:hover::before,
 .card-base:hover::after {
   opacity: 1;
+}
+
+/* Animated Orbiting Border */
+.orbiting-border {
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit; /* Ensure border radius matches */
+    padding: 2px; /* Must match parent padding */
+    background: conic-gradient(
+      from 0deg,
+      hsl(var(--primary) / 0.1), /* Start transparent */
+      hsl(var(--primary)),      /* Dot color */
+      hsl(var(--primary) / 0.1), /* Fade out */
+      hsl(var(--primary) / 0.1)  /* Rest transparent */
+    );
+    /* Adjust stop positions for dot size */
+    background-size: 100% 100%;
+    background-position: 0% 0%;
+    background-repeat: no-repeat;
+
+    /* Gradient stops for the dot */
+    /* Adjust the percentages to change dot size */
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    mask-origin: border-box;
+    animation: orbiting-dot 4s linear infinite;
+    z-index: -1; /* Place behind the inner content */
+  }
 }
 
 /* Dungeon Button Styles */
