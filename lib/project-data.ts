@@ -371,7 +371,64 @@ export const projects: Project[] = [
     category: "software",
     date: "2025-02",
     stars: 0
-  }
+  },
+  {
+    id: "manimtired",
+    title: "ManimTired",
+    description: "Generative educational videos in the style of 3Blue1Brown",
+    longDescription: "I'm a huge fan of 3Blue1Brown, so I built a generative educational video system using Manim, the framework that powers 3Blue1Brown's videos.",
+    image: "/projects/manimtired.jpg", 
+    techStack: ["Manim", "Python", "Cerebras"],
+    links: {
+      github: "https://github.com/tetraslam/manimtired",
+      demo: "https://www.youtube.com/watch?v=TYJ02Z1lQR0",
+      website: "https://devpost.com/software/manimtired"
+    },
+    achievements: [
+      "Won Steast Hackathon 2025"
+    ],
+    category: "software",
+    date: "2025-03",
+    stars: 0
+  },
+  {
+    id: "paperchase",
+    title: "Paperchase",
+    description: "Turn research papers into startups.",
+    longDescription: "I built this for an AWS MCP hackathon, and won first place (and $1000)! It allows you to turn research papers into startups, validated using market data, and with a detailed GTM plan.",
+    image: "/projects/paperchase.jpg", 
+    techStack: ["Next.js", "Tailwind", "MCP", "Apify", "Codename Goose"],
+    links: {
+      github: "https://github.com/tetraslam/paperchase",
+      demo: "https://www.youtube.com/watch?v=NKrUbi-G4EE",
+      website: "https://devpost.com/software/paperchase"
+    },
+    achievements: [
+      "Won AWS MCP hackathon 2025 (and $1000)",
+      "Building it into a real product"
+    ],
+    category: "software",
+    date: "2025-05",
+    stars: 0
+  },
+  {
+    id: "onemonthdev",
+    title: "OneMonth.dev",
+    description: "A platform for learning anything in one month.",
+    longDescription: "I built a platform for learning anything in one month, to help out my friends who are trying to learn new things and aren't good at finding resources on their own.",
+    image: "/projects/onemonthdev.png", 
+    techStack: ["Next.js", "Tailwind", "Shadcn-ui", "Supabase", "Firecrawl", "Gemini"],
+    links: {
+      github: "https://github.com/tetraslam/onemonth.dev",
+      website: "https://onemonth.dev/"
+    },
+    achievements: [
+      "My first SaaS product!"
+    ],
+    category: "software",
+    date: "2025-04",
+    stars: 0
+  },
 ];
 
 export async function getProjectStars(projectId: string): Promise<number> {
