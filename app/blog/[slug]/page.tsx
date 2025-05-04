@@ -7,7 +7,7 @@ import { NewsletterForm } from '@/components/ui/newsletter-form';
 
 interface BlogParams { slug: string }
 
-export async function generateMetadata({ params }: { params: BlogParams }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: any }): Promise<Metadata> {
   const post = await getBlogPost(params.slug);
   if (!post) return {};
   return {
