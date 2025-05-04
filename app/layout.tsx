@@ -4,6 +4,8 @@ import "./globals.css";
 import { NavigationMenu } from "@/components/ui/navigation-menu";
 import { CozyModeProvider } from "@/lib/cozy-mode";
 import { CozyToggle } from "@/components/ui/cozy-toggle";
+import { Analytics } from '@vercel/analytics/react';
+import NowPlayingWrapper from '@/components/ui/now-playing-wrapper';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,6 +28,8 @@ export default function RootLayout({
             {children}
           </div>
           <CozyToggle />
+          <NowPlayingWrapper />
+          <Analytics />
         </CozyModeProvider>
       </body>
     </html>

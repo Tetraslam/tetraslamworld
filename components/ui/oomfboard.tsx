@@ -5,9 +5,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import * as HoverCard from '@radix-ui/react-hover-card';
-import { Friend, getFriends, getFriendsByInterest, getFriendsByVibeScore } from '@/lib/integrations/oomfboard';
+import {
+  Friend,
+  getFriends,
+  getFriendsByInterest,
+  getFriendsByVibeScore,
+  getFriendsByLocation,
+} from '@/lib/integrations/oomfboard';
 
-type FilterType = 'all' | 'interest' | 'vibe';
+type FilterType = 'all' | 'interest' | 'vibe' | 'location';
 
 export function Oomfboard() {
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -17,6 +23,9 @@ export function Oomfboard() {
     type: FilterType;
     value: string;
   }>({ type: 'all', value: '' });
+  const [page, setPage] = useState(1);
+
+  const PER_PAGE = 6;
 
   useEffect(() => {
     const checkMobile = () => {
@@ -39,6 +48,9 @@ export function Oomfboard() {
         case 'vibe':
           friendsList = getFriendsByVibeScore(parseInt(filter.value));
           break;
+        case 'location':
+          friendsList = getFriendsByLocation(filter.value);
+          break;
         default:
           friendsList = await getFriends();
       }
@@ -49,11 +61,17 @@ export function Oomfboard() {
     fetchFriends();
   }, [filter]);
 
+  useEffect(() => setPage(1), [filter]);
+
   const allInterests = Array.from(
     new Set(
       friends.flatMap(friend => friend.interests)
     )
   ).sort();
+
+  const uniqueLocations = Array.from(new Set(friends.map(f => f.location).filter(Boolean))) as string[];
+
+  const paginatedFriends = friends.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const handleInteraction = (friendId: string) => {
     if (isMobile) {
@@ -295,15 +313,49 @@ export function Oomfboard() {
               </option>
             ))}
           </optgroup>
+          {uniqueLocations.length > 0 && (
+            <optgroup label="By Location">
+              {uniqueLocations.map(loc => (
+                <option key={loc} value={`location:${loc}`}>{loc}</option>
+              ))}
+            </optgroup>
+          )}
+          <optgroup label="By Vibe">
+            <option value="vibe:95">Vibe ≥ 95</option>
+            <option value="vibe:90">Vibe ≥ 90</option>
+          </optgroup>
         </select>
       </div>
 
       {/* Friend Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <AnimatePresence mode="popLayout">
-          {friends.map((friend, index) => renderFriendCard(friend, index))}
+          {paginatedFriends.map((friend, index) => renderFriendCard(friend, index))}
         </AnimatePresence>
       </div>
+
+      {/* Pagination Controls */}
+      {friends.length > PER_PAGE && (
+        <div className="flex justify-center gap-4 mt-6">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-3 py-1 border border-border rounded-sm text-sm disabled:opacity-50"
+          >
+            Prev
+          </button>
+          <span className="text-sm flex items-center">
+            Page {page} / {Math.ceil(friends.length / PER_PAGE)}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(Math.ceil(friends.length / PER_PAGE), p + 1))}
+            disabled={page === Math.ceil(friends.length / PER_PAGE)}
+            className="px-3 py-1 border border-border rounded-sm text-sm disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 } 

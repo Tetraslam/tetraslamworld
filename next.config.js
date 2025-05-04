@@ -2,7 +2,24 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['cdn.waifu.im', 's4.anilist.co', 'img.anili.st'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.waifu.im',
+      },
+      {
+        protocol: 'https',
+        hostname: 's4.anilist.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.anili.st',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.scdn.co', // Spotify album art
+      },
+    ],
   },
 }
 

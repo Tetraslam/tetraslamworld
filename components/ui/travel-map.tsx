@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import { Icon, LatLngExpression } from 'leaflet';
 import { motion, AnimatePresence } from 'framer-motion';
 import { locations, paths, getPathCoordinates, type Location } from '@/lib/travel-data';
 import L from 'leaflet';
 import Image from 'next/image';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css';
@@ -34,6 +35,16 @@ const markerIcon = new Icon({
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
 });
+
+function FlyToLocation({ coords }: { coords: LatLngExpression | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (coords) {
+      map.flyTo(coords, 5, { duration: 1.5 });
+    }
+  }, [coords, map]);
+  return null;
+}
 
 export function TravelMap() {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -92,23 +103,18 @@ export function TravelMap() {
           ))}
 
           {/* Location markers */}
-          {locations.map((location) => (
-            <Marker
-              key={location.id}
-              position={location.coordinates}
-              icon={markerIcon}
-              eventHandlers={{
-                click: () => setSelectedLocation(location),
-              }}
-            >
-              <Popup>
-                <div className="font-pixel bg-background/95 backdrop-blur-md border-2 border-primary/20 p-3">
-                  <h3 className="text-primary font-bold">{location.name}</h3>
-                  <p className="text-xs text-foreground/80">{location.visitDate}</p>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+          <MarkerClusterGroup chunkedLoading>
+            {locations.map((location) => (
+              <Marker
+                key={location.id}
+                position={location.coordinates}
+                icon={markerIcon}
+                eventHandlers={{ click: () => setSelectedLocation(location) }}
+              />
+            ))}
+          </MarkerClusterGroup>
+
+          <FlyToLocation coords={selectedLocation?.coordinates ?? null} />
         </MapContainer>
       </div>
 

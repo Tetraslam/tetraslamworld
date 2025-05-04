@@ -31,7 +31,7 @@ type D3Simulation = d3.Simulation<SimulationNode, undefined>;
 type D3DragBehavior = d3.DragBehavior<Element, SimulationNode, SimulationNode>;
 type D3ZoomBehavior = d3.ZoomBehavior<Element, unknown>;
 
-const nodes: Node[] = [
+const rawNodes: Node[] = [
   { id: "core", group: 1, label: "Core", details: "CS + Linguistics @ Northeastern" },
   { id: "tech", group: 2, label: "Tech", details: "Python, Nim, C++, TypeScript, ML/AI" },
   { id: "projects", group: 2, label: "Projects", details: "SHFLA, Sapientia, Oomfboard" },
@@ -109,6 +109,22 @@ const nodes: Node[] = [
   { id: "scuba-tech", group: 3, label: "Scuba Tech", details: "Shipwreck diving + autonomous underwater drones" }
 ];
 
+// Deduplicate nodes by id in case of accidental repeats
+const nodes: Node[] = Array.from(new Map(rawNodes.map(n => [n.id, n])).values());
+
+// Color palette for groups (override with CSS vars for consistency)
+const groupColor = (group: number) => {
+  switch (group) {
+    case 1:
+      return 'hsl(var(--primary))';
+    case 2:
+      return 'hsl(var(--accent))';
+    case 3:
+      return 'hsl(var(--secondary))';
+    default:
+      return 'hsl(var(--muted-foreground))';
+  }
+};
 
 const links: Link[] = [
   // Core connections
@@ -168,10 +184,9 @@ const links: Link[] = [
   { source: "travel", target: "fashion", value: 1 }
 ];
 
-
 const NODE_RADIUS = 20;
-const LINK_DISTANCE = 200;
-const CHARGE_STRENGTH = -100;
+const LINK_DISTANCE = 180;
+const CHARGE_STRENGTH = -200;
 
 export function NeuralNetwork() {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -202,11 +217,22 @@ export function NeuralNetwork() {
   useEffect(() => {
     if (!svgRef.current) return;
 
-    // Clear previous visualization
-    d3.select(svgRef.current).selectAll("*").remove();
-
+    // Clear previous visualization & prepare root SVG
     const svg = d3.select(svgRef.current);
-    
+    svg.selectAll('*').remove();
+
+    // Container group for zoom & pan
+    const g = svg.append('g');
+
+    // Enable zoom/pan
+    svg.call(
+      d3.zoom<SVGSVGElement, unknown>()
+        .scaleExtent([0.5, 3])
+        .on('zoom', (event) => {
+          g.attr('transform', event.transform);
+        })
+    );
+
     // Create the simulation
     const simulation = d3.forceSimulation(nodes as any)
       .force("link", d3.forceLink(links).id((d: any) => d.id).distance(LINK_DISTANCE))
@@ -215,7 +241,7 @@ export function NeuralNetwork() {
       .force("collision", d3.forceCollide().radius(NODE_RADIUS * 1.5));
 
     // Add links
-    const link = svg.append("g")
+    const link = g.append("g")
       .selectAll("line")
       .data(links)
       .join("line")
@@ -224,7 +250,7 @@ export function NeuralNetwork() {
       .attr("stroke-width", (d) => Math.sqrt(d.value) * 3);
 
     // Add nodes
-    const node = svg.append("g")
+    const node = g.append("g")
       .selectAll("g")
       .data(nodes)
       .join("g")
@@ -238,22 +264,34 @@ export function NeuralNetwork() {
     // Add node circles
     node.append("circle")
       .attr("r", NODE_RADIUS)
-      .attr("fill", "var(--secondary)")
-      .attr("fill-opacity", 0.3)
-      .attr("stroke", "var(--primary)")
-      .attr("stroke-opacity", 0.8)
-      .attr("stroke-width", 2);
+      .attr("fill", (d: any) => groupColor(d.group))
+      .attr("fill-opacity", 0.15)
+      .attr("stroke", (d: any) => groupColor(d.group))
+      .attr("stroke-opacity", 0.9)
+      .attr("stroke-width", 2)
+      .on("mouseover", function () {
+        d3.select(this)
+          .transition()
+          .duration(150)
+          .attr("r", NODE_RADIUS * 1.25);
+      })
+      .on("mouseout", function () {
+        d3.select(this)
+          .transition()
+          .duration(150)
+          .attr("r", NODE_RADIUS);
+      });
 
     // Add node labels
     node.append("text")
       .text((d) => d.label)
       .attr("text-anchor", "middle")
       .attr("dy", ".35em")
-      .attr("fill", "hsl(var(--primary))")
+      .attr("fill", (d: any) => groupColor(d.group))
       .attr("font-size", "16px")
       .attr("font-weight", "600")
       .attr("class", "font-pixel text-primary")
-      .style("fill", "hsl(var(--primary))");
+      .style("fill", (d: any) => groupColor(d.group));
 
     // Update positions on each tick
     simulation.on("tick", () => {

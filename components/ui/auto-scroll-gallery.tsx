@@ -11,6 +11,7 @@ interface AutoScrollGalleryProps {
 
 export function AutoScrollGallery({ className, speed = 3 }: AutoScrollGalleryProps) {
   const [images, setImages] = useState<string[]>([]);
+  const [isPaused, setIsPaused] = useState(false);
   
   useEffect(() => {
     const imagePaths: string[] = [];
@@ -27,18 +28,34 @@ export function AutoScrollGallery({ className, speed = 3 }: AutoScrollGalleryPro
     }
     
     // Shuffle array for more interesting presentation
-    setImages(imagePaths.sort(() => Math.random() - 0.5));
+    const shuffled = imagePaths.sort(() => Math.random() - 0.5);
+    setImages(shuffled);
+
+    // Preload images so they appear immediately when gallery mounts
+    shuffled.forEach((src) => {
+      const img = new window.Image();
+      img.src = src;
+    });
   }, []);
   
   const animationDuration = Math.max(20, 60 / (speed || 1));
   
   return (
-    <div className={cn("w-full overflow-hidden py-8", className)}>
+    <div className={cn("w-full overflow-hidden py-8 relative", className)}>
+      {/* Pause/Resume toggle */}
+      <button
+        onClick={() => setIsPaused((p) => !p)}
+        className="mb-4 px-3 py-1 bg-background/80 backdrop-blur-md border border-border text-sm font-pixel hover:bg-background/60 transition-colors"
+      >
+        {isPaused ? 'Resume' : 'Pause'}
+      </button>
+
       <div 
-        className="flex gap-6 animate-scroll hover:pause"
+        className="flex gap-6 animate-scroll"
         style={{
           '--duration': `${animationDuration}s`,
-          width: 'fit-content'
+          width: 'fit-content',
+          animationPlayState: isPaused ? 'paused' : 'running'
         } as React.CSSProperties}
       >
         {/* First copy of images */}
@@ -52,7 +69,7 @@ export function AutoScrollGallery({ className, speed = 3 }: AutoScrollGalleryPro
                 className="object-cover transition-transform duration-700 hover:scale-110"
                 sizes="(max-width: 768px) 100vw, 320px"
                 quality={85}
-                priority={index < 5}
+                loading="eager"
               />
             </div>
           </div>
@@ -69,6 +86,7 @@ export function AutoScrollGallery({ className, speed = 3 }: AutoScrollGalleryPro
                 className="object-cover transition-transform duration-700 hover:scale-110"
                 sizes="(max-width: 768px) 100vw, 320px"
                 quality={85}
+                loading="eager"
               />
             </div>
           </div>

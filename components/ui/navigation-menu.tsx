@@ -13,6 +13,9 @@ const menuItems = [
   { href: '/personality', label: 'Cool Stuff' },
   { href: '/about', label: 'About' },
   { href: '/support', label: 'Support' },
+  { href: '/resume', label: 'Resume' },
+  { href: '/pixels', label: 'Pixel Board' },
+  { href: '/blog', label: 'Blog' },
 ];
 
 export function NavigationMenu() {

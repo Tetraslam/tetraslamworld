@@ -2,9 +2,22 @@
 
 import { motion } from 'framer-motion';
 import { useCozyMode } from '@/lib/cozy-mode';
+import { useState, useEffect } from 'react';
 
 export function CozyToggle() {
   const { isCozyMode, toggleCozyMode } = useCozyMode();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // Tailwind md breakpoint
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  if (isMobile) return null; // Don't render on mobile
 
   return (
     <motion.button

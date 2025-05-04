@@ -2,181 +2,62 @@
 
 All notable changes to this project will be documented in this file.
 
-## Feature Roadmap (Priority Order)
+## Next Steps
 
-### Phase 1: Core Interactive Features
-1. Interactive Neural Network (About Section)
-   - [x] Force-directed graph visualization
-   - [x] Node click interactions
-   - [x] Animated transitions
-   - [x] Mobile-friendly interactions
+1.  **Blog Integration:** Build `/blog` route by fetching and parsing the external RSS feed from `https://blog.tetraslam.world/rss`. Render post list and individual posts.
+2.  **Interactive Resume Page:** Create `/app/resume/page.tsx`. Link existing nav/buttons to `/resume`. Add a prominent PDF download button on the new page.
+3.  **About Page Sections:** Add "Uses" and "Media Mentions" components/sections to `app/about/page.tsx`. Populate with initial content.
+4.  **Oomfboard Enhancements:** Add location filtering (similar to projects). Implement basic pagination. Define display ranking via a data array in `oomfboard.tsx` or a dedicated data file.
+5.  **Sitemap Generation:** Install and configure `next-sitemap` to generate `sitemap.xml` on build.
+6.  **Dynamic OG Images:** (todo)
+7.  ~~**Newsletter Signup Form:** Create a simple component for Beehiiv signup (using embed or direct form POST). Add it strategically (e.g., below blog posts, in Support section).~~ ✅ Done.
 
-2. Decision Tree ("What Would Shresht Do?")
-   - [x] Tree visualization
-   - [x] Path traversal animation
-   - [x] Random scenario loading
-   - [x] Mobile touch support
+### 2025-xx-xx – Oomfboard Enhancements & Sitemap
 
-3. Travel Map
-   - [x] Interactive world map
-   - [x] Custom location markers
-   - [x] Location details popup
-   - [x] Travel path animations
+• Added ranking array & `location` field to friend data; friends sorted by `FRIEND_DISPLAY_ORDER`.  
+• New filters: location + vibe thresholds; interest list auto-generated.  
+• Pagination (6 per page) with prev/next controls.  
+• `next-sitemap` configured (`postbuild`) for automatic `sitemap.xml` & `robots.txt`.  
+• TODO: dynamic Open Graph image endpoint using @vercel/og.
 
-### Phase 2: Dynamic Content Integration
-1. Project Showcase
-   - [x] Rating system
-   - [x] Project cards
-   - [x] Filter/sort functionality
-   - [x] Detailed view modal
+### 2025-xx-xx – Newsletter
 
-2. External Data Integration
-   - [x] Twitter feed scraping
-   - [x] Blog post fetching
-   - [x] Spotify current track
-   - [x] Roguelike leaderboard
+• `NewsletterForm` component rendering Beehiiv slim iframe.  
+• Inserted at bottom of blog index & single-post pages.
 
-### Phase 3: Additional Features
-1. Personality Section
-   - [x] Random thought generator
-   - [x] Waifu rankings
-   - [x] Friend list (Oomfboard)
+---
 
-2. Support Section
-   - [x] Coffee link
-   - [x] Calendly integration
-   - [x] GitHub contribution
+## Next Steps (High-Priority)
 
-## [Unreleased]
+1. **Spotify "Now Playing" Widget** – Pull real-time track via Spotify Web API; animated vinyl icon.  
+2. **Collaborative Pixel-Art Board** – Live canvas using yjs + P2P awareness; footer modal.
+3. **Dynamic OG Images** – hook `/api/og` endpoint into route metadata (still pending).
 
-### Initial Setup
-- 📝 Created project documentation (README.md, INFO.md)
-- 🎯 Defined project scope and requirements
-- 🎨 Established visual design direction: roguelike dungeon crawler + neobrutalist aesthetic
-- 🛠️ Selected tech stack: Next.js, React, TypeScript, Framer Motion, Radix UI, Tailwind CSS
+## Future (cool but heavier, park for now)
 
-### Added
-- ✨ Set up Next.js project with TypeScript and Tailwind CSS
-- 🎨 Configured custom theme and animations in Tailwind
-- 🖱️ Implemented custom cursor with glitch and sparkle effects
-- 🏗️ Created basic component structure and utility functions
-- 🎭 Added Framer Motion for animations
-- 🖼️ Added pixel art background pattern
-- 📱 Ensured responsive layout foundation
-- 🧭 Added navigation menu with pixel art aesthetic
-- 🎨 Enhanced home page with hero section and project grid
-- ✨ Added stagger animations to home page content
-- 🔥 Implemented cozy mode with:
-  - Bonfire animation with particle effects
-  - Ambient color overlay
-  - Lofi music integration (pending audio file)
-  - Global state management
-  - Smooth transitions
-- 🧠 Added interactive neural network visualization:
-  - Force-directed graph layout
-  - Draggable nodes with physics
-  - Click interactions for node details
-  - Responsive sizing
-  - Smooth animations
-- 🌳 Added "What Would Shresht Do?" decision tree:
-  - Interactive scenario navigation
-  - Animated transitions between steps
-  - History tracking with back navigation
-  - Mobile-friendly interface
-  - Responsive design
-- 🗺️ Added Travel Map visualization:
-  - Interactive world map with dark theme
-  - Custom location markers
-  - Animated travel paths
-  - Location details panel
-  - Activity and people tracking
-- 📂 Added Project Showcase:
-  - Interactive project cards with hover effects
-  - Star rating system
-  - Category filtering
-  - Multiple sort options
-  - Detailed project view modal
-  - Responsive grid layout
-- 🔄 Added External Data Integration:
-  - Twitter feed scraping using node-html-parser
-  - Blog post fetching from Prose.sh
-  - Spotify embed integration
-  - Roguelike leaderboard (mock data for now)
-  - Dynamic content component with animations
-- 💭 Added Random Thought Generator:
-  - Curated collection of personal thoughts
-  - Category and mood filtering
-  - Smooth animations for transitions
-  - Responsive design
-  - Integration with personality page
-- 🌟 Added Waifu Rankings:
-  - Weekly updated rankings
-  - Hover cards with detailed information
-  - Ranking change indicators
-  - Character traits and descriptions
-  - Responsive design and animations
-- 👥 Added Oomfboard Friend Network:
-  - Interactive friend cards with hover details
-  - Interest and vibe score filtering
-  - Project and connection information
-  - Social media links integration
-  - Responsive grid layout with animations
-- 🤝 Added Support Section:
-  - Buy Me a Coffee integration
-  - Calendly scheduling integration
-  - GitHub contribution links
-  - Pixel art decorations
-  - Responsive grid layout
-  - Hover animations and transitions
-  - Additional connection information
-- Auto-scrolling image gallery on the About page featuring:
-  - Smooth horizontal scrolling animation
-  - Pause-on-hover interaction
-  - Randomized image order for variety
-  - Responsive image sizing and loading optimizations
-  - Image hover effects with subtle scaling
+1. Interactive timeline of projects & milestones  
+2. "Build-of-the-week" random highlight  
+3. Live sensor readout via WebUSB  
+4. In-browser REPL for SHFLA / Pulsar  
+5. 3-D voxel neural network  
+6. Real-time visitor globe  
+7. Fluid "Ship / Sink" voting sim  
+8. AR sticky-note mode  
+9. Procedural soundtrack  
+10. Conlang word-of-the-day widget  
+11. Robot control panel over WebSerial  
+12. Persona AI chatbot  
+13. Retro DOS easter-egg  
+14. Site exploration achievement badges  
+15. Collaborative doodle pad (non-pixel)  
+16. Real-time commit diff viewer  
+17. Random tech-stack generator  
+18. Infinite fractal gallery  
+19. Scrollytelling ML paper explainer  
+20. Browser tinygrad demo  
+21. Map overlay of friend locations  
+22. Newsletter archives rendered as MDX  
+23. Dynamic fractal favicon  
+24. Digital garden graph of notes  
+25. ???
 
-### In Progress
-- 🎯 Final testing and deployment preparation
-
-### Planned Improvements
-
-#### UX Enhancements
-- [x] Project Details Navigation Enhancement
-  - Implemented scroll-to-project functionality when clicking "Learn more"
-  - Added auto-open project details modal after navigation
-  - Added smooth scroll animation for better user experience
-
-- [x] Resume Download Behavior
-  - Modified resume download to open in new tab without switching focus
-  - Updated anchor tag with target="_blank" and rel attributes
-  - Maintained current tab focus after clicking download
-
-#### Mobile Responsiveness Improvements
-- [x] Button Consistency
-  - Standardized mobile button widths
-  - Fixed Download Resume button width to match other buttons
-
-- [x] Touch Interaction Improvements
-  - Converted hover cards to click/touch events on mobile for projects
-  - Implemented touch-friendly interaction for OOMF cards
-  - Added touch feedback indicators for better UX
-
-- [x] Mobile Layout Optimizations
-  - Adjusted anime character rankings layout for mobile
-  - Removed expanded image view on mobile
-  - Optimized text and traits display for full component width
-  - Increased neural network component height on mobile for better node spacing
-  - Preserved node count while improving readability
-
-## [0.0.1] - 2024-01-24
-### Added
-- Initial repository setup
-- Basic documentation
-- Project planning documents
-- Core styling and animation system
-
-## [Unreleased]
-- Added `vercel.json` configuration file to explicitly specify Next.js as the framework for Vercel deployments
-### Fixed
-- Removed a trailing comma in the `projects` array in `lib/project-data.ts` to resolve a TypeScript type error. 
