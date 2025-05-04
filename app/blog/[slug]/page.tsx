@@ -21,12 +21,7 @@ export async function generateMetadata({ params }: { params: BlogParams }): Prom
   };
 }
 
-// Explicitly define the props type inline
-interface BlogPostPageProps {
-  params: BlogParams;
-}
-
-export default async function BlogPostPage({ params }: BlogPostPageProps) {
+export default async function BlogPostPage({ params }: { params: any }) {
   const post = await getBlogPost(params.slug);
   if (!post) notFound();
 
