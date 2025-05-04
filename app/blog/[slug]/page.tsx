@@ -5,9 +5,9 @@ import { format } from 'date-fns';
 import parse from 'html-react-parser';
 import { NewsletterForm } from '@/components/ui/newsletter-form';
 
-interface Params { slug: string }
+interface BlogParams { slug: string }
 
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: BlogParams }): Promise<Metadata> {
   const post = await getBlogPost(params.slug);
   if (!post) return {};
   return {
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 // Explicitly define the props type inline
 interface BlogPostPageProps {
-  params: Params;
+  params: BlogParams;
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
