@@ -6,7 +6,7 @@ const redis = new Redis({
 });
 
 export const BOARD_KEY = 'pixel-board-v1';
-export const BOARD_SIZE = 16; // 32x32
+export const BOARD_SIZE = 32; // 32x32
 
 export type PixelBoard = string[][]; // hex color string per pixel
 
