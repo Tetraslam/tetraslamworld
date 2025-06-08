@@ -7,6 +7,8 @@ import { NewsletterForm } from '@/components/ui/newsletter-form';
 
 interface BlogParams { slug: string }
 
+export const revalidate = 60; // Revalidate every 60 seconds
+
 export async function generateMetadata({ params }: { params: any }): Promise<Metadata> {
   const post = await getBlogPost(params.slug);
   if (!post) return {};
