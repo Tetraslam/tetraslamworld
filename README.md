@@ -1,7 +1,7 @@
 # Website Redesign README for Cursor
 
 ## Project Overview
-This project aims to create a personal website for Shresht that is fun, tasteful, and thoughtful. The website will showcase Shresht’s projects, personality, interests, and work in a way that is both visually stunning and technically impressive. The goal is to balance playfulness and professionalism, capturing Shresht’s unique personality while avoiding boring developer portfolio tropes. The design will follow a pixelated roguelike dungeon crawler aesthetic with neobrutalist elements, while incorporating dynamic features and interactive elements.
+This project aims to create a personal website for Shresht that is fun, tasteful, and thoughtful. The website will showcase Shresht's projects, personality, interests, and work in a way that is both visually stunning and technically impressive. The goal is to balance playfulness and professionalism, capturing Shresht's unique personality while avoiding boring developer portfolio tropes. The design will follow a pixelated roguelike dungeon crawler aesthetic with neobrutalist elements, while incorporating dynamic features and interactive elements.
 
 ## Visual Design Direction
 - **Aesthetic:** A mix of roguelike dungeon crawler, Stardew Valley pixel art, and neobrutalist elements.
@@ -17,7 +17,7 @@ This project aims to create a personal website for Shresht that is fun, tasteful
 
 ### Project Showcase
 - **Details:** Picture, title, description, date, tech stack, and notable outcomes.
-- **Dynamic Ordering:** Projects ordered by a “rate my projects” star button.
+- **Dynamic Ordering:** Projects ordered by a "rate my projects" star button.
 
 ### Personality Section
 - **Interactive Features:**
@@ -26,18 +26,18 @@ This project aims to create a personal website for Shresht that is fun, tasteful
   - "What would Shresht do?" decision tree (loads a random static tree).
   - Weekly waifu ranking (fetched from Waifu API).
 - **Oomfboard:** A playful friend list styled in the same aesthetic.
-- **Game Leaderboard:** Automatically updated leaderboard of Shresht’s roguelike runs.
+- **Game Leaderboard:** Automatically updated leaderboard of Shresht's roguelike runs.
 
 ### About Me
 - **Interactive Neural Network:** Clickable nodes reveal details about Shresht in an engaging, nonlinear way.
-- **Documentation:** A satirical, documentation-style page presenting Shresht’s skills and traits.
+- **Documentation:** A satirical, documentation-style page presenting Shresht's skills and traits.
 
 ### Dynamic Elements
 - **Live Twitter Feed:** Display latest tweets without using an API.
 - **Blog Feed:** Pull posts from blog.tetraslam.world (hosted on prose.sh).
 - **Travel Map:** Interactive map showing places Shresht has visited, with notes on activities and people met.
 - **Spotify Embed:** Recently played music displayed dynamically.
-- **Plans:** Extensible section listing Shresht’s future plans, styled for clarity and creativity.
+- **Plans:** Extensible section listing Shresht's future plans, styled for clarity and creativity.
 
 ### Miscellaneous Features
 - **Favorite Resources:** A unique section showcasing favorite papers, blogs, links, tools, and software.
@@ -47,6 +47,7 @@ This project aims to create a personal website for Shresht that is fun, tasteful
 - **Math Favorites:** Fun-styled LaTeX solutions and math problems, with user-submitted suggestions.
 - **Anime List:** Well-designed list of favorite anime.
 - **Pixel Art Favorites:** Weekly updated favorite pixel arts.
+- **Digital Vending Machine:** Retro-futuristic vending machine dispensing digital goods (zines, tools, voice packs) with cyberpunk aesthetics, sound effects, and interactive animations. Integrated with Polar.sh for payments.
 
 ## Technical Requirements
 ### Tech Stack
