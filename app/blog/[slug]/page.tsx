@@ -18,8 +18,9 @@ function rewriteImageUrls(html: string): string {
   );
 }
 
-export async function generateMetadata({ params }: { params: any }): Promise<Metadata> {
-  const post = await getBlogPost(params.slug);
+export async function generateMetadata({ params }: { params: Promise<any> }): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getBlogPost(slug);
   if (!post) return {};
   return {
     title: `${post.title} – Blog`,
@@ -32,8 +33,9 @@ export async function generateMetadata({ params }: { params: any }): Promise<Met
   };
 }
 
-export default async function BlogPostPage({ params }: { params: any }) {
-  const post = await getBlogPost(params.slug);
+export default async function BlogPostPage({ params }: { params: Promise<any> }) {
+  const { slug } = await params;
+  const post = await getBlogPost(slug);
   if (!post) notFound();
 
   // Rewrite image URLs in the content
@@ -44,12 +46,18 @@ export default async function BlogPostPage({ params }: { params: any }) {
       <article className="prose prose-invert mx-auto bg-card/20 border border-border p-8 rounded-sm">
         <h1>{post.title}</h1>
         {post.isoDate && <p className="text-sm text-muted-foreground">{format(new Date(post.isoDate), 'PPP')}</p>}
+        
+        {/* Newsletter CTA - Between title and content */}
+        <div className="not-prose my-6">
+          <NewsletterForm className="text-sm" />
+        </div>
+        
         <hr />
         <div className="prose-invert [&_a]:text-primary hover:[&_a]:text-accent [&_a]:underline">{parse(contentWithFixedImages)}</div>
       </article>
 
-      {/* Newsletter CTA */}
-      <div className="mt-16">
+      {/* Newsletter CTA - Bottom, same width as article */}
+      <div className="prose mx-auto mt-16">
         <NewsletterForm />
       </div>
     </main>

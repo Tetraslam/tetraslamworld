@@ -10,11 +10,11 @@ export function NewsletterForm({ className }: NewsletterFormProps) {
   return (
     <section
       className={cn(
-        'bg-card/20 border border-border rounded-sm p-6 flex flex-col items-center text-center',
+        'bg-card/20 border border-border rounded-sm p-6 flex flex-col items-center text-center text-foreground',
         className,
       )}
     >
-      <h2 className="text-xl font-bold mb-4">Join the Newsletter</h2>
+      <h2 className="text-xl font-bold mb-4 text-foreground">Join the Newsletter</h2>
       <p className="text-sm text-muted-foreground mb-4 max-w-md">
         Occasional updates on new blog posts, experiments & project drops. No spam, pinky promise.
       </p>
