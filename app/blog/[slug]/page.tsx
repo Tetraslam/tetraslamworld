@@ -21,7 +21,7 @@ function rewriteImageUrls(html: string): string {
 export async function generateMetadata({ params }: { params: Promise<any> }): Promise<Metadata> {
   const { slug } = await params;
   const post = await getBlogPost(slug);
-  if (!post) return {};
+  if (!post || post.draft) return {};
   return {
     title: `${post.title} – Blog`,
     description: post.title,
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<any> }): Pr
 export default async function BlogPostPage({ params }: { params: Promise<any> }) {
   const { slug } = await params;
   const post = await getBlogPost(slug);
-  if (!post) notFound();
+  if (!post || post.draft) notFound();
 
   // Rewrite image URLs in the content
   const contentWithFixedImages = rewriteImageUrls(post.content);
