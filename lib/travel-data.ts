@@ -445,7 +445,7 @@ export const paths: TravelPath[] = [
   { from: "paris", to: "luxembourg", type: "train" },
   { from: "ho_chi_minh", to: "da_nang", type: "flight" },
   { from: "boston", to: "san_francisco", type: "flight" },
-  { from: "san_francisco", to: "san_jose", type: "road" },
+  { from: "san_francisco", to: "san_jose", type: "train" },
   
 ];
 
