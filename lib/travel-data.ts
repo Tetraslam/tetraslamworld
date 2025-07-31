@@ -388,7 +388,7 @@ export const locations: Location[] = [
     id: "san_francisco",
     name: "San Francisco, USA",
     coordinates: [37.7749, -122.4194],
-    description: "Spent an incredible summer (April-August 2025) interning at <a href=\"https://usemosaic.ai\" target=\"_blank\" rel=\"noopener noreferrer\">Mosaic AI</a> as an ML Engineer building AI video agents! Also participated in Founders Inc offseason - what an amazing community of builders!",
+    description: "Spent the summer (April-August 2025) interning at usemosaic.ai (YC W25) as an ML Engineer building AI video agents! Also participated in Founders Inc offseason and built onemonth.dev for that :)",
     activities: ["ML Engineering internship", "Building AI video agents", "Founders Inc offseason"],
     peopleMet: ["Mosaic AI team", "Founders Inc community"],
     visitDate: "Summer 2025"
@@ -399,7 +399,7 @@ export const locations: Location[] = [
     coordinates: [37.3382, -121.8863],
     description: "Went just for an Ado concert and it was SO worth it!",
     activities: ["Ado concert"],
-    peopleMet: [],
+    peopleMet: ["Abo"],
     visitDate: "2025"
   },
   {
