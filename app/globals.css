@@ -35,6 +35,9 @@
 
 /* Base Layer Styles */
 @layer base {
+  html {
+    background-color: #000; /* ensure overscroll/base behind pattern is black */
+  }
   * {
     @apply border-border;
 }

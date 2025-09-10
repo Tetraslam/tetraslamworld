@@ -26,7 +26,7 @@ const item = {
 const featuredProjects = [
   projects.find(p => p.id === "lagrangiansubmanifolds"),
   projects.find(p => p.id === "medialab"),
-  projects.find(p => p.id === "maas"),
+  projects.find(p => p.id === "tetracorp"),
 ].filter(Boolean);
 
 export default function Home() {

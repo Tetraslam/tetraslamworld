@@ -23,6 +23,44 @@ export interface Project {
 
 export const projects: Project[] = [
   {
+    id: "tetracorp",
+    title: "Tetracorp.dev",
+    description: "Boutique engineering firm (9 founders) building agents, apps, and infra",
+    longDescription: "Started a boutique engineering firm with 8 friends. We design and ship full-stack products, AI agents, and infrastructure for clients — booked over $500k of projects across the next four months.",
+    image: "/projects/tetracorp.png",
+    techStack: ["AI Agents", "Systems", "Infra"],
+    links: {
+      website: "https://tetracorp.dev"
+    },
+    achievements: [
+      ">$500k in projects booked (Aug–Dec 2025)",
+      "9-founder boutique engineering team",
+      "Client work across agents, apps, and infra"
+    ],
+    category: "software",
+    date: "2025-08-23",
+    stars: 0
+  },
+  {
+    id: "mosaic",
+    title: "Mosaic — Agentic Video Editor",
+    description: "Node-based editor that can find, auto-edit, and auto-post",
+    longDescription: "Mosaic is an agentic, node-based video editor that can find content, auto-edit, caption, and auto-post. I built the public-facing API, social media agents, and universal media search (multimodal vector embeddings), plus a bunch more platform glue.",
+    image: "/projects/mosaic.png",
+    techStack: ["Next.js", "Multimodal Search", "FastAPI", "LangGraph"],
+    links: {
+      website: "https://mosaic.so"
+    },
+    achievements: [
+      "Y Combinator W25",
+      "Public API, social agents, universal media search",
+      "Agentic node editor with auto-editing and posting"
+    ],
+    category: "software",
+    date: "2025-04-28",
+    stars: 0
+  },
+  {
     id: "shfla",
     title: "SHFLA",
     description: "Shoegaze rock-inspired, Turing-complete fractal music language",

@@ -36,9 +36,9 @@ export default function ResumePage() {
                 <h3 className="font-semibold leading-snug">MOSAIC AI (YC W25) <span className="text-muted-foreground font-normal">| ML Engineering Intern</span></h3>
                 <p className="text-xs text-muted-foreground mb-1">May 2025 – August 2025 · San Francisco, CA</p>
                 <ul className="list-disc list-inside space-y-1 text-sm">
-                  <li>Designed, made full architecture decisions for, and built public-facing API for triggering video editing agents programmatically.</li>
-                  <li>Built music tile with tone-matching for each video with rhythm sync.</li>
-                  <li>Scaled platform to &gt;3000 paying subscribers by managing the twitter account and building an automatic video pipeline for constant growth marketing.</li>
+                  <li>Architected and built API for triggering video editing agents, including reliability engineering for AI inference and video processing (also wrote the docs: <Link href="https://docs.usemosaic.ai" className="text-primary underline" target="_blank">docs.usemosaic.ai</Link>)</li>
+                  <li>Built scheduler service which handles social media post scheduling and automatic agent runs triggered by new youtube videos on a channel</li>
+                  <li>Scaled platform to &gt;3000 paying subscribers by managing the twitter account and building an automatic video pipeline for growth marketing.</li>
                 </ul>
               </div>
 
@@ -49,19 +49,18 @@ export default function ResumePage() {
                 <ul className="list-disc list-inside space-y-1 text-sm">
                   <li>Training embedding models to create digital twins.</li>
                   <li>Building personal AI stacks (data pipelines, on-device inference, hardware integration) to empower users with full control over their own models.</li>
-                  <li>ML research on fine-tuning and post-training optimization, with a focus on replicating and adapting individual styles of thought and writing.</li>
-                  <li>Investigating novel approaches in linguistics and information theory to refine embedding architectures.</li>
+                  <li>ML research on fine-tuning and post-training optimization, with a focus on style and reasoning replication.</li>
+                  <li>Investigating novel approaches in information theory to refine embeddings.</li>
                 </ul>
               </div>
 
-              {/* Neuromechanics Lab */}
+              {/* Tetracorp */}
               <div className="mb-6">
-                <h3 className="font-semibold leading-snug">Northeastern Neuromechanics Lab <span className="text-muted-foreground font-normal">| Researcher</span></h3>
-                <p className="text-xs text-muted-foreground mb-1">October 2024 – May 2025 · Boston, MA</p>
+                <h3 className="font-semibold leading-snug">Tetracorp <span className="text-muted-foreground font-normal">| Founder</span></h3>
+                <p className="text-xs text-muted-foreground mb-1">August 2025 – Present · Boston, MA</p>
                 <ul className="list-disc list-inside space-y-1 text-sm">
-                  <li>Built high-performance computing pipeline for &gt;200GB dataset processing, 80× ed the speed of the previous pipeline.</li>
-                  <li>Developed reinforcement learning (RL) algorithms for controlling complex exoskeleton and human movement.</li>
-                  <li>Participated in NeurIPS as an organizer and researcher in the MyoChallenge.</li>
+                  <li>Founded student-led boutique engineering firm; secured $500k+ in project contracts in first 4 months from top AI startups. <Link href="https://tetracorp.dev" className="text-primary underline" target="_blank">Website: tetracorp.dev</Link></li>
+                  <li>Building the Github/HuggingFace for AI benchmarks</li>
                 </ul>
               </div>
 
@@ -80,31 +79,32 @@ export default function ResumePage() {
             <div>
               <h2 className="text-xl font-bold mb-4 text-primary">Projects/Awards/Publications</h2>
 
+              {/* Rev */}
+              <div className="mb-6">
+                <h3 className="font-semibold leading-snug">Rev <span className="text-muted-foreground font-normal">| President</span></h3>
+                <p className="text-xs text-muted-foreground mb-1">September 2024 – Present</p>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Organizing and leading Northeastern and Boston's top builder community with 40 members per cohort.</li>
+                  <li>Results: $3m+ ARR, &gt;2m users, 4 YC startups, 6 founding engineers @ YC startups, 1 Shark Tank deal, partnerships with Anthropic, Genesis Fund, Dorm Room Fund, Smithery.ai, and several dozen other companies.</li>
+                </ul>
+              </div>
+
               {/* Publication */}
               <div className="mb-6">
                 <h3 className="font-semibold leading-snug">Publication @ NeuroMonster 2025 <span className="text-muted-foreground font-normal">| Neuronal Computing</span></h3>
                 <p className="text-xs text-muted-foreground mb-1">January 2025 – June 2025</p>
                 <ul className="list-disc list-inside space-y-1 text-sm">
                   <li>Led research and development of a novel code framework and tool which enables scientists to paint neural cellular automata on a canvas, customize learning parameters and other constraints, and run benchmarking tasks.</li>
-                  <li>Spotlight presentation @ the 6th International Conference for the Mathematics of Neuroscience and AI.</li>
+                  <li>Spotlight presentation @ the Sixth International Conference for the Mathematics of Neuroscience and AI.</li>
                 </ul>
               </div>
 
-              {/* FiberFinder */}
+              {/* Onemonth.dev */}
               <div className="mb-6">
-                <h3 className="font-semibold leading-snug">FiberFinder <span className="text-muted-foreground font-normal">| Computer Vision for Recycling</span></h3>
-                <p className="text-xs text-muted-foreground mb-1">December 2022 – Present</p>
+                <h3 className="font-semibold leading-snug">Onemonth.dev <span className="text-muted-foreground font-normal">| AI Edtech Platform</span></h3>
+                <p className="text-xs text-muted-foreground mb-1">January 2025 – Present</p>
                 <ul className="list-disc list-inside space-y-1 text-sm">
-                  <li>ML model which detects non-textile parts on clothes for automated recycling. Used in Bangalore's recycling program + finalist at the Blue Ocean Entrepreneurship Competition.</li>
-                </ul>
-              </div>
-
-              {/* TF-IDF */}
-              <div className="mb-6">
-                <h3 className="font-semibold leading-snug">TF-IDF Sentiment Analysis <span className="text-muted-foreground font-normal">| Urdu Language</span></h3>
-                <p className="text-xs text-muted-foreground mb-1">July 2022 – Jan 2023</p>
-                <ul className="list-disc list-inside space-y-1 text-sm">
-                  <li>Sentiment analysis paper which won the Forum for Information Retrieval Evaluation's Best Paper award. <Link href="https://ceur-ws.org" className="text-primary underline" target="_blank">https://ceur-ws.org</Link></li>
+                  <li>Building <Link href="https://onemonth.dev" className="text-primary underline" target="_blank">onemonth.dev</Link> (supported by <Link href="https://f.inc" className="text-primary underline" target="_blank">Founders, Inc.</Link>), where you can learn anything in 30 days. Currently at &gt;$2500 cumulative revenue</li>
                 </ul>
               </div>
 
@@ -147,7 +147,7 @@ export default function ResumePage() {
               </p>
               
               <p className="font-semibold text-sm mb-1">Technology</p>
-              <p className="text-sm">Git • Supabase • Linux • PostgreSQL • NextJS • Redis • Bash • PyTorch • HPC • DSA • Network protocols • Concurrency • Shadcn • Posthog • TypeScript • FastAPI • NodeJS • NumPy • CUDA • Triton • Tinygrad</p>
+              <p className="text-sm">Git • Supabase • Linux • PostgreSQL • NextJS • Langgraph • Bash • PyTorch • HPC • MCP • Network protocols • Concurrency • Shadcn • Vercel AI SDK • TypeScript • FastAPI • NodeJS • AWS • CUDA • Triton • Tinygrad</p>
             </div>
 
             {/* Coursework */}
@@ -164,6 +164,7 @@ export default function ResumePage() {
                 <li>Matrix Methods and Machine Learning</li>
                 <li>Compilers</li>
                 <li>Real Analysis</li>
+                <li>Machine Learning and Statistical Learning Theory 1</li>
                 <li>Fundamentals of Artificial Intelligence</li>
                 <li>Networks and Distributed Systems</li>
               </ul>
@@ -174,9 +175,9 @@ export default function ResumePage() {
               <h2 className="text-lg font-bold mb-2 text-primary">Societies</h2>
               <ul className="list-disc list-inside text-sm space-y-1">
                 <li>AeroNU Satellite Avionics</li>
-                <li>Rev Startup School Cohort 2</li>
+                <li>Rev Cohort 2; Cohort 4 President</li>
                 <li>MIT Augmentation Lab</li>
-                <li>Northeastern Quantum Photonics Lab</li>
+                <li>Founders, Inc. Offseason</li>
               </ul>
             </div>
 
