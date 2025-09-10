@@ -138,24 +138,6 @@ export const projects: Project[] = [
     stars: 0
   },
   {
-    id: "neuromech",
-    title: "Neuromechanics of Movement",
-    description: "Building reinforcement learning models for humans, robots, and exoskeletons.",
-    longDescription: "Building a neuromorphic computer with a team of 5; we're using the Intel Loihi 2 chip to build a general-purpose computer.",
-    image: "/projects/neuromech.png", 
-    techStack: ["Pytorch", "MuJoCo", "CUDA"],
-    links: {
-      website: "https://neumove.org/people.html"
-    },
-    achievements: [
-      "First-year researcher at the lab",
-      "Full-body musculoskeletal controllers"
-    ],
-    category: "research",
-    date: "2024-09",
-    stars: 0
-  },
-  {
     id: "medialab",
     title: "ML & Digital Twin Research @ MIT Media Lab",
     description: "Researching personal AI and digital twins",
