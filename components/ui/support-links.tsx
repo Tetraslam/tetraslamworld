@@ -18,7 +18,7 @@ const SUPPORT_LINKS = [
     title: 'Schedule a Chat',
     description: 'Book a time to discuss internships or collaborations',
     icon: Calendar,
-    href: 'https://calendly.com/bhowmickshresht/30min',
+    href: 'https://cal.com/tetraslam/30min',
     color: 'text-blue-500'
   },
   {
