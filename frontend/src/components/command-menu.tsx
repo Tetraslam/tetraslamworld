@@ -3,6 +3,7 @@
 import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { useDevice } from "@/hooks/use-device";
 
 interface CommandItem {
 	id: string;
@@ -16,6 +17,7 @@ interface CommandItem {
 export function CommandMenu() {
 	const [open, setOpen] = useState(false);
 	const router = useRouter();
+	const { isMobile, isMac } = useDevice();
 
 	const navigate = useCallback(
 		(path: string) => {
@@ -91,6 +93,14 @@ export function CommandMenu() {
 			group: "navigation",
 			icon: "%",
 		},
+		{
+			id: "gallery",
+			label: "gallery",
+			shortcut: ["G"],
+			action: () => navigate("/gallery"),
+			group: "navigation",
+			icon: "[]",
+		},
 
 		// External
 		{
@@ -110,9 +120,33 @@ export function CommandMenu() {
 		{
 			id: "email",
 			label: "email",
-			action: () => window.open("mailto:shresht@tetraslam.world", "_blank"),
+			action: () => window.open("mailto:bhowmickshresht@gmail.com", "_blank"),
 			group: "external",
 			icon: "@",
+		},
+
+		// Meta
+		{
+			id: "resume",
+			label: "resume",
+			shortcut: ["R"],
+			action: () => window.open("/resume.pdf", "_blank"),
+			group: "meta",
+			icon: "pdf",
+		},
+		{
+			id: "sitemap",
+			label: "sitemap",
+			action: () => window.open("/sitemap.xml", "_blank"),
+			group: "meta",
+			icon: "/",
+		},
+		{
+			id: "rss",
+			label: "blog rss",
+			action: () => window.open("https://blog.tetraslam.world/rss", "_blank"),
+			group: "meta",
+			icon: "rss",
 		},
 	];
 
@@ -143,14 +177,17 @@ export function CommandMenu() {
 		{} as Record<string, CommandItem[]>,
 	);
 
+	// Hide command menu button on mobile
 	if (!open) {
+		if (isMobile) return null;
 		return (
 			<button
+				type="button"
 				onClick={() => setOpen(true)}
 				className="fixed bottom-4 right-4 px-3 py-1.5 text-xs text-muted-foreground bg-surface border border-border rounded hover:border-rose/50 transition-colors z-50"
 			>
 				<span className="opacity-60">press</span>{" "}
-				<kbd className="text-rose">ctrl+k</kbd>
+				<kbd className="text-rose">{isMac ? "cmd" : "ctrl"}+k</kbd>
 			</button>
 		);
 	}

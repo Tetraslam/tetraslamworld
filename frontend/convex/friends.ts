@@ -48,3 +48,17 @@ export const remove = mutation({
     await ctx.db.delete(args.id);
   },
 });
+
+export const reorder = mutation({
+  args: {
+    orderedIds: v.array(v.id("friends")),
+  },
+  handler: async (ctx, args) => {
+    // Update order field for each item based on position in array
+    await Promise.all(
+      args.orderedIds.map((id, index) =>
+        ctx.db.patch(id, { order: index })
+      )
+    );
+  },
+});

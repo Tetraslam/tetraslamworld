@@ -39,6 +39,7 @@ export const create = mutation({
     links: v.optional(v.array(v.object({ label: v.string(), url: v.string() }))),
     imageUrl: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
+    order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("media", args);
@@ -54,6 +55,7 @@ export const update = mutation({
     links: v.optional(v.array(v.object({ label: v.string(), url: v.string() }))),
     imageUrl: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
+    order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
@@ -65,5 +67,18 @@ export const remove = mutation({
   args: { id: v.id("media") },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
+  },
+});
+
+export const reorder = mutation({
+  args: {
+    orderedIds: v.array(v.id("media")),
+  },
+  handler: async (ctx, args) => {
+    await Promise.all(
+      args.orderedIds.map((id, index) =>
+        ctx.db.patch(id, { order: index })
+      )
+    );
   },
 });

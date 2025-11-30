@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 interface AtomEntry {
   id: string;
+  slug: string;
   title: string;
   link: string;
   published: string;
@@ -49,8 +50,19 @@ function parseAtomFeed(xml: string): AtomEntry[] {
     const linkMatch = entry.match(/<link[^>]*href=["']([^"']+)["'][^>]*>/);
     const link = linkMatch ? linkMatch[1] : id;
 
+    // Extract slug from the id URL (e.g., "https://blog.tetraslam.world/i_love_high_speed_rail" -> "i_love_high_speed_rail")
+    let slug = id;
+    try {
+      const url = new URL(id);
+      slug = url.pathname.replace(/^\//, ""); // Remove leading slash
+    } catch {
+      // If it's not a valid URL, use the id as-is
+      slug = id.split("/").pop() || id;
+    }
+
     posts.push({
       id,
+      slug,
       title: decodeHtmlEntities(title),
       link,
       published,

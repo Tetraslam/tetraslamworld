@@ -69,7 +69,12 @@ export const update = mutation({
     order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const { id, ...updates } = args;
+    const { id, imageUrl, ...rest } = args;
+    // Handle imageUrl separately - empty string means clear it
+    const updates: Record<string, unknown> = { ...rest };
+    if (imageUrl !== undefined) {
+      updates.imageUrl = imageUrl || undefined; // Convert empty string to undefined
+    }
     await ctx.db.patch(id, updates);
   },
 });
@@ -78,5 +83,18 @@ export const remove = mutation({
   args: { id: v.id("work") },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
+  },
+});
+
+export const reorder = mutation({
+  args: {
+    orderedIds: v.array(v.id("work")),
+  },
+  handler: async (ctx, args) => {
+    await Promise.all(
+      args.orderedIds.map((id, index) =>
+        ctx.db.patch(id, { order: index })
+      )
+    );
   },
 });

@@ -2,6 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { useState } from "react";
+import { Markdown } from "@/components/markdown";
 import { api } from "../../../convex/_generated/api";
 
 const typeLabels: Record<string, string> = {
@@ -31,22 +32,48 @@ export default function WorkPage() {
 
 	return (
 		<div className="max-w-4xl mx-auto px-4 py-12">
-			<div className="space-y-8">
-				<div>
-					<h1 className="text-3xl font-bold">work</h1>
-					<p className="text-muted-foreground mt-1">
-						things i've built, written, and done
-					</p>
+			<div className="space-y-8 animate-fade-in">
+				<div className="flex items-start justify-between gap-4">
+					<div>
+						<h1 className="text-3xl font-bold">work</h1>
+						<p className="text-muted-foreground mt-1">
+							things i've built, written, and done
+						</p>
+					</div>
+					<a
+						href="/resume.pdf"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="px-3 py-1.5 text-sm border border-rose/50 bg-rose/10 text-rose rounded-lg hover:bg-rose/20 hover:border-rose transition-all flex items-center gap-1.5 shrink-0"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							aria-hidden="true"
+						>
+							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+							<polyline points="7 10 12 15 17 10" />
+							<line x1="12" y1="15" x2="12" y2="3" />
+						</svg>
+						resume
+					</a>
 				</div>
 
 				{/* Filter tabs */}
 				<div className="flex flex-wrap gap-2">
 					<button
 						onClick={() => setFilter(null)}
-						className={`px-3 py-1 text-sm rounded border transition-colors ${
+						className={`px-3 py-1.5 text-sm rounded-lg border transition-all ${
 							filter === null
 								? "border-rose bg-rose/10 text-rose"
-								: "border-border text-muted-foreground hover:border-rose/50"
+								: "border-border text-muted-foreground hover:border-rose/50 hover:bg-surface"
 						}`}
 					>
 						all
@@ -55,10 +82,10 @@ export default function WorkPage() {
 						<button
 							key={type}
 							onClick={() => setFilter(type)}
-							className={`px-3 py-1 text-sm rounded border transition-colors ${
+							className={`px-3 py-1.5 text-sm rounded-lg border transition-all ${
 								filter === type
 									? "border-rose bg-rose/10 text-rose"
-									: "border-border text-muted-foreground hover:border-rose/50"
+									: "border-border text-muted-foreground hover:border-rose/50 hover:bg-surface"
 							}`}
 						>
 							{typeLabels[type]}
@@ -68,7 +95,7 @@ export default function WorkPage() {
 
 				{!work ? (
 					<div className="text-muted-foreground py-8 text-center">
-						loading...
+						<div className="inline-block animate-pulse-subtle">loading...</div>
 					</div>
 				) : work.length === 0 ? (
 					<div className="text-muted-foreground py-8 text-center">
@@ -80,20 +107,24 @@ export default function WorkPage() {
 							.filter((type) => !filter || filter === type)
 							.map((type) => (
 								<section key={type}>
-									<h2 className="text-xl font-semibold text-rose mb-4">
+									<h2 className="text-xl font-semibold text-rose mb-4 flex items-center gap-2">
+										<span className="w-2 h-2 rounded-full bg-rose animate-pulse-subtle" />
 										{typeLabels[type]}
 									</h2>
 									<div className="space-y-4">
 										{grouped?.[type]
-											?.sort((a, b) => (b.order ?? 0) - (a.order ?? 0))
-											.map((item) => (
+											?.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+											.map((item, index) => (
 												<div
 													key={item._id}
-													className="p-4 bg-surface border border-border rounded"
+													className="p-4 bg-surface border border-border rounded-lg hover:border-rose/30 transition-all hover-lift group"
+													style={{ animationDelay: `${index * 50}ms` }}
 												>
 													<div className="flex items-start justify-between gap-4">
 														<div className="flex-1">
-															<h3 className="font-medium">{item.title}</h3>
+															<h3 className="font-semibold group-hover:text-rose transition-colors">
+																{item.title}
+															</h3>
 															{item.date && (
 																<p className="text-xs text-muted-foreground mt-0.5">
 																	{item.date}
@@ -101,16 +132,16 @@ export default function WorkPage() {
 																</p>
 															)}
 															{item.content && (
-																<p className="text-sm text-muted-foreground mt-2">
-																	{item.content}
-																</p>
+																<div className="text-sm text-muted-foreground mt-2">
+																	<Markdown content={item.content} />
+																</div>
 															)}
 															{item.tags && item.tags.length > 0 && (
-																<div className="flex flex-wrap gap-1 mt-2">
+																<div className="flex flex-wrap gap-1.5 mt-3">
 																	{item.tags.map((tag) => (
 																		<span
 																			key={tag}
-																			className="px-2 py-0.5 text-xs bg-background rounded border border-border"
+																			className="px-2 py-0.5 text-xs bg-background rounded border border-border text-muted-foreground"
 																		>
 																			{tag}
 																		</span>
@@ -118,14 +149,14 @@ export default function WorkPage() {
 																</div>
 															)}
 															{item.links && item.links.length > 0 && (
-																<div className="flex flex-wrap gap-2 mt-3">
+																<div className="flex flex-wrap gap-3 mt-3">
 																	{item.links.map((link, i) => (
 																		<a
 																			key={i}
 																			href={link.url}
 																			target="_blank"
 																			rel="noopener noreferrer"
-																			className="text-xs text-rose-deep hover:text-rose"
+																			className="text-sm text-rose-deep hover:text-rose transition-colors"
 																		>
 																			{link.label} &rarr;
 																		</a>
@@ -137,7 +168,7 @@ export default function WorkPage() {
 															<img
 																src={item.imageUrl}
 																alt={item.title}
-																className="w-20 h-20 object-cover rounded border border-border"
+																className="w-24 h-24 object-cover rounded-lg border border-border group-hover:border-rose/30 transition-colors"
 															/>
 														)}
 													</div>

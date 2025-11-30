@@ -9,7 +9,10 @@
  */
 
 import type * as comments from "../comments.js";
+import type * as files from "../files.js";
 import type * as friends from "../friends.js";
+import type * as gallery from "../gallery.js";
+import type * as imageMigration from "../imageMigration.js";
 import type * as links from "../links.js";
 import type * as media from "../media.js";
 import type * as pixelBoard from "../pixelBoard.js";
@@ -25,7 +28,10 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   comments: typeof comments;
+  files: typeof files;
   friends: typeof friends;
+  gallery: typeof gallery;
+  imageMigration: typeof imageMigration;
   links: typeof links;
   media: typeof media;
   pixelBoard: typeof pixelBoard;

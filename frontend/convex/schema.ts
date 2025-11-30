@@ -73,6 +73,7 @@ export default defineSchema({
     ),
     imageUrl: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
+    order: v.optional(v.number()),
   }).index("by_type", ["type"]),
 
   // Links (bookmarks)
@@ -91,7 +92,8 @@ export default defineSchema({
     coordinates: v.object({ lat: v.number(), lng: v.number() }),
     dates: v.object({ start: v.string(), end: v.optional(v.string()) }),
     content: v.optional(v.string()),
-    photos: v.optional(v.array(v.id("_storage"))),
+    photos: v.optional(v.array(v.id("_storage"))), // Legacy storage IDs
+    photoUrls: v.optional(v.array(v.string())), // Direct URLs for gallery
     order: v.optional(v.number()),
   }),
 
@@ -103,4 +105,12 @@ export default defineSchema({
     clerkId: v.optional(v.string()),
     placedAt: v.number(),
   }).index("by_position", ["x", "y"]),
+
+  // Gallery images
+  gallery: defineTable({
+    imageUrl: v.string(),
+    caption: v.optional(v.string()),
+    order: v.optional(v.number()),
+    createdAt: v.number(),
+  }),
 });

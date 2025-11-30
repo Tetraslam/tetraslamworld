@@ -21,6 +21,7 @@ export const create = mutation({
     dates: v.object({ start: v.string(), end: v.optional(v.string()) }),
     content: v.optional(v.string()),
     photos: v.optional(v.array(v.id("_storage"))),
+    photoUrls: v.optional(v.array(v.string())),
     order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -36,6 +37,7 @@ export const update = mutation({
     dates: v.optional(v.object({ start: v.string(), end: v.optional(v.string()) })),
     content: v.optional(v.string()),
     photos: v.optional(v.array(v.id("_storage"))),
+    photoUrls: v.optional(v.array(v.string())),
     order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -48,6 +50,19 @@ export const remove = mutation({
   args: { id: v.id("travel") },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
+  },
+});
+
+export const reorder = mutation({
+  args: {
+    orderedIds: v.array(v.id("travel")),
+  },
+  handler: async (ctx, args) => {
+    await Promise.all(
+      args.orderedIds.map((id, index) =>
+        ctx.db.patch(id, { order: index })
+      )
+    );
   },
 });
 

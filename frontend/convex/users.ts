@@ -41,6 +41,45 @@ export const create = mutation({
   },
 });
 
+export const getOrCreate = mutation({
+  args: { clerkId: v.string(), username: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    // Check if user exists
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+      .unique();
+
+    if (existing) {
+      return existing;
+    }
+
+    // Create new user with provided username or generate one
+    const username = args.username || `user_${args.clerkId.slice(-8)}`;
+    
+    // Make sure username is unique
+    let finalUsername = username;
+    let counter = 1;
+    while (true) {
+      const taken = await ctx.db
+        .query("users")
+        .withIndex("by_username", (q) => q.eq("username", finalUsername))
+        .unique();
+      if (!taken) break;
+      finalUsername = `${username}_${counter}`;
+      counter++;
+    }
+
+    const id = await ctx.db.insert("users", {
+      clerkId: args.clerkId,
+      username: finalUsername,
+      createdAt: Date.now(),
+    });
+
+    return await ctx.db.get(id);
+  },
+});
+
 export const updateUsername = mutation({
   args: { clerkId: v.string(), username: v.string() },
   handler: async (ctx, args) => {
