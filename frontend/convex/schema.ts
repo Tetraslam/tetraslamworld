@@ -59,6 +59,7 @@ export default defineSchema({
   media: defineTable({
     type: v.union(
       v.literal("anime"),
+      v.literal("manga"),
       v.literal("book"),
       v.literal("game"),
       v.literal("music"),
@@ -71,9 +72,14 @@ export default defineSchema({
     links: v.optional(
       v.array(v.object({ label: v.string(), url: v.string() }))
     ),
-    imageUrl: v.optional(v.string()),
+    imageUrl: v.optional(v.string()), // Legacy single image
+    imageUrls: v.optional(v.array(v.string())), // Multiple images (ordered)
     tags: v.optional(v.array(v.string())),
     order: v.optional(v.number()),
+    // For anime/manga crossover entries
+    showInBoth: v.optional(v.boolean()), // If true, show in both anime and manga
+    altImageOrder: v.optional(v.array(v.number())), // Image indices for the alternate section
+    altOrder: v.optional(v.number()), // Order in the alternate section
   }).index("by_type", ["type"]),
 
   // Links (bookmarks)

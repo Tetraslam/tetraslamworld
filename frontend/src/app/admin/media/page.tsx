@@ -2,13 +2,14 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
-import { ImageUpload } from "@/components/image-upload";
+import { MultiImageUpload } from "@/components/multi-image-upload";
 import { SortableList } from "@/components/sortable-list";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
 type MediaType =
 	| "anime"
+	| "manga"
 	| "book"
 	| "game"
 	| "music"
@@ -18,6 +19,7 @@ type MediaType =
 
 const typeLabels: Record<MediaType, string> = {
 	anime: "anime",
+	manga: "manga",
 	book: "books",
 	game: "games",
 	music: "music",
@@ -26,16 +28,19 @@ const typeLabels: Record<MediaType, string> = {
 	other: "other",
 };
 
-const typeOrder: MediaType[] = ["anime", "book", "game", "music", "movie", "show", "other"];
+const typeOrder: MediaType[] = ["anime", "manga", "book", "game", "music", "movie", "show", "other"];
 
 interface MediaForm {
 	type: MediaType;
 	title: string;
 	content: string;
 	links: { label: string; url: string }[];
-	imageUrl: string;
+	imageUrls: string[];
 	tags: string;
 	order: number;
+	showInBoth: boolean;
+	altImageOrder: number[];
+	altOrder: number;
 }
 
 const emptyForm: MediaForm = {
@@ -43,13 +48,16 @@ const emptyForm: MediaForm = {
 	title: "",
 	content: "",
 	links: [],
-	imageUrl: "",
+	imageUrls: [],
 	tags: "",
 	order: 0,
+	showInBoth: false,
+	altImageOrder: [],
+	altOrder: 0,
 };
 
 export default function AdminMediaPage() {
-	const media = useQuery(api.media.list);
+	const media = useQuery(api.media.list, {});
 	const create = useMutation(api.media.create);
 	const update = useMutation(api.media.update);
 	const remove = useMutation(api.media.remove);
@@ -80,14 +88,19 @@ export default function AdminMediaPage() {
 
 	const handleEdit = (item: NonNullable<typeof media>[0]) => {
 		setEditing(item._id);
+		// Support both legacy imageUrl and new imageUrls
+		const images = item.imageUrls || (item.imageUrl ? [item.imageUrl] : []);
 		setForm({
 			type: item.type,
 			title: item.title,
 			content: item.content || "",
 			links: item.links || [],
-			imageUrl: item.imageUrl || "",
+			imageUrls: images,
 			tags: item.tags?.join(", ") || "",
 			order: item.order || 0,
+			showInBoth: item.showInBoth || false,
+			altImageOrder: item.altImageOrder || [],
+			altOrder: item.altOrder || 0,
 		});
 	};
 
@@ -95,7 +108,7 @@ export default function AdminMediaPage() {
 		const targetType = type || "anime";
 		const typeItems = grouped?.[targetType] || [];
 		setEditing("new");
-		setForm({ ...emptyForm, type: targetType, order: typeItems.length });
+		setForm({ ...emptyForm, type: targetType, order: typeItems.length, altOrder: 0 });
 	};
 
 	const handleCancel = () => {
@@ -116,14 +129,20 @@ export default function AdminMediaPage() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		const isAnimeManga = form.type === "anime" || form.type === "manga";
 		const data = {
 			type: form.type,
 			title: form.title,
 			content: form.content || undefined,
 			links: form.links.length > 0 ? form.links : undefined,
-			imageUrl: form.imageUrl || undefined,
+			imageUrls: form.imageUrls.length > 0 ? form.imageUrls : undefined,
+			imageUrl: form.imageUrls[0] || undefined, // Keep legacy field for compatibility
 			tags: form.tags ? form.tags.split(",").map((t) => t.trim()) : undefined,
 			order: form.order || undefined,
+			// Only save anime/manga crossover fields if applicable
+			showInBoth: isAnimeManga && form.showInBoth ? true : undefined,
+			altImageOrder: isAnimeManga && form.showInBoth && form.altImageOrder.length > 0 ? form.altImageOrder : undefined,
+			altOrder: isAnimeManga && form.showInBoth ? form.altOrder : undefined,
 		};
 
 		if (editing === "new") {
@@ -207,6 +226,7 @@ export default function AdminMediaPage() {
 								className="w-full px-3 py-2 bg-background border border-border rounded focus:outline-none focus:border-rose/50"
 							>
 								<option value="anime">anime</option>
+								<option value="manga">manga</option>
 								<option value="book">book</option>
 								<option value="game">game</option>
 								<option value="music">music</option>
@@ -243,12 +263,11 @@ export default function AdminMediaPage() {
 
 					<div>
 						<label className="block text-sm text-muted-foreground mb-1">
-							cover image
+							images (first is cover)
 						</label>
-						<ImageUpload
-							value={form.imageUrl || undefined}
-							onChange={(url) => setForm({ ...form, imageUrl: url || "" })}
-							adaptivePreview
+						<MultiImageUpload
+							value={form.imageUrls}
+							onChange={(urls) => setForm({ ...form, imageUrls: urls })}
 						/>
 					</div>
 
@@ -314,6 +333,84 @@ export default function AdminMediaPage() {
 						</div>
 					</div>
 
+					{/* Anime/Manga crossover option */}
+					{(form.type === "anime" || form.type === "manga") && (
+						<div className="p-3 bg-background/50 border border-border/50 rounded space-y-3">
+							<label className="flex items-center gap-2 cursor-pointer">
+								<input
+									type="checkbox"
+									checked={form.showInBoth}
+									onChange={(e) => setForm({ ...form, showInBoth: e.target.checked })}
+									className="w-4 h-4 accent-rose"
+								/>
+								<span className="text-sm">
+									also show in {form.type === "anime" ? "manga" : "anime"}
+								</span>
+							</label>
+
+							{form.showInBoth && form.imageUrls.length > 1 && (
+								<div className="space-y-2">
+									<p className="text-xs text-muted-foreground">
+										image order for {form.type === "anime" ? "manga" : "anime"} section:
+									</p>
+									<div className="flex flex-wrap gap-2">
+										{(form.altImageOrder.length === form.imageUrls.length
+											? form.altImageOrder
+											: form.imageUrls.map((_, i) => i)
+										).map((imgIndex, orderPos) => (
+											<div key={orderPos} className="relative group">
+												{/* biome-ignore lint: dynamic image */}
+												<img
+													src={form.imageUrls[imgIndex]}
+													alt={`Alt order ${orderPos + 1}`}
+													className="w-12 h-12 object-cover rounded border border-border"
+												/>
+												<span className="absolute -top-1 -left-1 w-4 h-4 bg-rose text-background text-[10px] rounded-full flex items-center justify-center">
+													{orderPos + 1}
+												</span>
+												<div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-0.5">
+													{orderPos > 0 && (
+														<button
+															type="button"
+															onClick={() => {
+																const newOrder = form.altImageOrder.length === form.imageUrls.length
+																	? [...form.altImageOrder]
+																	: form.imageUrls.map((_, i) => i);
+																[newOrder[orderPos - 1], newOrder[orderPos]] = [newOrder[orderPos], newOrder[orderPos - 1]];
+																setForm({ ...form, altImageOrder: newOrder });
+															}}
+															className="text-[10px] px-1 bg-surface rounded"
+														>
+															&lt;
+														</button>
+													)}
+													{orderPos < form.imageUrls.length - 1 && (
+														<button
+															type="button"
+															onClick={() => {
+																const newOrder = form.altImageOrder.length === form.imageUrls.length
+																	? [...form.altImageOrder]
+																	: form.imageUrls.map((_, i) => i);
+																[newOrder[orderPos], newOrder[orderPos + 1]] = [newOrder[orderPos + 1], newOrder[orderPos]];
+																setForm({ ...form, altImageOrder: newOrder });
+															}}
+															className="text-[10px] px-1 bg-surface rounded"
+														>
+															&gt;
+														</button>
+													)}
+												</div>
+											</div>
+										))}
+									</div>
+									<p className="text-[10px] text-muted-foreground">
+										hover over images and use &lt; &gt; to reorder
+									</p>
+								</div>
+							)}
+						</div>
+					)}
+
 					<div className="flex gap-2">
 						<button
 							type="submit"
@@ -358,36 +455,48 @@ export default function AdminMediaPage() {
 								<SortableList
 									items={grouped?.[type] || []}
 									onReorder={handleReorder}
-									renderItem={(item) => (
-										<div className="flex items-center justify-between p-3 bg-surface border border-border rounded flex-1">
-											<div className="flex items-center gap-3">
-												{item.imageUrl && (
-													<img
-														src={item.imageUrl}
-														alt={item.title}
-														className="w-10 h-14 object-cover rounded"
-													/>
-												)}
-												<span className="font-medium">{item.title}</span>
+									renderItem={(item) => {
+										const coverImage = item.imageUrls?.[0] || item.imageUrl;
+										const imageCount = item.imageUrls?.length || (item.imageUrl ? 1 : 0);
+										return (
+											<div className="flex items-center justify-between p-3 bg-surface border border-border rounded flex-1">
+												<div className="flex items-center gap-3">
+													{coverImage && (
+														<div className="relative">
+															{/* biome-ignore lint: dynamic image */}
+															<img
+																src={coverImage}
+																alt={item.title}
+																className="w-10 h-14 object-cover rounded"
+															/>
+															{imageCount > 1 && (
+																<span className="absolute -bottom-1 -right-1 px-1 py-0.5 bg-rose text-background text-[9px] rounded-full">
+																	{imageCount}
+																</span>
+															)}
+														</div>
+													)}
+													<span className="font-medium">{item.title}</span>
+												</div>
+												<div className="flex gap-2">
+													<button
+														type="button"
+														onClick={() => handleEdit(item)}
+														className="text-sm text-rose-deep hover:text-rose"
+													>
+														edit
+													</button>
+													<button
+														type="button"
+														onClick={() => handleDelete(item._id)}
+														className="text-sm text-muted-foreground hover:text-rose-deep"
+													>
+														delete
+													</button>
+												</div>
 											</div>
-											<div className="flex gap-2">
-												<button
-													type="button"
-													onClick={() => handleEdit(item)}
-													className="text-sm text-rose-deep hover:text-rose"
-												>
-													edit
-												</button>
-												<button
-													type="button"
-													onClick={() => handleDelete(item._id)}
-													className="text-sm text-muted-foreground hover:text-rose-deep"
-												>
-													delete
-												</button>
-											</div>
-										</div>
-									)}
+										);
+									}}
 								/>
 							</section>
 						))}

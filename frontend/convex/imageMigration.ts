@@ -33,6 +33,7 @@ export const getExternalImages = query({
 		// Check media
 		const media = await ctx.db.query("media").collect();
 		for (const item of media) {
+			// Check legacy single imageUrl
 			if (item.imageUrl && !isConvexUrl(item.imageUrl)) {
 				externalImages.push({
 					table: "media",
@@ -40,6 +41,20 @@ export const getExternalImages = query({
 					field: "imageUrl",
 					url: item.imageUrl,
 				});
+			}
+			// Check new imageUrls array
+			if (item.imageUrls) {
+				for (let i = 0; i < item.imageUrls.length; i++) {
+					const url = item.imageUrls[i];
+					if (!isConvexUrl(url)) {
+						externalImages.push({
+							table: "media",
+							id: item._id,
+							field: `imageUrls[${i}]`,
+							url,
+						});
+					}
+				}
 			}
 		}
 
@@ -113,6 +128,17 @@ export const updateImageUrl = internalMutation({
 				newPhotoUrls[index] = newUrl;
 				// biome-ignore lint: dynamic table access requires any
 				await ctx.db.patch(id as any, { photoUrls: newPhotoUrls });
+			}
+		} else if (field.startsWith("imageUrls[")) {
+			// Handle media imageUrls array
+			const index = parseInt(field.match(/\[(\d+)\]/)?.[1] || "0");
+			// biome-ignore lint: dynamic table access requires any
+			const item = await ctx.db.get(id as any);
+			if (item && "imageUrls" in item && Array.isArray(item.imageUrls)) {
+				const newImageUrls = [...item.imageUrls];
+				newImageUrls[index] = newUrl;
+				// biome-ignore lint: dynamic table access requires any
+				await ctx.db.patch(id as any, { imageUrls: newImageUrls });
 			}
 		} else {
 			// Handle simple imageUrl field

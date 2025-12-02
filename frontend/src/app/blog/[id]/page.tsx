@@ -250,7 +250,7 @@ export default function BlogPostPage() {
 
 	if (loading) {
 		return (
-			<div className="max-w-3xl mx-auto px-4 py-12">
+			<div className="max-w-4xl mx-auto px-4 py-12">
 				<div className="text-muted-foreground text-center animate-pulse-subtle">
 					loading...
 				</div>
@@ -260,7 +260,7 @@ export default function BlogPostPage() {
 
 	if (!post) {
 		return (
-			<div className="max-w-3xl mx-auto px-4 py-12">
+			<div className="max-w-4xl mx-auto px-4 py-12">
 				<div className="text-center">
 					<h1 className="text-2xl font-bold text-rose">post not found</h1>
 					<Link
@@ -275,7 +275,7 @@ export default function BlogPostPage() {
 	}
 
 	return (
-		<div className="max-w-3xl mx-auto px-4 py-12 animate-fade-in">
+		<div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in">
 			<Link href="/blog" className="text-sm text-rose-deep hover:text-rose mb-4 inline-block">
 				&larr; back to blog
 			</Link>

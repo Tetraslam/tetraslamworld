@@ -1,0 +1,56 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cute tetrahedron with soft edges and a sparkle -->
+  
+  <!-- Main tetrahedron shape - back face -->
+  <path 
+    d="M32 8L52 48H12L32 8Z" 
+    fill="#D46A7A" 
+    opacity="0.6"
+  />
+  
+  <!-- Front-left face -->
+  <path 
+    d="M32 8L12 48L32 38L32 8Z" 
+    fill="#E8A6A6"
+  />
+  
+  <!-- Front-right face -->
+  <path 
+    d="M32 8L52 48L32 38L32 8Z" 
+    fill="#D46A7A"
+  />
+  
+  <!-- Bottom highlight -->
+  <path 
+    d="M12 48L52 48L32 38L12 48Z" 
+    fill="#E8A6A6"
+    opacity="0.4"
+  />
+  
+  <!-- Cute inner glow/highlight -->
+  <ellipse 
+    cx="32" 
+    cy="32" 
+    rx="6" 
+    ry="8" 
+    fill="#F7F4F1" 
+    opacity="0.3"
+  />
+  
+  <!-- Sparkle top-right -->
+  <g transform="translate(46, 16)">
+    <path 
+      d="M4 0L4.5 3.5L8 4L4.5 4.5L4 8L3.5 4.5L0 4L3.5 3.5L4 0Z" 
+      fill="#E8A6A6"
+    />
+  </g>
+  
+  <!-- Sparkle small -->
+  <g transform="translate(50, 28) scale(0.5)">
+    <path 
+      d="M4 0L4.5 3.5L8 4L4.5 4.5L4 8L3.5 4.5L0 4L3.5 3.5L4 0Z" 
+      fill="#E8A6A6"
+      opacity="0.7"
+    />
+  </g>
+</svg>

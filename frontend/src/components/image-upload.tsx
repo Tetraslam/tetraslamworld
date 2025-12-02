@@ -47,11 +47,6 @@ export function ImageUpload({
 			return;
 		}
 
-		if (file.size > 5 * 1024 * 1024) {
-			setError("Image must be smaller than 5MB");
-			return;
-		}
-
 		setError(null);
 		setUploading(true);
 
@@ -98,10 +93,6 @@ export function ImageUpload({
 			if (!response.ok) throw new Error("Failed to fetch image");
 			
 			const blob = await response.blob();
-			
-			if (blob.size > 5 * 1024 * 1024) {
-				throw new Error("Image must be smaller than 5MB");
-			}
 
 			// Upload to Convex storage
 			const uploadUrl = await generateUploadUrl();

@@ -3,6 +3,7 @@ import { mutation, query } from "./_generated/server";
 
 const mediaType = v.union(
   v.literal("anime"),
+  v.literal("manga"),
   v.literal("book"),
   v.literal("game"),
   v.literal("music"),
@@ -38,8 +39,12 @@ export const create = mutation({
     content: v.optional(v.string()),
     links: v.optional(v.array(v.object({ label: v.string(), url: v.string() }))),
     imageUrl: v.optional(v.string()),
+    imageUrls: v.optional(v.array(v.string())),
     tags: v.optional(v.array(v.string())),
     order: v.optional(v.number()),
+    showInBoth: v.optional(v.boolean()),
+    altImageOrder: v.optional(v.array(v.number())),
+    altOrder: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("media", args);
@@ -54,8 +59,12 @@ export const update = mutation({
     content: v.optional(v.string()),
     links: v.optional(v.array(v.object({ label: v.string(), url: v.string() }))),
     imageUrl: v.optional(v.string()),
+    imageUrls: v.optional(v.array(v.string())),
     tags: v.optional(v.array(v.string())),
     order: v.optional(v.number()),
+    showInBoth: v.optional(v.boolean()),
+    altImageOrder: v.optional(v.array(v.number())),
+    altOrder: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;

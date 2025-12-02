@@ -15,6 +15,10 @@ import { SiteHeader } from "@/components/site-header";
 export const metadata: Metadata = {
 	title: "tetraslam's world",
 	description: "shresht bhowmick's personal site",
+	icons: {
+		icon: "/favicon.svg",
+		apple: "/logo.svg",
+	},
 };
 
 export default function RootLayout({

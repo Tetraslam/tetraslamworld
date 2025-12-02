@@ -42,17 +42,17 @@ export function ImageGalleryUpload({
 
 		const filesToUpload = Array.from(files).slice(0, remainingSlots);
 		const invalidFiles = filesToUpload.filter(
-			(f) => !f.type.startsWith("image/") || f.size > 5 * 1024 * 1024
+			(f) => !f.type.startsWith("image/")
 		);
 
 		if (invalidFiles.length > 0) {
-			setError("Some files were skipped (must be images under 5MB)");
+			setError("Some files were skipped (must be images)");
 		} else {
 			setError(null);
 		}
 
 		const validFiles = filesToUpload.filter(
-			(f) => f.type.startsWith("image/") && f.size <= 5 * 1024 * 1024
+			(f) => f.type.startsWith("image/")
 		);
 
 		if (validFiles.length === 0) return;
