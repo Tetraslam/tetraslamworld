@@ -1,0 +1,317 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Iosevka font imported via @fontsource/iosevka in layout.tsx */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Iosevka", ui-monospace, monospace;
+  --font-mono: "Iosevka", ui-monospace, monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Custom colors for tetraslam palette */
+  --color-rose: var(--rose);
+  --color-rose-deep: var(--rose-deep);
+  --color-surface: var(--surface);
+}
+
+:root {
+  --radius: 0.5rem;
+  
+  /* tetraslam palette - dark by default */
+  --background: #221F22;
+  --foreground: #F7F4F1;
+  --surface: #2B262B;
+  --card: #2B262B;
+  --card-foreground: #F7F4F1;
+  --popover: #2B262B;
+  --popover-foreground: #F7F4F1;
+  
+  /* Rose accents */
+  --rose: #e8a6a6;
+  --rose-deep: #D46A7A;
+  --primary: #E8A6A6;
+  --primary-foreground: #221F22;
+  
+  --secondary: #2B262B;
+  --secondary-foreground: #F7F4F1;
+  --muted: #2B262B;
+  --muted-foreground: #9A8F94;
+  --accent: #D46A7A;
+  --accent-foreground: #F7F4F1;
+  --destructive: #D46A7A;
+  
+  /* Borders */
+  --border: #4A3B46;
+  --input: #4A3B46;
+  --ring: #E8A6A6;
+  
+  /* Charts - rose tones */
+  --chart-1: #E8A6A6;
+  --chart-2: #D46A7A;
+  --chart-3: #B85A6A;
+  --chart-4: #9A4A5A;
+  --chart-5: #7C3A4A;
+  
+  /* Sidebar */
+  --sidebar: #221F22;
+  --sidebar-foreground: #F7F4F1;
+  --sidebar-primary: #E8A6A6;
+  --sidebar-primary-foreground: #221F22;
+  --sidebar-accent: #2B262B;
+  --sidebar-accent-foreground: #F7F4F1;
+  --sidebar-border: #4A3B46;
+  --sidebar-ring: #E8A6A6;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Iosevka", ui-monospace, monospace;
+  }
+  
+  /* Links default to rose accent */
+  a {
+    @apply text-rose-deep hover:text-rose transition-colors;
+  }
+  
+  /* Headings use dusty rose */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-rose;
+  }
+}
+
+/* Selection color */
+::selection {
+  background: #D46A7A;
+  color: #F7F4F1;
+}
+
+/* Blog post content styling */
+.blog-post-content {
+  @apply text-foreground leading-relaxed;
+}
+
+.blog-post-content p {
+  @apply mb-4;
+}
+
+.blog-post-content h1,
+.blog-post-content h2,
+.blog-post-content h3,
+.blog-post-content h4,
+.blog-post-content h5,
+.blog-post-content h6 {
+  @apply font-semibold mt-8 mb-4;
+}
+
+.blog-post-content h1 {
+  @apply text-2xl;
+}
+
+.blog-post-content h2 {
+  @apply text-xl;
+}
+
+.blog-post-content h3 {
+  @apply text-lg;
+}
+
+.blog-post-content a {
+  @apply text-rose-deep hover:text-rose underline underline-offset-2;
+}
+
+.blog-post-content img {
+  @apply rounded-lg my-6 max-w-full h-auto;
+}
+
+.blog-post-content figure {
+  @apply my-6;
+}
+
+.blog-post-content figcaption {
+  @apply text-sm text-muted-foreground mt-2 text-center italic;
+}
+
+.blog-post-content blockquote {
+  @apply border-l-2 border-rose pl-4 my-4 italic text-muted-foreground;
+}
+
+.blog-post-content code {
+  @apply bg-surface px-1.5 py-0.5 rounded text-sm text-rose;
+}
+
+.blog-post-content pre {
+  @apply bg-surface p-4 rounded-lg overflow-x-auto my-4;
+}
+
+.blog-post-content pre code {
+  @apply bg-transparent p-0 text-foreground;
+}
+
+.blog-post-content ul,
+.blog-post-content ol {
+  @apply pl-6 my-4 space-y-2;
+}
+
+.blog-post-content ul {
+  @apply list-disc;
+}
+
+.blog-post-content ol {
+  @apply list-decimal;
+}
+
+.blog-post-content li {
+  @apply pl-1;
+}
+
+.blog-post-content hr {
+  @apply border-border my-8;
+}
+
+.blog-post-content strong,
+.blog-post-content b {
+  @apply font-semibold text-foreground;
+}
+
+.blog-post-content em,
+.blog-post-content i {
+  @apply italic;
+}
+
+/* Subtle animations for life */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+/* Hover lift effect */
+.hover-lift {
+  @apply transition-all duration-200;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(232, 166, 166, 0.1);
+}
+
+/* Gentle bob animation */
+@keyframes bob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes bob-shadow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(0.8);
+    opacity: 0.2;
+  }
+}
+
+.animate-bob {
+  animation: bob 3s ease-in-out infinite;
+}
+
+.animate-bob-shadow {
+  animation: bob-shadow 3s ease-in-out infinite;
+}
+
+/* iPod-style marquee scrolling for overflowing text */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  /* Longer pause at start */
+  15% {
+    transform: translateX(0);
+  }
+  /* Slow scroll to show second copy */
+  42% {
+    transform: translateX(-50%);
+  }
+  /* Longer pause at end */
+  58% {
+    transform: translateX(-50%);
+  }
+  /* Slow scroll back */
+  85% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-marquee {
+  animation: marquee var(--marquee-duration, 10s) ease-in-out infinite;
+}
