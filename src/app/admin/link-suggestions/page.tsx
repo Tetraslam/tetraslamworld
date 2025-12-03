@@ -8,7 +8,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 type Status = "pending" | "accepted" | "rejected";
 
 export default function AdminLinkSuggestionsPage() {
-	const suggestions = useQuery(api.linkSuggestions.list);
+	const suggestions = useQuery(api.linkSuggestions.list, {});
 	const updateStatus = useMutation(api.linkSuggestions.updateStatus);
 	const removeSuggestion = useMutation(api.linkSuggestions.remove);
 	const createLink = useMutation(api.links.create);
