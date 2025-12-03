@@ -9,7 +9,7 @@ import { api } from "../../../convex/_generated/api";
 const isGif = (url: string) => url.toLowerCase().includes(".gif");
 
 export default function GalleryPage() {
-	const images = useQuery(api.gallery.list);
+	const images = useQuery(api.gallery.list, {});
 	const [lightbox, setLightbox] = useState<string | null>(null);
 
 	const sortedImages = images

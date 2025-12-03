@@ -24,7 +24,7 @@ const emptyForm: FriendForm = {
 };
 
 export default function AdminFriendsPage() {
-	const friends = useQuery(api.friends.list);
+	const friends = useQuery(api.friends.list, {});
 	const create = useMutation(api.friends.create);
 	const update = useMutation(api.friends.update);
 	const remove = useMutation(api.friends.remove);

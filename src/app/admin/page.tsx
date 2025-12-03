@@ -6,13 +6,13 @@ import { useState } from "react";
 import { api } from "../../../convex/_generated/api";
 
 export default function AdminPage() {
-	const work = useQuery(api.work.list);
-	const friends = useQuery(api.friends.list);
-	const media = useQuery(api.media.list);
-	const links = useQuery(api.links.list);
-	const travel = useQuery(api.travel.list);
-	const gallery = useQuery(api.gallery.list);
-	const externalImages = useQuery(api.imageMigration.getExternalImages);
+	const work = useQuery(api.work.list, {});
+	const friends = useQuery(api.friends.list, {});
+	const media = useQuery(api.media.list, {});
+	const links = useQuery(api.links.list, {});
+	const travel = useQuery(api.travel.list, {});
+	const gallery = useQuery(api.gallery.list, {});
+	const externalImages = useQuery(api.imageMigration.getExternalImages, {});
 	const migrateImage = useAction(api.imageMigration.migrateImage);
 
 	const [migrating, setMigrating] = useState(false);

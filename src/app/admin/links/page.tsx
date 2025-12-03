@@ -25,7 +25,7 @@ const emptyForm: LinkForm = {
 
 export default function AdminLinksPage() {
 	const searchParams = useSearchParams();
-	const links = useQuery(api.links.list);
+	const links = useQuery(api.links.list, {});
 	const create = useMutation(api.links.create);
 	const update = useMutation(api.links.update);
 	const remove = useMutation(api.links.remove);

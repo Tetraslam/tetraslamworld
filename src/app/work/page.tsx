@@ -19,7 +19,7 @@ const typeLabels: Record<string, string> = {
 const typeOrder = ["job", "project", "paper", "talk", "other"];
 
 export default function WorkPage() {
-	const work = useQuery(api.work.list);
+	const work = useQuery(api.work.list, {});
 	const [filter, setFilter] = useState<string | null>(null);
 
 	const grouped = work?.reduce(

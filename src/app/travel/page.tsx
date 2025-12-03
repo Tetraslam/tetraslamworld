@@ -22,7 +22,7 @@ interface Location {
 }
 
 export default function TravelPage() {
-	const locationsRaw = useQuery(api.travel.list);
+	const locationsRaw = useQuery(api.travel.list, {});
 	// Sort by order field
 	const locations = locationsRaw
 		? [...locationsRaw].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))

@@ -37,7 +37,7 @@ const emptyForm: WorkForm = {
 };
 
 export default function AdminWorkPage() {
-	const work = useQuery(api.work.list);
+	const work = useQuery(api.work.list, {});
 	const create = useMutation(api.work.create);
 	const update = useMutation(api.work.update);
 	const remove = useMutation(api.work.remove);

@@ -17,7 +17,7 @@ interface Petal {
 
 export function AmbientParticles() {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const animationRef = useRef<number>();
+	const animationRef = useRef<number | undefined>(undefined);
 	const petalsRef = useRef<Petal[]>([]);
 
 	useEffect(() => {

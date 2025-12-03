@@ -9,7 +9,7 @@ import { api } from "../../../convex/_generated/api";
 const isGif = (url: string) => url.toLowerCase().includes(".gif");
 
 export default function FriendsPage() {
-	const friends = useQuery(api.friends.list);
+	const friends = useQuery(api.friends.list, {});
 
 	const sortedFriends = friends
 		? [...friends].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))

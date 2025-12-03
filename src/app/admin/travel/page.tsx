@@ -40,7 +40,7 @@ const emptyForm: TravelForm = {
 };
 
 export default function AdminTravelPage() {
-	const travel = useQuery(api.travel.list);
+	const travel = useQuery(api.travel.list, {});
 	const create = useMutation(api.travel.create);
 	const update = useMutation(api.travel.update);
 	const remove = useMutation(api.travel.remove);
@@ -149,7 +149,7 @@ export default function AdminTravelPage() {
 			startDate: item.dates?.start || "",
 			endDate: item.dates?.end || "",
 			content: item.content || "",
-			photos: item.photoUrls || [],
+			photos: (item.photoUrls || []).map((url) => ({ url })),
 			order: item.order || 0,
 		});
 		setShowPreview(false);

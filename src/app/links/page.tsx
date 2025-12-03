@@ -8,7 +8,7 @@ type SortOrder = "manual" | "newest" | "oldest" | "alpha";
 type PinnedFilter = "all" | "pinned" | "unpinned";
 
 export default function LinksPage() {
-	const links = useQuery(api.links.list);
+	const links = useQuery(api.links.list, {});
 	const suggestLink = useMutation(api.linkSuggestions.create);
 	const [search, setSearch] = useState("");
 	const [tagFilter, setTagFilter] = useState<string | null>(null);

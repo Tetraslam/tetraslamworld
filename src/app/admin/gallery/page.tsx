@@ -18,7 +18,7 @@ const emptyForm: GalleryForm = {
 };
 
 export default function AdminGalleryPage() {
-	const images = useQuery(api.gallery.list);
+	const images = useQuery(api.gallery.list, {});
 	const create = useMutation(api.gallery.create);
 	const update = useMutation(api.gallery.update);
 	const remove = useMutation(api.gallery.remove);

@@ -39,7 +39,7 @@ export default function PixelsPage() {
 	const { user } = useUser();
 	const { openSignIn } = useClerk();
 	const { isMobile } = useDevice();
-	const pixels = useQuery(api.pixelBoard.getAll) as Pixel[] | undefined;
+	const pixels = useQuery(api.pixelBoard.getAll, {}) as Pixel[] | undefined;
 	const placePixel = useMutation(api.pixelBoard.place);
 	const [selectedColor, setSelectedColor] = useState(COLORS[0]);
 	// Desktop: hover preview. Mobile: selected cell (tap to select, tap again to place)
