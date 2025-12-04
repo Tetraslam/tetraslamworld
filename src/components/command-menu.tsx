@@ -1,10 +1,13 @@
 "use client";
 
 import { getCalApi } from "@calcom/embed-react";
+import { useUser } from "@clerk/nextjs";
 import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDevice } from "@/hooks/use-device";
+
+const ADMIN_USER_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || "").split(",").filter(Boolean);
 
 interface CommandItem {
 	id: string;
@@ -20,6 +23,11 @@ export function CommandMenu() {
 	const [calApi, setCalApi] = useState<Awaited<ReturnType<typeof getCalApi>> | null>(null);
 	const router = useRouter();
 	const { isMobile, isMac } = useDevice();
+	const { user } = useUser();
+	
+	const isAdmin = useMemo(() => {
+		return user && ADMIN_USER_IDS.length > 0 && ADMIN_USER_IDS.includes(user.id);
+	}, [user]);
 
 	// Initialize Cal.com
 	useEffect(() => {
@@ -185,6 +193,15 @@ export function CommandMenu() {
 			group: "meta",
 			icon: "rss",
 		},
+		// Admin (only visible to admins)
+		...(isAdmin ? [{
+			id: "admin",
+			label: "admin dashboard",
+			shortcut: ["A"],
+			action: () => navigate("/admin"),
+			group: "admin",
+			icon: "!",
+		}] : []),
 	];
 
 	// Toggle with cmd+k / ctrl+k
