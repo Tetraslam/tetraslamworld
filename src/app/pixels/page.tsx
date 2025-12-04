@@ -10,6 +10,8 @@ const GRID_SIZE = 32;
 const CELL_SIZE_DESKTOP = 16;
 const CELL_SIZE_MOBILE = 12;
 
+const ANON_COLOR = "#9A8F94"; // muted gray for anonymous users
+
 const COLORS = [
 	"#E8A6A6", // rose
 	"#D46A7A", // rose-deep
@@ -58,21 +60,20 @@ export default function PixelsPage() {
 	const activeCell = isMobile ? selectedCell : hoveredCell;
 	const activePixel = activeCell ? pixelMap.get(`${activeCell.x},${activeCell.y}`) : null;
 
+	// Determine the actual color to use (anon users only get the anon color)
+	const effectiveColor = isSignedIn ? selectedColor : ANON_COLOR;
+
 	const placeAtCell = useCallback(
 		async (x: number, y: number) => {
-			if (!isSignedIn || !user) {
-				openSignIn();
-				return;
-			}
 			if (placing) return;
 			setPlacing(true);
 			try {
 				await placePixel({
 					x,
 					y,
-					color: selectedColor,
-					clerkId: user.id,
-					username: user.username || user.firstName || undefined,
+					color: effectiveColor,
+					clerkId: user?.id,
+					username: user?.username || user?.firstName || undefined,
 				});
 				// Clear selection after placing on mobile
 				if (isMobile) setSelectedCell(null);
@@ -82,7 +83,7 @@ export default function PixelsPage() {
 				setPlacing(false);
 			}
 		},
-		[isSignedIn, user, placePixel, selectedColor, placing, openSignIn, isMobile]
+		[user, placePixel, effectiveColor, placing, isMobile]
 	);
 
 	const handleCellClick = useCallback(
@@ -119,21 +120,42 @@ export default function PixelsPage() {
 					{/* Colors */}
 					<div className="flex flex-wrap gap-2 items-center flex-1">
 						<span className="text-sm text-muted-foreground mr-2">color:</span>
-						{COLORS.map((color) => (
-							<button
-								type="button"
-								key={color}
-								onClick={() => setSelectedColor(color)}
-								className={`w-8 h-8 md:w-7 md:h-7 rounded-lg border-2 transition-all ${
-									selectedColor === color
-										? "border-foreground scale-110 shadow-lg"
-										: "border-transparent hover:scale-105 hover:border-border"
-								}`}
-								style={{ backgroundColor: color }}
-								title={color}
-								aria-label={`Select color ${color}`}
-							/>
-						))}
+						{isSignedIn ? (
+							// Signed in: full palette
+							COLORS.map((color) => (
+								<button
+									type="button"
+									key={color}
+									onClick={() => setSelectedColor(color)}
+									className={`w-8 h-8 md:w-7 md:h-7 rounded-lg border-2 transition-all ${
+										selectedColor === color
+											? "border-foreground scale-110 shadow-lg"
+											: "border-transparent hover:scale-105 hover:border-border"
+									}`}
+									style={{ backgroundColor: color }}
+									title={color}
+									aria-label={`Select color ${color}`}
+								/>
+							))
+						) : (
+							// Anonymous: single color + login prompt
+							<>
+								<button
+									type="button"
+									className="w-8 h-8 md:w-7 md:h-7 rounded-lg border-2 border-foreground scale-110 shadow-lg"
+									style={{ backgroundColor: ANON_COLOR }}
+									title="Anonymous color"
+									aria-label="Anonymous color"
+								/>
+								<button
+									type="button"
+									onClick={() => openSignIn()}
+									className="ml-2 px-3 py-1.5 text-xs bg-rose/10 text-rose border border-rose/30 rounded-lg hover:bg-rose/20 hover:border-rose/50 transition-all"
+								>
+									log in for all colors
+								</button>
+							</>
+						)}
 					</div>
 
 					{/* Divider */}
@@ -182,20 +204,9 @@ export default function PixelsPage() {
 							) : (
 								<p>tap a cell to select, tap again to place</p>
 							)}
-							<div className="flex items-center justify-between mt-2">
-								<p>
-									<span className="text-rose font-medium">{pixels?.length ?? 0}</span> pixels placed
-								</p>
-								{!isSignedIn && (
-									<button
-										type="button"
-										onClick={() => openSignIn()}
-										className="text-rose-deep hover:text-rose transition-colors"
-									>
-										sign in to place
-									</button>
-								)}
-							</div>
+							<p className="mt-2">
+								<span className="text-rose font-medium">{pixels?.length ?? 0}</span> pixels placed
+							</p>
 						</div>
 					</div>
 				</div>
@@ -239,15 +250,15 @@ export default function PixelsPage() {
 									onMouseLeave={() => !isMobile && setHoveredCell(null)}
 									disabled={placing}
 									className="border border-border/20 transition-all"
-									style={{
-										width: cellSize,
-										height: cellSize,
-										backgroundColor: isActive ? selectedColor : pixel?.color || "transparent",
-										opacity: isActive && !pixel ? 0.7 : 1,
-										transform: isActive ? "scale(1.15)" : "scale(1)",
-										zIndex: isActive ? 10 : 1,
-										boxShadow: isSelected ? `0 0 0 2px ${selectedColor}` : undefined,
-									}}
+								style={{
+									width: cellSize,
+									height: cellSize,
+									backgroundColor: isActive ? effectiveColor : pixel?.color || "transparent",
+									opacity: isActive && !pixel ? 0.7 : 1,
+									transform: isActive ? "scale(1.15)" : "scale(1)",
+									zIndex: isActive ? 10 : 1,
+									boxShadow: isSelected ? `0 0 0 2px ${effectiveColor}` : undefined,
+								}}
 									aria-label={`Cell ${x}, ${y}${pixel ? ` - placed by ${pixel.username || "anonymous"}` : ""}`}
 								/>
 							);

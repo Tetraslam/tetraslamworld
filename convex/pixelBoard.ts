@@ -38,38 +38,40 @@ export const place = mutation({
     x: v.number(),
     y: v.number(),
     color: v.string(),
-    clerkId: v.string(),
+    clerkId: v.optional(v.string()),
     username: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Ensure user exists in users table
-    const existingUser = await ctx.db
-      .query("users")
-      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
-      .unique();
+    // If signed in, ensure user exists in users table
+    if (args.clerkId) {
+      const existingUser = await ctx.db
+        .query("users")
+        .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId!))
+        .unique();
 
-    if (!existingUser) {
-      // Create user record
-      const baseUsername = args.username || `user_${args.clerkId.slice(-6)}`;
-      let username = baseUsername;
-      let counter = 1;
+      if (!existingUser) {
+        // Create user record
+        const baseUsername = args.username || `user_${args.clerkId.slice(-6)}`;
+        let username = baseUsername;
+        let counter = 1;
 
-      // Ensure unique username
-      while (true) {
-        const taken = await ctx.db
-          .query("users")
-          .withIndex("by_username", (q) => q.eq("username", username))
-          .unique();
-        if (!taken) break;
-        username = `${baseUsername}_${counter}`;
-        counter++;
+        // Ensure unique username
+        while (true) {
+          const taken = await ctx.db
+            .query("users")
+            .withIndex("by_username", (q) => q.eq("username", username))
+            .unique();
+          if (!taken) break;
+          username = `${baseUsername}_${counter}`;
+          counter++;
+        }
+
+        await ctx.db.insert("users", {
+          clerkId: args.clerkId,
+          username,
+          createdAt: Date.now(),
+        });
       }
-
-      await ctx.db.insert("users", {
-        clerkId: args.clerkId,
-        username,
-        createdAt: Date.now(),
-      });
     }
 
     // Check if pixel already exists at this position
