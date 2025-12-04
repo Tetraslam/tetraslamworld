@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-// Your Clerk user ID - replace with your actual ID
-const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
+// Comma-separated list of admin Clerk user IDs
+const ADMIN_USER_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || "").split(",").filter(Boolean);
 
 const navItems = [
 	{ href: "/admin", label: "overview" },
@@ -31,7 +31,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 		);
 	}
 
-	if (!user || (ADMIN_USER_ID && user.id !== ADMIN_USER_ID)) {
+	// Deny if: no user, no admin IDs configured, or user not in admin list
+	if (!user || ADMIN_USER_IDS.length === 0 || !ADMIN_USER_IDS.includes(user.id)) {
 		return (
 			<div className="min-h-[calc(100vh-3rem)] flex items-center justify-center">
 				<div className="text-center space-y-4">
