@@ -15,6 +15,7 @@ export async function GET() {
 					justifyContent: "center",
 					backgroundColor: "#221F22",
 					fontFamily: "monospace",
+					position: "relative",
 				}}
 			>
 				{/* Background pattern - subtle grid */}
@@ -71,16 +72,17 @@ export async function GET() {
 					}}
 				/>
 
-				{/* Main content */}
+				{/* Only title */}
 				<div
 					style={{
 						display: "flex",
 						flexDirection: "column",
 						alignItems: "center",
-						gap: 24,
+						justifyContent: "center",
+						height: "100%",
+						width: "100%",
 					}}
 				>
-					{/* Title */}
 					<div
 						style={{
 							fontSize: 72,
@@ -90,44 +92,6 @@ export async function GET() {
 						}}
 					>
 						tetraslam's world
-					</div>
-
-					{/* Subtitle */}
-					<div
-						style={{
-							fontSize: 28,
-							color: "#E8A6A6",
-							display: "flex",
-							gap: 16,
-							alignItems: "center",
-						}}
-					>
-						<span>builder</span>
-						<span style={{ color: "#4A3B46" }}>/</span>
-						<span>roboticist</span>
-						<span style={{ color: "#4A3B46" }}>/</span>
-						<span>worldbuilder</span>
-					</div>
-
-					{/* Decorative line */}
-					<div
-						style={{
-							width: 200,
-							height: 2,
-							background: "linear-gradient(90deg, transparent, #E8A6A6, transparent)",
-							marginTop: 8,
-						}}
-					/>
-
-					{/* Footer */}
-					<div
-						style={{
-							fontSize: 20,
-							color: "#9A8F94",
-							marginTop: 16,
-						}}
-					>
-						founding engineer @ natural.co
 					</div>
 				</div>
 
