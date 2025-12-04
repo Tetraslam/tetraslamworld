@@ -86,7 +86,7 @@ pnpm dev              # in another
 - cmdk (keyboard navigation)
 
 ## convex tables
-
+ 
 ```
 users (for commenters)
 - _id
