@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { useMemo, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { api } from "../../../convex/_generated/api";
 
 type SortOrder = "manual" | "newest" | "oldest" | "alpha";
@@ -490,9 +491,29 @@ function LinkCard({
 					</h3>
 					<p className="text-xs text-muted-foreground">{domain}</p>
 					{link.content && (
-						<p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
-							{link.content}
-						</p>
+						<div className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
+							<ReactMarkdown
+								components={{
+									p: ({ children }) => <span>{children}</span>,
+									a: ({ href, children }) => (
+										<a
+											href={href}
+											target="_blank"
+											rel="noopener noreferrer"
+											onClick={(e) => e.stopPropagation()}
+											className="text-rose-deep hover:text-rose underline underline-offset-2 transition-colors"
+										>
+											{children}
+										</a>
+									),
+									strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
+									em: ({ children }) => <em className="italic">{children}</em>,
+									code: ({ children }) => <code className="px-1 py-0.5 bg-background rounded text-rose text-xs font-mono">{children}</code>,
+								}}
+							>
+								{link.content}
+							</ReactMarkdown>
+						</div>
 					)}
 					{link.tags && link.tags.length > 0 && (
 						<div className="flex flex-wrap gap-1.5 mt-2">
