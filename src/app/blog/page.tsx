@@ -1,7 +1,8 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface BlogPost {
 	id: string;
@@ -14,27 +15,44 @@ interface BlogPost {
 
 type SortOrder = "newest" | "oldest";
 
+const ADMIN_USER_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || "").split(",").filter(Boolean);
+
 export default function BlogPage() {
+	const { user } = useUser();
+	const isAdmin = user && ADMIN_USER_IDS.includes(user.id);
+
 	const [posts, setPosts] = useState<BlogPost[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [refreshing, setRefreshing] = useState(false);
 	const [search, setSearch] = useState("");
 	const [yearFilter, setYearFilter] = useState<string | null>(null);
 	const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
 
-	useEffect(() => {
-		async function fetchPosts() {
-			try {
-				const res = await fetch("/api/blog");
-				const data = await res.json();
-				setPosts(data.posts || []);
-			} catch (err) {
-				console.error("Failed to fetch posts:", err);
-			} finally {
-				setLoading(false);
-			}
+	const fetchPosts = useCallback(async () => {
+		try {
+			const res = await fetch("/api/blog");
+			const data = await res.json();
+			setPosts(data.posts || []);
+		} catch (err) {
+			console.error("Failed to fetch posts:", err);
 		}
-		fetchPosts();
 	}, []);
+
+	useEffect(() => {
+		fetchPosts().finally(() => setLoading(false));
+	}, [fetchPosts]);
+
+	const handleRefresh = async () => {
+		setRefreshing(true);
+		try {
+			await fetch("/api/blog/revalidate", { method: "POST" });
+			await fetchPosts();
+		} catch (err) {
+			console.error("Failed to refresh:", err);
+		} finally {
+			setRefreshing(false);
+		}
+	};
 
 	// Extract unique years from posts
 	const years = useMemo(() => {
@@ -81,11 +99,23 @@ export default function BlogPage() {
 	return (
 		<div className="max-w-4xl mx-auto px-4 py-12">
 			<div className="space-y-6 animate-fade-in">
-				<div>
-					<h1 className="text-3xl font-bold">blog</h1>
-					<p className="text-muted-foreground mt-1">
-						thoughts, notes, and ramblings
-					</p>
+				<div className="flex items-start justify-between gap-4">
+					<div>
+						<h1 className="text-3xl font-bold">blog</h1>
+						<p className="text-muted-foreground mt-1">
+							thoughts, notes, and ramblings
+						</p>
+					</div>
+					{isAdmin && (
+						<button
+							type="button"
+							onClick={handleRefresh}
+							disabled={refreshing}
+							className="px-3 py-1.5 text-sm border border-rose/50 bg-rose/10 text-rose rounded-lg hover:bg-rose/20 hover:border-rose transition-all disabled:opacity-50 shrink-0"
+						>
+							{refreshing ? "refreshing..." : "refresh"}
+						</button>
+					)}
 				</div>
 
 				{/* Search and filters */}
