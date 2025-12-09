@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@vercel/analytics";
 import { useMutation, useQuery } from "convex/react";
 import { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -474,11 +475,21 @@ function LinkCard({
 		domain = link.url;
 	}
 
+	const handleClick = () => {
+		track("link_click", {
+			title: link.title,
+			url: link.url,
+			domain,
+			pinned: isPinned,
+		});
+	};
+
 	return (
 		<a
 			href={link.url}
 			target="_blank"
 			rel="noopener noreferrer"
+			onClick={handleClick}
 			className={`block p-4 bg-surface border rounded-lg hover-lift transition-all group ${
 				isPinned ? "border-rose/30" : "border-border hover:border-rose/50"
 			}`}
