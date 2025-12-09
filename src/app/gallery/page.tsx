@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@vercel/analytics";
 import { useQuery } from "convex/react";
 import Image from "next/image";
 import { useState } from "react";
@@ -51,7 +52,10 @@ export default function GalleryPage() {
 							<button
 								key={image._id}
 								type="button"
-								onClick={() => setLightbox(image.imageUrl)}
+								onClick={() => {
+									setLightbox(image.imageUrl);
+									track("gallery_image_view", { caption: image.caption || "untitled" });
+								}}
 								className="mb-4 group relative overflow-hidden rounded-lg border border-border hover:border-rose/50 transition-all cursor-pointer block w-full bg-surface"
 							>
 								<Image

@@ -1,6 +1,7 @@
 "use client";
 
 import { useClerk, useUser } from "@clerk/nextjs";
+import { track } from "@vercel/analytics";
 import { useMutation, useQuery } from "convex/react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -179,6 +180,7 @@ export default function BlogPostPage() {
 				userId: userRecord._id,
 				content: commentText.trim(),
 			});
+			track("comment_submit", { post_slug: slug, type: "comment" });
 			setCommentText("");
 			localStorage.removeItem(`draft-comment-${slug}`);
 			refreshComments();
@@ -207,6 +209,7 @@ export default function BlogPostPage() {
 				content: replyText.trim(),
 				parentId,
 			});
+			track("comment_submit", { post_slug: slug, type: "reply" });
 			setReplyText("");
 			setReplyingTo(null);
 			refreshComments();

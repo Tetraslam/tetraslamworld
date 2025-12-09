@@ -1,8 +1,9 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
+import { track } from "@vercel/analytics";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface BlogPost {
 	id: string;
@@ -27,6 +28,18 @@ export default function BlogPage() {
 	const [search, setSearch] = useState("");
 	const [yearFilter, setYearFilter] = useState<string | null>(null);
 	const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
+	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+	// Track search queries with debounce
+	const handleSearchChange = (value: string) => {
+		setSearch(value);
+		if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+		if (value.trim()) {
+			searchTimeoutRef.current = setTimeout(() => {
+				track("search_query", { page: "blog", query: value.trim() });
+			}, 1000);
+		}
+	};
 
 	const fetchPosts = useCallback(async () => {
 		try {
@@ -125,7 +138,7 @@ export default function BlogPage() {
 							type="text"
 							placeholder="search posts..."
 							value={search}
-							onChange={(e) => setSearch(e.target.value)}
+							onChange={(e) => handleSearchChange(e.target.value)}
 							className="w-full px-4 py-3 bg-surface border border-border rounded-lg focus:outline-none focus:border-rose/50 text-foreground placeholder:text-muted-foreground transition-colors"
 						/>
 						{search && (
@@ -145,7 +158,10 @@ export default function BlogPage() {
 							<span className="text-xs text-muted-foreground">year:</span>
 							<div className="flex gap-1">
 								<button
-									onClick={() => setYearFilter(null)}
+									onClick={() => {
+										setYearFilter(null);
+										track("filter_use", { page: "blog", filter_type: "year", value: "all" });
+									}}
 									className={`px-2 py-1 text-xs rounded transition-colors ${
 										yearFilter === null
 											? "bg-rose/20 text-rose border border-rose/50"
@@ -157,7 +173,10 @@ export default function BlogPage() {
 								{years.map((year) => (
 									<button
 										key={year}
-										onClick={() => setYearFilter(year)}
+										onClick={() => {
+											setYearFilter(year);
+											track("filter_use", { page: "blog", filter_type: "year", value: year });
+										}}
 										className={`px-2 py-1 text-xs rounded transition-colors ${
 											yearFilter === year
 												? "bg-rose/20 text-rose border border-rose/50"
@@ -177,7 +196,10 @@ export default function BlogPage() {
 							<span className="text-xs text-muted-foreground">sort:</span>
 							<div className="flex gap-1">
 								<button
-									onClick={() => setSortOrder("newest")}
+									onClick={() => {
+										setSortOrder("newest");
+										track("filter_use", { page: "blog", filter_type: "sort", value: "newest" });
+									}}
 									className={`px-2 py-1 text-xs rounded transition-colors ${
 										sortOrder === "newest"
 											? "bg-rose/20 text-rose border border-rose/50"
@@ -187,7 +209,10 @@ export default function BlogPage() {
 									newest
 								</button>
 								<button
-									onClick={() => setSortOrder("oldest")}
+									onClick={() => {
+										setSortOrder("oldest");
+										track("filter_use", { page: "blog", filter_type: "sort", value: "oldest" });
+									}}
 									className={`px-2 py-1 text-xs rounded transition-colors ${
 										sortOrder === "oldest"
 											? "bg-rose/20 text-rose border border-rose/50"
@@ -242,6 +267,7 @@ export default function BlogPage() {
 						<Link
 							key={post.id}
 							href={`/blog/${post.slug}`}
+							onClick={() => track("blog_post_click", { title: post.title, slug: post.slug })}
 							className="block p-4 bg-surface border border-border rounded-lg hover:border-rose/50 transition-all hover-lift group"
 							style={{ animationDelay: `${index * 30}ms` }}
 						>

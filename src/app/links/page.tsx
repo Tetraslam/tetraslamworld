@@ -2,7 +2,7 @@
 
 import { track } from "@vercel/analytics";
 import { useMutation, useQuery } from "convex/react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { api } from "../../../convex/_generated/api";
 
@@ -16,6 +16,18 @@ export default function LinksPage() {
 	const [tagFilter, setTagFilter] = useState<string | null>(null);
 	const [pinnedFilter, setPinnedFilter] = useState<PinnedFilter>("all");
 	const [sortOrder, setSortOrder] = useState<SortOrder>("manual");
+	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+	// Track search queries with debounce
+	const handleSearchChange = (value: string) => {
+		setSearch(value);
+		if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+		if (value.trim()) {
+			searchTimeoutRef.current = setTimeout(() => {
+				track("search_query", { page: "links", query: value.trim() });
+			}, 1000);
+		}
+	};
 	
 	// Suggestion modal state
 	const [showSuggestModal, setShowSuggestModal] = useState(false);
@@ -147,7 +159,7 @@ export default function LinksPage() {
 							type="text"
 							placeholder="search links..."
 							value={search}
-							onChange={(e) => setSearch(e.target.value)}
+							onChange={(e) => handleSearchChange(e.target.value)}
 							className="w-full px-4 py-3 bg-surface border border-border rounded-lg focus:outline-none focus:border-rose/50 text-foreground placeholder:text-muted-foreground transition-colors"
 						/>
 						{search && (
@@ -169,7 +181,10 @@ export default function LinksPage() {
 									<span className="text-xs text-muted-foreground">tag:</span>
 									<div className="flex flex-wrap gap-1">
 										<button
-											onClick={() => setTagFilter(null)}
+											onClick={() => {
+												setTagFilter(null);
+												track("filter_use", { page: "links", filter_type: "tag", value: "all" });
+											}}
 											className={`px-2 py-1 text-xs rounded transition-colors ${
 												tagFilter === null
 													? "bg-rose/20 text-rose border border-rose/50"
@@ -181,7 +196,10 @@ export default function LinksPage() {
 										{allTags.slice(0, 5).map((tag) => (
 											<button
 												key={tag}
-												onClick={() => setTagFilter(tag)}
+												onClick={() => {
+													setTagFilter(tag);
+													track("filter_use", { page: "links", filter_type: "tag", value: tag });
+												}}
 												className={`px-2 py-1 text-xs rounded transition-colors ${
 													tagFilter === tag
 														? "bg-rose/20 text-rose border border-rose/50"
@@ -221,7 +239,10 @@ export default function LinksPage() {
 								{(["all", "pinned", "unpinned"] as const).map((option) => (
 									<button
 										key={option}
-										onClick={() => setPinnedFilter(option)}
+										onClick={() => {
+											setPinnedFilter(option);
+											track("filter_use", { page: "links", filter_type: "pinned", value: option });
+										}}
 										className={`px-2 py-1 text-xs rounded transition-colors ${
 											pinnedFilter === option
 												? "bg-rose/20 text-rose border border-rose/50"
@@ -250,7 +271,10 @@ export default function LinksPage() {
 								).map(([value, label]) => (
 									<button
 										key={value}
-										onClick={() => setSortOrder(value)}
+										onClick={() => {
+											setSortOrder(value);
+											track("filter_use", { page: "links", filter_type: "sort", value });
+										}}
 										className={`px-2 py-1 text-xs rounded transition-colors ${
 											sortOrder === value
 												? "bg-rose/20 text-rose border border-rose/50"
@@ -507,15 +531,25 @@ function LinkCard({
 								components={{
 									p: ({ children }) => <span>{children}</span>,
 									a: ({ href, children }) => (
-										<a
-											href={href}
-											target="_blank"
-											rel="noopener noreferrer"
-											onClick={(e) => e.stopPropagation()}
-											className="text-rose-deep hover:text-rose underline underline-offset-2 transition-colors"
+										<span
+											role="link"
+											tabIndex={0}
+											onClick={(e) => {
+												e.preventDefault();
+												e.stopPropagation();
+												window.open(href, "_blank", "noopener,noreferrer");
+											}}
+											onKeyDown={(e) => {
+												if (e.key === "Enter") {
+													e.preventDefault();
+													e.stopPropagation();
+													window.open(href, "_blank", "noopener,noreferrer");
+												}
+											}}
+											className="text-rose-deep hover:text-rose underline underline-offset-2 transition-colors cursor-pointer"
 										>
 											{children}
-										</a>
+										</span>
 									),
 									strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
 									em: ({ children }) => <em className="italic">{children}</em>,

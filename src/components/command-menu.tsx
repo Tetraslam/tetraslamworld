@@ -2,6 +2,7 @@
 
 import { getCalApi } from "@calcom/embed-react";
 import { useUser } from "@clerk/nextjs";
+import { track } from "@vercel/analytics";
 import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -47,6 +48,7 @@ export function CommandMenu() {
 	}, []);
 
 	const openBooking = useCallback(() => {
+		track("book_call_click", { source: "cmdk" });
 		if (calApi) {
 			calApi("modal", {
 				calLink: "tetraslam/30min",
@@ -58,11 +60,26 @@ export function CommandMenu() {
 
 	const navigate = useCallback(
 		(path: string) => {
+			track("cmdk_action", { action: "navigate", path });
 			router.push(path);
 			setOpen(false);
 		},
 		[router],
 	);
+
+	const openExternal = useCallback((url: string, label: string) => {
+		track("cmdk_action", { action: "external", url, label });
+		track("external_link_click", { url, label, source: "cmdk" });
+		window.open(url, "_blank");
+		setOpen(false);
+	}, []);
+
+	const openResume = useCallback(() => {
+		track("cmdk_action", { action: "resume" });
+		track("resume_download", { source: "cmdk" });
+		window.open("/resume.pdf", "_blank");
+		setOpen(false);
+	}, []);
 
 	const commands: CommandItem[] = [
 		// Navigation
@@ -143,21 +160,21 @@ export function CommandMenu() {
 		{
 			id: "twitter",
 			label: "twitter",
-			action: () => window.open("https://twitter.com/tetraslam", "_blank"),
+			action: () => openExternal("https://twitter.com/tetraslam", "twitter"),
 			group: "external",
 			icon: "x",
 		},
 		{
 			id: "github",
 			label: "github",
-			action: () => window.open("https://github.com/tetraslam", "_blank"),
+			action: () => openExternal("https://github.com/tetraslam", "github"),
 			group: "external",
 			icon: "gh",
 		},
 		{
 			id: "email",
 			label: "email",
-			action: () => window.open("mailto:bhowmickshresht@gmail.com", "_blank"),
+			action: () => openExternal("mailto:bhowmickshresht@gmail.com", "email"),
 			group: "external",
 			icon: "@",
 		},
@@ -175,21 +192,25 @@ export function CommandMenu() {
 			id: "resume",
 			label: "resume",
 			shortcut: ["R"],
-			action: () => window.open("/resume.pdf", "_blank"),
+			action: openResume,
 			group: "meta",
 			icon: "pdf",
 		},
 		{
 			id: "sitemap",
 			label: "sitemap",
-			action: () => window.open("/sitemap.xml", "_blank"),
+			action: () => {
+				track("cmdk_action", { action: "sitemap" });
+				window.open("/sitemap.xml", "_blank");
+				setOpen(false);
+			},
 			group: "meta",
 			icon: "/",
 		},
 		{
 			id: "rss",
 			label: "blog rss",
-			action: () => window.open("https://blog.tetraslam.world/rss", "_blank"),
+			action: () => openExternal("https://blog.tetraslam.world/rss", "blog_rss"),
 			group: "meta",
 			icon: "rss",
 		},

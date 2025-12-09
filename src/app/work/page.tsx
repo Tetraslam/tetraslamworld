@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@vercel/analytics";
 import { useQuery } from "convex/react";
 import Image from "next/image";
 import { useState } from "react";
@@ -47,6 +48,7 @@ export default function WorkPage() {
 						href="/resume.pdf"
 						target="_blank"
 						rel="noopener noreferrer"
+						onClick={() => track("resume_download", { source: "work_page" })}
 						className="px-3 py-1.5 text-sm border border-rose/50 bg-rose/10 text-rose rounded-lg hover:bg-rose/20 hover:border-rose transition-all flex items-center gap-1.5 shrink-0"
 					>
 						<svg
@@ -72,7 +74,10 @@ export default function WorkPage() {
 				{/* Filter tabs */}
 				<div className="flex flex-wrap gap-2">
 					<button
-						onClick={() => setFilter(null)}
+						onClick={() => {
+							setFilter(null);
+							track("filter_use", { page: "work", filter: "all" });
+						}}
 						className={`px-3 py-1.5 text-sm rounded-lg border transition-all ${
 							filter === null
 								? "border-rose bg-rose/10 text-rose"
@@ -84,7 +89,10 @@ export default function WorkPage() {
 					{sortedTypes.map((type) => (
 						<button
 							key={type}
-							onClick={() => setFilter(type)}
+							onClick={() => {
+								setFilter(type);
+								track("filter_use", { page: "work", filter: type });
+							}}
 							className={`px-3 py-1.5 text-sm rounded-lg border transition-all ${
 								filter === type
 									? "border-rose bg-rose/10 text-rose"

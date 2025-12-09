@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@vercel/analytics";
 import { useQuery } from "convex/react";
 import mapboxgl from "mapbox-gl";
 import Image from "next/image";
@@ -121,6 +122,7 @@ export default function TravelPage() {
 
 			el.addEventListener("click", () => {
 				setSelectedLocation(loc);
+				track("travel_location_view", { location: loc.location, source: "marker" });
 				map.current?.flyTo({
 					center: [loc.coordinates.lng, loc.coordinates.lat],
 					zoom: 5,
@@ -550,6 +552,7 @@ export default function TravelPage() {
 							key={loc._id}
 							onClick={() => {
 								setSelectedLocation(loc);
+								track("travel_location_view", { location: loc.location, source: "list" });
 								map.current?.flyTo({
 									center: [loc.coordinates.lng, loc.coordinates.lat],
 									zoom: 5,
@@ -604,6 +607,7 @@ export default function TravelPage() {
 								key={loc._id}
 								onClick={() => {
 									setSelectedLocation(loc);
+									track("travel_location_view", { location: loc.location, source: "mobile_list" });
 									setShowMobileDestinations(false);
 									map.current?.flyTo({
 										center: [loc.coordinates.lng, loc.coordinates.lat],

@@ -1,6 +1,7 @@
 "use client";
 
 import { getCalApi } from "@calcom/embed-react";
+import { track } from "@vercel/analytics";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
@@ -618,6 +619,7 @@ export default function Home() {
 							href="https://natural.co"
 							target="_blank"
 							rel="noopener noreferrer"
+							onClick={() => track("external_link_click", { url: "https://natural.co", label: "natural.co", source: "homepage" })}
 							className="text-foreground hover:text-rose"
 						>
 							natural.co
@@ -629,6 +631,7 @@ export default function Home() {
 							href="https://media.mit.edu"
 							target="_blank"
 							rel="noopener noreferrer"
+							onClick={() => track("external_link_click", { url: "https://media.mit.edu", label: "mit media lab", source: "homepage" })}
 							className="text-foreground/80 hover:text-rose"
 						>
 							mit media lab
@@ -638,6 +641,7 @@ export default function Home() {
 							href="https://mosaic.so"
 							target="_blank"
 							rel="noopener noreferrer"
+							onClick={() => track("external_link_click", { url: "https://mosaic.so", label: "mosaic", source: "homepage" })}
 							className="text-foreground/80 hover:text-rose"
 						>
 							mosaic
@@ -656,6 +660,7 @@ export default function Home() {
 						data-cal-namespace="30min"
 						data-cal-link="tetraslam/30min"
 						data-cal-config='{"layout":"month_view","theme":"dark"}'
+						onClick={() => track("book_call_click", { source: "homepage" })}
 						className="px-4 py-2 border border-rose/50 bg-rose/10 rounded-lg hover:border-rose hover:bg-rose/20 hover:-translate-y-0.5 transition-all text-rose"
 					>
 						book a call
@@ -680,6 +685,7 @@ function SocialLink({ href, label }: { href: string; label: string }) {
 			href={href}
 			target={href.startsWith("mailto") ? undefined : "_blank"}
 			rel={href.startsWith("mailto") ? undefined : "noopener noreferrer"}
+			onClick={() => track("external_link_click", { url: href, label, source: "homepage" })}
 			className="px-4 py-2 border border-border rounded-lg hover:border-rose/50 hover:bg-rose/5 hover:-translate-y-0.5 transition-all text-muted-foreground hover:text-foreground"
 		>
 			{label}

@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@vercel/analytics";
 import { useQuery } from "convex/react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -177,7 +178,10 @@ export default function MediaPage() {
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setFilter(null)}
+            onClick={() => {
+              setFilter(null);
+              track("filter_use", { page: "media", filter: "all" });
+            }}
             className={`px-3 py-1 text-sm rounded border transition-colors ${
               filter === null
                 ? "border-rose bg-rose/10 text-rose"
@@ -190,7 +194,10 @@ export default function MediaPage() {
             <button
               type="button"
               key={type}
-              onClick={() => setFilter(type)}
+              onClick={() => {
+                setFilter(type);
+                track("filter_use", { page: "media", filter: type });
+              }}
               className={`px-3 py-1 text-sm rounded border transition-colors ${
                 filter === type
                   ? "border-rose bg-rose/10 text-rose"
@@ -231,9 +238,13 @@ export default function MediaPage() {
                           key={item._id}
                           item={item}
                           isExpanded={expanded === item._id}
-                          onExpand={() =>
-                            setExpanded(expanded === item._id ? null : item._id)
-                          }
+                          onExpand={() => {
+                            const isOpening = expanded !== item._id;
+                            setExpanded(isOpening ? item._id : null);
+                            if (isOpening) {
+                              track("media_expand", { title: item.title, type: item.type });
+                            }
+                          }}
                         />
                       ))}
                     </div>
