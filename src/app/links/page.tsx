@@ -9,6 +9,8 @@ import { api } from "../../../convex/_generated/api";
 type SortOrder = "manual" | "newest" | "oldest" | "alpha";
 type PinnedFilter = "all" | "pinned" | "unpinned";
 
+const PAGE_SIZE = 50;
+
 export default function LinksPage() {
 	const links = useQuery(api.links.list, {});
 	const suggestLink = useMutation(api.linkSuggestions.create);
@@ -16,11 +18,13 @@ export default function LinksPage() {
 	const [tagFilter, setTagFilter] = useState<string | null>(null);
 	const [pinnedFilter, setPinnedFilter] = useState<PinnedFilter>("all");
 	const [sortOrder, setSortOrder] = useState<SortOrder>("manual");
+	const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
 	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	// Track search queries with debounce
 	const handleSearchChange = (value: string) => {
 		setSearch(value);
+		setDisplayCount(PAGE_SIZE); // Reset pagination on search
 		if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 		if (value.trim()) {
 			searchTimeoutRef.current = setTimeout(() => {
@@ -131,6 +135,23 @@ export default function LinksPage() {
 		setTagFilter(null);
 		setPinnedFilter("all");
 		setSortOrder("manual");
+		setDisplayCount(PAGE_SIZE);
+	};
+
+	// Reset pagination when filters change
+	const handleTagFilterChange = (tag: string | null) => {
+		setTagFilter(tag);
+		setDisplayCount(PAGE_SIZE);
+	};
+
+	const handlePinnedFilterChange = (filter: PinnedFilter) => {
+		setPinnedFilter(filter);
+		setDisplayCount(PAGE_SIZE);
+	};
+
+	const handleSortChange = (sort: SortOrder) => {
+		setSortOrder(sort);
+		setDisplayCount(PAGE_SIZE);
 	};
 
 	return (
@@ -182,7 +203,7 @@ export default function LinksPage() {
 									<div className="flex flex-wrap gap-1">
 										<button
 											onClick={() => {
-												setTagFilter(null);
+												handleTagFilterChange(null);
 												track("filter_use", { page: "links", filter_type: "tag", value: "all" });
 											}}
 											className={`px-2 py-1 text-xs rounded transition-colors ${
@@ -197,7 +218,7 @@ export default function LinksPage() {
 											<button
 												key={tag}
 												onClick={() => {
-													setTagFilter(tag);
+													handleTagFilterChange(tag);
 													track("filter_use", { page: "links", filter_type: "tag", value: tag });
 												}}
 												className={`px-2 py-1 text-xs rounded transition-colors ${
@@ -213,7 +234,7 @@ export default function LinksPage() {
 											<select
 												value={tagFilter || ""}
 												onChange={(e) =>
-													setTagFilter(e.target.value || null)
+													handleTagFilterChange(e.target.value || null)
 												}
 												className="px-2 py-1 text-xs rounded bg-surface border border-border text-muted-foreground focus:outline-none focus:border-rose/30"
 											>
@@ -240,7 +261,7 @@ export default function LinksPage() {
 									<button
 										key={option}
 										onClick={() => {
-											setPinnedFilter(option);
+											handlePinnedFilterChange(option);
 											track("filter_use", { page: "links", filter_type: "pinned", value: option });
 										}}
 										className={`px-2 py-1 text-xs rounded transition-colors ${
@@ -272,7 +293,7 @@ export default function LinksPage() {
 									<button
 										key={value}
 										onClick={() => {
-											setSortOrder(value);
+											handleSortChange(value);
 											track("filter_use", { page: "links", filter_type: "sort", value });
 										}}
 										className={`px-2 py-1 text-xs rounded transition-colors ${
@@ -304,8 +325,16 @@ export default function LinksPage() {
 					{/* Results count */}
 					{links && (
 						<div className="text-xs text-muted-foreground">
-							{filteredLinks.length} link
-							{filteredLinks.length !== 1 ? "s" : ""}
+							{pinnedFilter === "all" ? (
+								<>
+									{pinned.length > 0 && `${pinned.length} pinned, `}
+									{Math.min(displayCount, unpinned.length)} of {unpinned.length} link{unpinned.length !== 1 ? "s" : ""}
+								</>
+							) : (
+								<>
+									{Math.min(displayCount, filteredLinks.length)} of {filteredLinks.length} link{filteredLinks.length !== 1 ? "s" : ""}
+								</>
+							)}
 							{hasActiveFilters && " found"}
 						</div>
 					)}
@@ -349,7 +378,7 @@ export default function LinksPage() {
 									</h2>
 								)}
 								<div className="space-y-2">
-									{unpinned.map((link, index) => (
+									{unpinned.slice(0, displayCount).map((link, index) => (
 										<LinkCard
 											key={link._id}
 											link={link}
@@ -357,13 +386,22 @@ export default function LinksPage() {
 										/>
 									))}
 								</div>
+								{unpinned.length > displayCount && (
+									<button
+										type="button"
+										onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
+										className="w-full mt-4 py-3 text-sm text-muted-foreground hover:text-rose border border-border hover:border-rose/50 rounded-lg transition-colors"
+									>
+										load more ({unpinned.length - displayCount} remaining)
+									</button>
+								)}
 							</section>
 						)}
 					</div>
 				) : (
 					// Flat list when filtering by pinned/unpinned
 					<div className="space-y-2">
-						{filteredLinks.map((link, index) => (
+						{filteredLinks.slice(0, displayCount).map((link, index) => (
 							<LinkCard
 								key={link._id}
 								link={link}
@@ -371,6 +409,15 @@ export default function LinksPage() {
 								isPinned={link.pinned}
 							/>
 						))}
+						{filteredLinks.length > displayCount && (
+							<button
+								type="button"
+								onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
+								className="w-full mt-4 py-3 text-sm text-muted-foreground hover:text-rose border border-border hover:border-rose/50 rounded-lg transition-colors"
+							>
+								load more ({filteredLinks.length - displayCount} remaining)
+							</button>
+						)}
 					</div>
 				)}
 			</div>
