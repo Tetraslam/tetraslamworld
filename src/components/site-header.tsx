@@ -81,6 +81,7 @@ export function SiteHeader() {
 					</SignedOut>
 					<SignedIn>
 						<UserButton
+							afterSignOutUrl={pathname}
 							appearance={{
 								elements: {
 									avatarBox: "w-7 h-7",
@@ -94,6 +95,7 @@ export function SiteHeader() {
 				<div className="flex md:hidden items-center gap-3">
 					<SignedIn>
 						<UserButton
+							afterSignOutUrl={pathname}
 							appearance={{
 								elements: {
 									avatarBox: "w-7 h-7",
