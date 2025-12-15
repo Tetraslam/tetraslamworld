@@ -322,22 +322,14 @@ export default function BlogPostPage() {
 						</p>
 						{subscribeStatus === "already" ? (
 							<span className="text-sm text-muted-foreground">already subscribed!</span>
-						) : isSignedIn ? (
-							<button
-								type="button"
-								onClick={handleSubscribe}
-								disabled={subscribing}
-								className="px-3 py-1.5 text-sm bg-rose text-background rounded hover:bg-rose-deep transition-colors disabled:opacity-50"
-							>
-								{subscribing ? "..." : "subscribe"}
-							</button>
 						) : (
 							<button
 								type="button"
-								onClick={() => openSignIn()}
-								className="px-3 py-1.5 text-sm border border-rose/50 text-rose rounded hover:bg-rose/10 transition-colors"
+								onClick={isSignedIn ? handleSubscribe : () => openSignIn()}
+								disabled={subscribing}
+								className="px-3 py-1.5 text-sm bg-rose text-background rounded hover:bg-rose-deep transition-colors disabled:opacity-50"
 							>
-								subscribe to mailing list
+								{subscribing ? "..." : `join ${emails?.length ?? 0} others`}
 							</button>
 						)}
 					</div>
