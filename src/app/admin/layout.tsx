@@ -17,6 +17,7 @@ const navItems = [
 	{ href: "/admin/link-suggestions", label: "suggestions" },
 	{ href: "/admin/travel", label: "travel" },
 	{ href: "/admin/gallery", label: "gallery" },
+	{ href: "/admin/emails", label: "emails" },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

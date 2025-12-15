@@ -9,6 +9,7 @@
  */
 
 import type * as comments from "../comments.js";
+import type * as emailList from "../emailList.js";
 import type * as files from "../files.js";
 import type * as friends from "../friends.js";
 import type * as gallery from "../gallery.js";
@@ -29,6 +30,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   comments: typeof comments;
+  emailList: typeof emailList;
   files: typeof files;
   friends: typeof friends;
   gallery: typeof gallery;

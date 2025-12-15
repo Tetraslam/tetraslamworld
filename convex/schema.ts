@@ -131,4 +131,10 @@ export default defineSchema({
     order: v.optional(v.number()),
     createdAt: v.number(),
   }),
+
+  // Email list
+  emailList: defineTable({
+    email: v.string(),
+    addedAt: v.number(),
+  }).index("by_email", ["email"]),
 });
