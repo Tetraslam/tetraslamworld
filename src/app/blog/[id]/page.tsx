@@ -42,6 +42,36 @@ export default function BlogPostPage() {
 	const [submitting, setSubmitting] = useState(false);
 	const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
+	// Email subscription
+	const emails = useQuery(api.emailList.list, {});
+	const addEmails = useMutation(api.emailList.add);
+	const [subscribing, setSubscribing] = useState(false);
+	const [subscribeStatus, setSubscribeStatus] = useState<"idle" | "success" | "already">("idle");
+
+	const userEmail = user?.primaryEmailAddress?.emailAddress;
+	const isSubscribed = userEmail && emails?.some((e) => e.email === userEmail.toLowerCase());
+
+	const handleSubscribe = async () => {
+		if (!isSignedIn) {
+			openSignIn();
+			return;
+		}
+		if (!userEmail) return;
+
+		setSubscribing(true);
+		try {
+			const result = await addEmails({ emails: [userEmail] });
+			if (result.added.length > 0) {
+				setSubscribeStatus("success");
+				track("email_subscribe", { source: "blog_post", slug });
+			} else {
+				setSubscribeStatus("already");
+			}
+		} finally {
+			setSubscribing(false);
+		}
+	};
+
 	// Restore saved comment from localStorage on mount and scroll to input
 	useEffect(() => {
 		const savedComment = localStorage.getItem(`draft-comment-${slug}`);
@@ -282,6 +312,37 @@ export default function BlogPostPage() {
 			<Link href="/blog" className="text-sm text-rose-deep hover:text-rose mb-4 inline-block">
 				&larr; back to blog
 			</Link>
+
+			{/* Subscribe box - show if not subscribed */}
+			{!isSubscribed && subscribeStatus !== "success" && (
+				<div className="mb-4 p-3 bg-surface/50 border border-border rounded-lg">
+					<div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+						<p className="text-sm text-muted-foreground">
+							want updates when i post?
+						</p>
+						{subscribeStatus === "already" ? (
+							<span className="text-sm text-muted-foreground">already subscribed!</span>
+						) : isSignedIn ? (
+							<button
+								type="button"
+								onClick={handleSubscribe}
+								disabled={subscribing}
+								className="px-3 py-1.5 text-sm bg-rose text-background rounded hover:bg-rose-deep transition-colors disabled:opacity-50"
+							>
+								{subscribing ? "..." : "subscribe"}
+							</button>
+						) : (
+							<button
+								type="button"
+								onClick={() => openSignIn()}
+								className="px-3 py-1.5 text-sm border border-rose/50 text-rose rounded hover:bg-rose/10 transition-colors"
+							>
+								subscribe to mailing list
+							</button>
+						)}
+					</div>
+				</div>
+			)}
 
 			{/* Main content container with solid background */}
 			<div className="bg-background/95 backdrop-blur-sm border border-border rounded-lg p-6 md:p-8 shadow-lg">

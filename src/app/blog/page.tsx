@@ -284,6 +284,40 @@ export default function BlogPage() {
 					)}
 				</div>
 
+				{/* Subscribe box - show if not subscribed */}
+				{!isSubscribed && subscribeStatus !== "success" && (
+					<div className="p-4 bg-surface/50 border border-border rounded-lg">
+						<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+							<div className="text-center sm:text-left">
+								<p className="text-sm font-medium">stay updated</p>
+								<p className="text-xs text-muted-foreground">
+									get notified when i post something new
+								</p>
+							</div>
+							{subscribeStatus === "already" ? (
+								<span className="text-sm text-muted-foreground">already subscribed!</span>
+							) : isSignedIn ? (
+								<button
+									type="button"
+									onClick={handleSubscribe}
+									disabled={subscribing}
+									className="px-4 py-2 text-sm bg-rose text-background rounded-lg hover:bg-rose-deep transition-colors disabled:opacity-50"
+								>
+									{subscribing ? "subscribing..." : `subscribe as ${userEmail}`}
+								</button>
+							) : (
+								<button
+									type="button"
+									onClick={() => openSignIn()}
+									className="px-4 py-2 text-sm border border-rose/50 text-rose rounded-lg hover:bg-rose/10 transition-colors"
+								>
+									subscribe to mailing list
+								</button>
+							)}
+						</div>
+					</div>
+				)}
+
 				{loading ? (
 					<div className="text-muted-foreground py-8 text-center">
 						<div className="inline-block animate-pulse-subtle">loading...</div>
@@ -327,45 +361,6 @@ export default function BlogPage() {
 						))}
 					</div>
 				)}
-
-				{/* Subscribe box */}
-				<div className="mt-8 p-4 bg-surface/50 border border-border rounded-lg">
-					<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-						<div className="text-center sm:text-left">
-							<p className="text-sm font-medium">stay updated</p>
-							<p className="text-xs text-muted-foreground">
-								get notified when i post something new
-							</p>
-						</div>
-						{isSubscribed || subscribeStatus === "success" ? (
-							<div className="flex items-center gap-2 text-sm text-rose">
-								<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-								</svg>
-								subscribed
-							</div>
-						) : subscribeStatus === "already" ? (
-							<span className="text-sm text-muted-foreground">already subscribed!</span>
-						) : isSignedIn ? (
-							<button
-								type="button"
-								onClick={handleSubscribe}
-								disabled={subscribing}
-								className="px-4 py-2 text-sm bg-rose text-background rounded-lg hover:bg-rose-deep transition-colors disabled:opacity-50"
-							>
-								{subscribing ? "subscribing..." : `subscribe as ${userEmail}`}
-							</button>
-						) : (
-							<button
-								type="button"
-								onClick={() => openSignIn()}
-								className="px-4 py-2 text-sm border border-rose/50 text-rose rounded-lg hover:bg-rose/10 transition-colors"
-							>
-								sign in to subscribe
-							</button>
-						)}
-					</div>
-				</div>
 
 				<p className="text-xs text-muted-foreground text-center pt-4">
 					posts pulled from{" "}
