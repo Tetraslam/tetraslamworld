@@ -131,7 +131,7 @@
 }
 
 .blog-post-content p {
-  @apply mb-4;
+  @apply mb-4 text-justify;
 }
 
 .blog-post-content h1,
