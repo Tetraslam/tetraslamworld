@@ -362,7 +362,12 @@ export default function BlogPostPage() {
 						{post.content && (
 							<div
 								className="blog-post-content"
-								dangerouslySetInnerHTML={{ __html: post.content }}
+								dangerouslySetInnerHTML={{
+									__html: post.content.replace(
+										/<a\s+(?![^>]*target=)/gi,
+										'<a target="_blank" rel="noopener noreferrer" '
+									),
+								}}
 							/>
 						)}
 					</article>
