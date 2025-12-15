@@ -313,8 +313,8 @@ export default function BlogPostPage() {
 				&larr; back to blog
 			</Link>
 
-			{/* Subscribe box - show if not subscribed */}
-			{!isSubscribed && subscribeStatus !== "success" && (
+			{/* Subscribe box - show only if confirmed not subscribed */}
+			{subscribeStatus !== "success" && (isSignedIn ? (emails && !isSubscribed) : true) && (
 				<div className="mb-4 p-3 bg-surface/50 border border-border rounded-lg">
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-2">
 						<p className="text-sm text-muted-foreground">

@@ -284,8 +284,8 @@ export default function BlogPage() {
 					)}
 				</div>
 
-				{/* Subscribe box - show if not subscribed */}
-				{!isSubscribed && subscribeStatus !== "success" && (
+				{/* Subscribe box - show only if confirmed not subscribed */}
+				{subscribeStatus !== "success" && (isSignedIn ? (emails && !isSubscribed) : true) && (
 					<div className="p-4 bg-surface/50 border border-border rounded-lg">
 						<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
 							<div className="text-center sm:text-left">
