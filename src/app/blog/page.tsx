@@ -1,9 +1,11 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { track } from "@vercel/analytics";
+import { useMutation, useQuery } from "convex/react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { api } from "../../../convex/_generated/api";
 
 interface BlogPost {
 	id: string;
@@ -19,7 +21,8 @@ type SortOrder = "newest" | "oldest";
 const ADMIN_USER_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || "").split(",").filter(Boolean);
 
 export default function BlogPage() {
-	const { user } = useUser();
+	const { user, isSignedIn } = useUser();
+	const { openSignIn } = useClerk();
 	const isAdmin = user && ADMIN_USER_IDS.includes(user.id);
 
 	const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -29,6 +32,36 @@ export default function BlogPage() {
 	const [yearFilter, setYearFilter] = useState<string | null>(null);
 	const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
 	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+	// Email subscription
+	const emails = useQuery(api.emailList.list, {});
+	const addEmails = useMutation(api.emailList.add);
+	const [subscribing, setSubscribing] = useState(false);
+	const [subscribeStatus, setSubscribeStatus] = useState<"idle" | "success" | "already">("idle");
+
+	const userEmail = user?.primaryEmailAddress?.emailAddress;
+	const isSubscribed = userEmail && emails?.some((e) => e.email === userEmail.toLowerCase());
+
+	const handleSubscribe = async () => {
+		if (!isSignedIn) {
+			openSignIn();
+			return;
+		}
+		if (!userEmail) return;
+
+		setSubscribing(true);
+		try {
+			const result = await addEmails({ emails: [userEmail] });
+			if (result.added.length > 0) {
+				setSubscribeStatus("success");
+				track("email_subscribe", { source: "blog" });
+			} else {
+				setSubscribeStatus("already");
+			}
+		} finally {
+			setSubscribing(false);
+		}
+	};
 
 	// Track search queries with debounce
 	const handleSearchChange = (value: string) => {
@@ -294,6 +327,45 @@ export default function BlogPage() {
 						))}
 					</div>
 				)}
+
+				{/* Subscribe box */}
+				<div className="mt-8 p-4 bg-surface/50 border border-border rounded-lg">
+					<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+						<div className="text-center sm:text-left">
+							<p className="text-sm font-medium">stay updated</p>
+							<p className="text-xs text-muted-foreground">
+								get notified when i post something new
+							</p>
+						</div>
+						{isSubscribed || subscribeStatus === "success" ? (
+							<div className="flex items-center gap-2 text-sm text-rose">
+								<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+								</svg>
+								subscribed
+							</div>
+						) : subscribeStatus === "already" ? (
+							<span className="text-sm text-muted-foreground">already subscribed!</span>
+						) : isSignedIn ? (
+							<button
+								type="button"
+								onClick={handleSubscribe}
+								disabled={subscribing}
+								className="px-4 py-2 text-sm bg-rose text-background rounded-lg hover:bg-rose-deep transition-colors disabled:opacity-50"
+							>
+								{subscribing ? "subscribing..." : `subscribe as ${userEmail}`}
+							</button>
+						) : (
+							<button
+								type="button"
+								onClick={() => openSignIn()}
+								className="px-4 py-2 text-sm border border-rose/50 text-rose rounded-lg hover:bg-rose/10 transition-colors"
+							>
+								sign in to subscribe
+							</button>
+						)}
+					</div>
+				</div>
 
 				<p className="text-xs text-muted-foreground text-center pt-4">
 					posts pulled from{" "}
