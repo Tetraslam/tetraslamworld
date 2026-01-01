@@ -1,9 +1,34 @@
 import type { Metadata } from "next";
-import "@fontsource/iosevka/400.css";
-import "@fontsource/iosevka/500.css";
-import "@fontsource/iosevka/600.css";
-import "@fontsource/iosevka/700.css";
+import localFont from "next/font/local";
 import "./globals.css";
+
+const iosevka = localFont({
+	src: [
+		{
+			path: "../fonts/iosevka-latin-400-normal.woff2",
+			weight: "400",
+			style: "normal",
+		},
+		{
+			path: "../fonts/iosevka-latin-500-normal.woff2",
+			weight: "500",
+			style: "normal",
+		},
+		{
+			path: "../fonts/iosevka-latin-600-normal.woff2",
+			weight: "600",
+			style: "normal",
+		},
+		{
+			path: "../fonts/iosevka-latin-700-normal.woff2",
+			weight: "700",
+			style: "normal",
+		},
+	],
+	variable: "--font-iosevka",
+	display: "swap",
+	preload: true,
+});
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { Analytics } from "@vercel/analytics/next";
@@ -61,7 +86,7 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" className="dark">
+		<html lang="en" className={`dark ${iosevka.variable}`}>
 			<body className="font-mono antialiased">
 				<ClerkProvider
 					appearance={{
