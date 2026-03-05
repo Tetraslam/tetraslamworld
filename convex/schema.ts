@@ -132,6 +132,18 @@ export default defineSchema({
     createdAt: v.number(),
   }),
 
+  // Taste (design inspiration board)
+  taste: defineTable({
+    title: v.string(),
+    url: v.string(),
+    content: v.optional(v.string()), // Human description (markdown)
+    designNotes: v.optional(v.string()), // Agent-focused design notes (markdown)
+    screenshotUrls: v.optional(v.array(v.string())),
+    tags: v.optional(v.array(v.string())),
+    order: v.optional(v.number()),
+    createdAt: v.number(),
+  }).index("by_order", ["order"]),
+
   // Email list
   emailList: defineTable({
     email: v.string(),

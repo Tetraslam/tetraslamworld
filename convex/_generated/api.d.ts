@@ -18,6 +18,7 @@ import type * as linkSuggestions from "../linkSuggestions.js";
 import type * as links from "../links.js";
 import type * as media from "../media.js";
 import type * as pixelBoard from "../pixelBoard.js";
+import type * as taste from "../taste.js";
 import type * as travel from "../travel.js";
 import type * as users from "../users.js";
 import type * as work from "../work.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   links: typeof links;
   media: typeof media;
   pixelBoard: typeof pixelBoard;
+  taste: typeof taste;
   travel: typeof travel;
   users: typeof users;
   work: typeof work;
