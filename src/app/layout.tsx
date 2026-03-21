@@ -35,6 +35,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { CommandMenu } from "@/components/command-menu";
 import { PageBackground } from "@/components/page-background";
 import { ConvexClientProvider } from "@/components/providers/convex-provider";
+import { AgentHint } from "@/components/agent-hint";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
@@ -78,6 +79,9 @@ export const metadata: Metadata = {
 		index: true,
 		follow: true,
 	},
+	other: {
+		"llms.txt": "https://tetraslam.world/llms.txt",
+	},
 };
 
 export default function RootLayout({
@@ -87,7 +91,11 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en" className={`dark ${iosevka.variable}`}>
+			<head>
+				<link rel="alternate" type="text/markdown" href="/llms.txt" title="LLM-friendly site directory" />
+			</head>
 			<body className="font-mono antialiased">
+				<AgentHint />
 				<ClerkProvider
 					appearance={{
 						baseTheme: dark,
