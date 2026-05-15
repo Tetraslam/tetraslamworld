@@ -614,19 +614,34 @@ export default function Home() {
 
 				<div className="text-sm text-muted-foreground space-y-1">
 					<p>
-						currently: founding engineer @{" "}
+						{/* TODO: when out of stealth, replace the span below with a link like:
+						<a
+							href="https://YOUR_NEOLAB_URL.com"
+							target="_blank"
+							rel="noopener noreferrer"
+							onClick={() => track("external_link_click", { url: "https://YOUR_NEOLAB_URL.com", label: "neolab", source: "homepage" })}
+							className="text-foreground hover:text-rose"
+						>
+							neolab-name
+						</a>
+						Also update:
+						- src/app/layout.tsx (lines ~46, ~57, ~70) — meta/OG/twitter descriptions
+						- src/app/llms.txt/route.ts (line ~7) — LLM-readable intro
+						*/}
+						currently: member of technical staff @ <span className="text-foreground">stealth neolab</span>
+					</p>
+					<p>
+						prev:{" "}
 						<a
 							href="https://natural.co"
 							target="_blank"
 							rel="noopener noreferrer"
 							onClick={() => track("external_link_click", { url: "https://natural.co", label: "natural.co", source: "homepage" })}
-							className="text-foreground hover:text-rose"
+							className="text-foreground/80 hover:text-rose"
 						>
 							natural.co
 						</a>
-					</p>
-					<p>
-						prev:{" "}
+						,{" "}
 						<a
 							href="https://media.mit.edu"
 							target="_blank"

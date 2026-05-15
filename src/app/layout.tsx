@@ -43,7 +43,7 @@ export const metadata: Metadata = {
 		default: "tetraslam's world",
 		template: "%s | tetraslam",
 	},
-	description: "building cool stuff :D / founding engineer @ natural.co. prev mit media lab.",
+	description: "building cool stuff :D / mts @ stealth neolab. prev natural.co, mit media lab.",
 	keywords: ["shresht bhowmick", "tetraslam", "engineer", "robotics", "ai", "portfolio"],
 	authors: [{ name: "Shresht Bhowmick", url: "https://tetraslam.world" }],
 	creator: "Shresht Bhowmick",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
 		url: "https://tetraslam.world",
 		siteName: "tetraslam's world",
 		title: "tetraslam's world",
-		description: "building cool stuff :D / founding engineer @ natural.co. prev mit media lab.",
+		description: "building cool stuff :D / mts @ stealth neolab. prev natural.co, mit media lab.",
 		images: [
 			{
 				url: "/og-image.png",
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
 	twitter: {
 		card: "summary_large_image",
 		title: "tetraslam's world",
-		description: "building cool stuff :D / founding engineer @ natural.co.",
+		description: "building cool stuff :D / mts @ stealth neolab. prev natural.co, mit media lab.",
 		creator: "@tetraslam",
 		images: ["/og-image.png"],
 	},
