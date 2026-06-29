@@ -312,6 +312,12 @@ export async function GET(
   const { path } = await params;
   const page = path[0];
 
+  // WET_MODE.md: a single editable markdown blob (not a collection)
+  if (page === "WET_MODE") {
+    const doc = await fetchQuery(api.wetMode.get, {});
+    return mdResponse(doc?.content ?? "");
+  }
+
   // Blog routes: /blog.md and /blog/{slug}.md
   if (page === "blog") {
     const slug = path.length > 1 ? path.slice(1).join("/") : undefined;
