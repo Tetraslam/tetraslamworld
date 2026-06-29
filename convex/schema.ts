@@ -29,7 +29,7 @@ export default defineSchema({
       v.literal("paper"),
       v.literal("talk"),
       v.literal("job"),
-      v.literal("other")
+      v.literal("other"),
     ),
     title: v.string(),
     content: v.optional(v.string()),
@@ -37,7 +37,7 @@ export default defineSchema({
     date: v.optional(v.string()),
     endDate: v.optional(v.string()),
     links: v.optional(
-      v.array(v.object({ label: v.string(), url: v.string() }))
+      v.array(v.object({ label: v.string(), url: v.string() })),
     ),
     imageUrl: v.optional(v.string()),
     featured: v.optional(v.boolean()),
@@ -49,7 +49,7 @@ export default defineSchema({
     name: v.string(),
     content: v.optional(v.string()),
     links: v.optional(
-      v.array(v.object({ label: v.string(), url: v.string() }))
+      v.array(v.object({ label: v.string(), url: v.string() })),
     ),
     imageUrl: v.optional(v.string()),
     order: v.optional(v.number()),
@@ -65,12 +65,12 @@ export default defineSchema({
       v.literal("music"),
       v.literal("movie"),
       v.literal("show"),
-      v.literal("other")
+      v.literal("other"),
     ),
     title: v.string(),
     content: v.optional(v.string()),
     links: v.optional(
-      v.array(v.object({ label: v.string(), url: v.string() }))
+      v.array(v.object({ label: v.string(), url: v.string() })),
     ),
     imageUrl: v.optional(v.string()), // Legacy single image
     imageUrls: v.optional(v.array(v.string())), // Multiple images (ordered)
@@ -100,7 +100,11 @@ export default defineSchema({
     url: v.string(),
     reason: v.optional(v.string()),
     submitterName: v.optional(v.string()),
-    status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("rejected")),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("accepted"),
+      v.literal("rejected"),
+    ),
     createdAt: v.number(),
   }).index("by_status", ["status"]),
 
@@ -108,7 +112,9 @@ export default defineSchema({
   travel: defineTable({
     location: v.string(),
     coordinates: v.object({ lat: v.number(), lng: v.number() }),
-    dates: v.optional(v.object({ start: v.optional(v.string()), end: v.optional(v.string()) })),
+    dates: v.optional(
+      v.object({ start: v.optional(v.string()), end: v.optional(v.string()) }),
+    ),
     content: v.optional(v.string()),
     photos: v.optional(v.array(v.id("_storage"))), // Legacy storage IDs
     photoUrls: v.optional(v.array(v.string())), // Direct URLs for gallery
@@ -149,4 +155,10 @@ export default defineSchema({
     email: v.string(),
     addedAt: v.number(),
   }).index("by_email", ["email"]),
+
+  // WET_MODE.md (single editable text blob)
+  wetMode: defineTable({
+    content: v.string(),
+    updatedAt: v.number(),
+  }),
 });

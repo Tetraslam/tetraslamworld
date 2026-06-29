@@ -21,6 +21,7 @@ import type * as pixelBoard from "../pixelBoard.js";
 import type * as taste from "../taste.js";
 import type * as travel from "../travel.js";
 import type * as users from "../users.js";
+import type * as wetMode from "../wetMode.js";
 import type * as work from "../work.js";
 
 import type {
@@ -43,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   taste: typeof taste;
   travel: typeof travel;
   users: typeof users;
+  wetMode: typeof wetMode;
   work: typeof work;
 }>;
 
