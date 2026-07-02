@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { AmbientParticles } from "./ambient-particles";
 import { ConwayBackground } from "./conway-background";
 import { ConwayStatic } from "./conway-static";
+import { DecorativeErrorBoundary } from "./decorative-error-boundary";
 
 export function PageBackground() {
 	const pathname = usePathname();
@@ -16,32 +17,32 @@ export function PageBackground() {
 	// Travel page manages its own background (map)
 	if (pathname === "/travel") {
 		return (
-			<>
+			<DecorativeErrorBoundary>
 				<ConwayStatic />
 				<FrostedOverlay />
 				<AmbientParticles />
-			</>
+			</DecorativeErrorBoundary>
 		);
 	}
 
 	// Home page gets animated Conway + particles
 	if (pathname === "/") {
 		return (
-			<>
+			<DecorativeErrorBoundary>
 				<ConwayBackground />
 				<FrostedOverlay opacity={0.3} />
 				<AmbientParticles />
-			</>
+			</DecorativeErrorBoundary>
 		);
 	}
 
 	// All other pages get static Conway + frosted overlay + particles
 	return (
-		<>
+		<DecorativeErrorBoundary>
 			<ConwayStatic />
 			<FrostedOverlay />
 			<AmbientParticles />
-		</>
+		</DecorativeErrorBoundary>
 	);
 }
 

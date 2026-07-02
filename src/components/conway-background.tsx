@@ -194,6 +194,10 @@ export function ConwayBackground() {
 			const { width: gridWidth, height: gridHeight } = gridDimensionsRef.current;
 			const margin = 5;
 
+			// Skip degenerate grids (tiny headless viewports): game.place throws
+			// on out-of-bounds coords, which would crash the whole page.
+			if (gridWidth - margin * 2 - 2 <= 0 || gridHeight - margin * 2 - 2 <= 0) return;
+
 			// Spawn 2-5 random live cells outside exclusion zone
 			const spawnCount = 2 + Math.floor(Math.random() * 4);
 			for (let i = 0; i < spawnCount; i++) {
@@ -231,23 +235,28 @@ export function ConwayBackground() {
 			const gridHeight = Math.ceil(window.innerHeight / cellSize) + 2;
 			gridDimensionsRef.current = { width: gridWidth, height: gridHeight };
 
-			const game = conway(canvasRef.current!.id, {
-				cellSize,
-				gridWidth,
-				gridHeight,
-				backgroundColor: "rgba(34, 31, 34, 0)",
-				cellColor: "rgba(232, 166, 166, 0.6)",
-				deadCellColor: "rgba(34, 31, 34, 0)",
-				gridColor: "rgba(0, 0, 0, 0)",
-				showGrid: false,
-				showDead: false,
-				animationSpeed: 250,
-				toroidal: true,
-			});
+			// Decorative background: never let a canvas/context failure crash the page
+			try {
+				const game = conway(canvasRef.current!.id, {
+					cellSize,
+					gridWidth,
+					gridHeight,
+					backgroundColor: "rgba(34, 31, 34, 0)",
+					cellColor: "rgba(232, 166, 166, 0.6)",
+					deadCellColor: "rgba(34, 31, 34, 0)",
+					gridColor: "rgba(0, 0, 0, 0)",
+					showGrid: false,
+					showDead: false,
+					animationSpeed: 250,
+					toroidal: true,
+				});
 
-			spawnRandomCells(game, gridWidth, gridHeight);
-			game.start();
-			gameRef.current = game;
+				spawnRandomCells(game, gridWidth, gridHeight);
+				game.start();
+				gameRef.current = game;
+			} catch {
+				gameRef.current = null;
+			}
 		};
 
 		initGame();

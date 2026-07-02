@@ -4,6 +4,7 @@ import { getCalApi } from "@calcom/embed-react";
 import { track } from "@vercel/analytics";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { DecorativeErrorBoundary } from "@/components/decorative-error-boundary";
 
 const roles = [
 	"builder",
@@ -151,16 +152,26 @@ function Tetrahedron() {
 
 		const width = 280;
 		const height = 200;
-		
+
+		// Bail gracefully when WebGL2 is unavailable (headless browsers, scrapers).
+		// three's WebGLRenderer constructor throws in that case, and an uncaught
+		// throw here takes down the whole page.
+		let renderer: THREE.WebGLRenderer;
+		try {
+			const probe = document.createElement("canvas");
+			if (!probe.getContext("webgl2")) return;
+			renderer = new THREE.WebGLRenderer({
+				antialias: true,
+				alpha: true
+			});
+		} catch {
+			return;
+		}
+
 		// Scene setup
 		const scene = new THREE.Scene();
 		const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
 		camera.position.z = 2.8; // Closer camera = bigger tetrahedra
-
-		const renderer = new THREE.WebGLRenderer({ 
-			antialias: true, 
-			alpha: true 
-		});
 		renderer.setSize(width, height);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 		container.appendChild(renderer.domElement);
@@ -591,7 +602,9 @@ export default function Home() {
 			<div className="max-w-2xl text-center space-y-8 animate-fade-in">
 				{/* Tetrahedron */}
 				<div className="flex flex-col items-center">
-					<Tetrahedron />
+					<DecorativeErrorBoundary>
+						<Tetrahedron />
+					</DecorativeErrorBoundary>
 					{/* Shadow underneath */}
 					<div className="w-28 h-4 bg-rose/50 rounded-full blur-lg -mt-4 animate-bob-shadow" />
 				</div>
