@@ -36,6 +36,7 @@ import { CommandMenu } from "@/components/command-menu";
 import { PageBackground } from "@/components/page-background";
 import { ConvexClientProvider } from "@/components/providers/convex-provider";
 import { AgentHint } from "@/components/agent-hint";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
@@ -123,6 +124,7 @@ export default function RootLayout({
 						<PageBackground />
 						<SiteHeader />
 						<main className="pt-12 min-h-screen">{children}</main>
+						<SiteFooter />
 						<CommandMenu />
 					</ConvexClientProvider>
 				</ClerkProvider>

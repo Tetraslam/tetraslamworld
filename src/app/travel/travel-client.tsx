@@ -6,10 +6,10 @@ import mapboxgl from "mapbox-gl";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Markdown } from "@/components/markdown";
+import { BLUR_DATA_URL, isGif } from "@/lib/media";
 import { api } from "../../../convex/_generated/api";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-const isGif = (url: string) => url.toLowerCase().includes(".gif");
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
@@ -410,7 +410,7 @@ export function TravelClient({
 													sizes="(max-width: 768px) 33vw, 25vw"
 													unoptimized={isGif(url)}
 													placeholder={isGif(url) ? "empty" : "blur"}
-													blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAIhAAAQMEAQUAAAAAAAAAAAAAAQIDBAAFBhEhEiIxQVH/xAAVAQEBAAAAAAAAAAAAAAAAAAADBP/EABkRAQADAQEAAAAAAAAAAAAAAAEAAhEhA//aAAwDAQACEQMRAD8AyTG8guNjvEW5Q3AttJ3zjpChpQ4I+g6pMnymXyM/Xp3kl6YkqkOrUoqWtRJJJJJJJJPJJNKUq7V+CJE9J//Z"
+													blurDataURL={BLUR_DATA_URL}
 												/>
 												<div className="absolute top-1 left-1 w-5 h-5 bg-rose text-background text-xs font-bold rounded-full flex items-center justify-center shadow z-10">
 													{index + 1}

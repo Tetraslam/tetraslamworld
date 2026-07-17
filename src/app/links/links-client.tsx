@@ -4,6 +4,10 @@ import { track } from "@vercel/analytics";
 import { type Preloaded, useMutation, usePreloadedQuery } from "convex/react";
 import { useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { EmptyState } from "@/components/empty-state";
+import { FilterPills } from "@/components/filter-pills";
+import { PageHeader } from "@/components/page-header";
+import { SectionHeading } from "@/components/section-heading";
 import { api } from "../../../convex/_generated/api";
 
 type SortOrder = "manual" | "newest" | "oldest" | "alpha";
@@ -161,21 +165,22 @@ export function LinksClient({
 	return (
 		<div className="max-w-4xl mx-auto px-4 py-12">
 			<div className="space-y-6 animate-fade-in">
-				<div className="flex items-start justify-between gap-4">
-				<div>
-					<h1 className="text-3xl font-bold">links</h1>
-					<p className="text-muted-foreground mt-1">
-						bookmarks, resources, and interesting finds
-					</p>
-					</div>
-					<button
-						type="button"
-						onClick={() => setShowSuggestModal(true)}
-						className="px-3 py-1.5 text-sm border border-rose/50 bg-rose/10 text-rose rounded-lg hover:bg-rose/20 hover:border-rose transition-all shrink-0"
-					>
-						suggest a link
-					</button>
-				</div>
+				<PageHeader
+					path="/links"
+					title="links"
+					subtitle="bookmarks, resources, and interesting finds"
+					count={links?.length}
+					countLabel="links"
+					action={
+						<button
+							type="button"
+							onClick={() => setShowSuggestModal(true)}
+							className="px-3 py-1.5 text-sm border border-rose/50 bg-rose/10 text-rose rounded-lg hover:bg-rose/20 hover:border-rose transition-all"
+						>
+							suggest a link
+						</button>
+					}
+				/>
 
 				{/* Search and filters */}
 				<div className="space-y-3">
@@ -198,59 +203,46 @@ export function LinksClient({
 					</div>
 
 					{/* Filter row */}
-					<div className="flex flex-wrap items-center gap-2">
+					<div className="flex flex-wrap items-center gap-x-3 gap-y-2">
 						{/* Tag filter */}
 						{allTags.length > 0 && (
 							<>
-								<div className="flex items-center gap-1">
-									<span className="text-xs text-muted-foreground">tag:</span>
-									<div className="flex flex-wrap gap-1">
-										<button
-											onClick={() => {
-												handleTagFilterChange(null);
-												track("filter_use", { page: "links", filter_type: "tag", value: "all" });
-											}}
-											className={`px-2 py-1 text-xs rounded transition-colors ${
-												tagFilter === null
-													? "bg-rose/20 text-rose border border-rose/50"
-													: "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-											}`}
+								<div className="flex flex-wrap items-center gap-2">
+									<FilterPills
+										size="sm"
+										label="tag:"
+										options={[
+											{ value: null, label: "all" },
+											...allTags
+												.slice(0, 5)
+												.map((tag) => ({ value: tag, label: tag })),
+										]}
+										value={tagFilter}
+										onChange={(value) => {
+											handleTagFilterChange(value);
+											track("filter_use", {
+												page: "links",
+												filter_type: "tag",
+												value: value ?? "all",
+											});
+										}}
+									/>
+									{allTags.length > 5 && (
+										<select
+											value={tagFilter || ""}
+											onChange={(e) =>
+												handleTagFilterChange(e.target.value || null)
+											}
+											className="px-2.5 py-1 text-xs rounded-lg bg-surface border border-border text-muted-foreground focus:outline-none focus:border-rose/50"
 										>
-											all
-										</button>
-										{allTags.slice(0, 5).map((tag) => (
-											<button
-												key={tag}
-												onClick={() => {
-													handleTagFilterChange(tag);
-													track("filter_use", { page: "links", filter_type: "tag", value: tag });
-												}}
-												className={`px-2 py-1 text-xs rounded transition-colors ${
-													tagFilter === tag
-														? "bg-rose/20 text-rose border border-rose/50"
-														: "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-												}`}
-											>
-												{tag}
-											</button>
-										))}
-										{allTags.length > 5 && (
-											<select
-												value={tagFilter || ""}
-												onChange={(e) =>
-													handleTagFilterChange(e.target.value || null)
-												}
-												className="px-2 py-1 text-xs rounded bg-surface border border-border text-muted-foreground focus:outline-none focus:border-rose/30"
-											>
-												<option value="">more...</option>
-												{allTags.slice(5).map((tag) => (
-													<option key={tag} value={tag}>
-														{tag}
-													</option>
-												))}
-											</select>
-										)}
-									</div>
+											<option value="">more...</option>
+											{allTags.slice(5).map((tag) => (
+												<option key={tag} value={tag}>
+													{tag}
+												</option>
+											))}
+										</select>
+									)}
 								</div>
 
 								<span className="text-border">|</span>
@@ -258,65 +250,54 @@ export function LinksClient({
 						)}
 
 						{/* Pinned filter */}
-						<div className="flex items-center gap-1">
-							<span className="text-xs text-muted-foreground">show:</span>
-							<div className="flex gap-1">
-								{(["all", "pinned", "unpinned"] as const).map((option) => (
-									<button
-										key={option}
-										onClick={() => {
-											handlePinnedFilterChange(option);
-											track("filter_use", { page: "links", filter_type: "pinned", value: option });
-										}}
-										className={`px-2 py-1 text-xs rounded transition-colors ${
-											pinnedFilter === option
-												? "bg-rose/20 text-rose border border-rose/50"
-												: "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-										}`}
-									>
-										{option}
-									</button>
-								))}
-							</div>
-						</div>
+						<FilterPills
+							size="sm"
+							label="show:"
+							options={(["all", "pinned", "unpinned"] as const).map(
+								(option) => ({ value: option, label: option }),
+							)}
+							value={pinnedFilter}
+							onChange={(value) => {
+								handlePinnedFilterChange(value);
+								track("filter_use", {
+									page: "links",
+									filter_type: "pinned",
+									value,
+								});
+							}}
+						/>
 
 						<span className="text-border">|</span>
 
 						{/* Sort order */}
-						<div className="flex items-center gap-1">
-							<span className="text-xs text-muted-foreground">sort:</span>
-							<div className="flex gap-1">
-								{(
-									[
-										["manual", "custom"],
-										["newest", "newest"],
-										["oldest", "oldest"],
-										["alpha", "a-z"],
-									] as const
-								).map(([value, label]) => (
-									<button
-										key={value}
-										onClick={() => {
-											handleSortChange(value);
-											track("filter_use", { page: "links", filter_type: "sort", value });
-										}}
-										className={`px-2 py-1 text-xs rounded transition-colors ${
-											sortOrder === value
-												? "bg-rose/20 text-rose border border-rose/50"
-												: "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-										}`}
-									>
-										{label}
-									</button>
-								))}
-							</div>
-						</div>
+						<FilterPills
+							size="sm"
+							label="sort:"
+							options={(
+								[
+									["manual", "custom"],
+									["newest", "newest"],
+									["oldest", "oldest"],
+									["alpha", "a-z"],
+								] as const
+							).map(([value, label]) => ({ value, label }))}
+							value={sortOrder}
+							onChange={(value) => {
+								handleSortChange(value);
+								track("filter_use", {
+									page: "links",
+									filter_type: "sort",
+									value,
+								});
+							}}
+						/>
 
 						{/* Clear all filters */}
 						{hasActiveFilters && (
 							<>
 								<span className="text-border">|</span>
 								<button
+									type="button"
 									onClick={clearAllFilters}
 									className="px-2 py-1 text-xs text-muted-foreground hover:text-rose transition-colors"
 								>
@@ -345,18 +326,19 @@ export function LinksClient({
 				</div>
 
 				{filteredLinks.length === 0 ? (
-					<div className="text-muted-foreground py-8 text-center">
-						{hasActiveFilters ? "no links match your filters" : "no links saved yet"}
-					</div>
+					<EmptyState
+						message={
+							hasActiveFilters
+								? "no links match your filters"
+								: "no links saved yet"
+						}
+					/>
 				) : pinnedFilter === "all" ? (
 					// Group by pinned/unpinned when showing all
 					<div className="space-y-8">
 						{pinned.length > 0 && (
 							<section>
-								<h2 className="text-sm font-medium text-rose mb-3 uppercase tracking-wider flex items-center gap-2">
-									<span className="w-1.5 h-1.5 rounded-full bg-rose" />
-									pinned
-								</h2>
+								<SectionHeading title="pinned" count={pinned.length} />
 								<div className="space-y-2">
 									{pinned.map((link, index) => (
 										<LinkCard
@@ -373,9 +355,7 @@ export function LinksClient({
 						{unpinned.length > 0 && (
 							<section>
 								{pinned.length > 0 && (
-									<h2 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">
-										all links
-									</h2>
+									<SectionHeading title="all links" count={unpinned.length} />
 								)}
 								<div className="space-y-2">
 									{unpinned.slice(0, displayCount).map((link, index) => (
@@ -561,8 +541,8 @@ function LinkCard({
 			target="_blank"
 			rel="noopener noreferrer"
 			onClick={handleClick}
-			className={`block p-4 bg-surface border rounded-lg hover-lift transition-all group ${
-				isPinned ? "border-rose/30" : "border-border hover:border-rose/50"
+			className={`block p-4 tcard tcard-hover group ${
+				isPinned ? "border-rose/30" : ""
 			}`}
 			style={{ animationDelay: `${delay}ms` }}
 		>

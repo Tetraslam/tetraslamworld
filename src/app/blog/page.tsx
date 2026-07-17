@@ -5,6 +5,9 @@ import { track } from "@vercel/analytics";
 import { useMutation, useQuery } from "convex/react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { EmptyState } from "@/components/empty-state";
+import { FilterPills } from "@/components/filter-pills";
+import { PageHeader } from "@/components/page-header";
 import { api } from "../../../convex/_generated/api";
 
 interface BlogPost {
@@ -137,32 +140,28 @@ export default function BlogPage() {
 		return result;
 	}, [posts, search, yearFilter, sortOrder]);
 
-	const activeFilters = [
-		yearFilter,
-		sortOrder !== "newest" ? sortOrder : null,
-	].filter(Boolean).length;
-
 	return (
 		<div className="max-w-4xl mx-auto px-4 py-12">
 			<div className="space-y-6 animate-fade-in">
-				<div className="flex items-start justify-between gap-4">
-					<div>
-						<h1 className="text-3xl font-bold">blog</h1>
-						<p className="text-muted-foreground mt-1">
-							thoughts, notes, and ramblings
-						</p>
-					</div>
-					{isAdmin && (
-						<button
-							type="button"
-							onClick={handleRefresh}
-							disabled={refreshing}
-							className="px-3 py-1.5 text-sm border border-rose/50 bg-rose/10 text-rose rounded-lg hover:bg-rose/20 hover:border-rose transition-all disabled:opacity-50 shrink-0"
-						>
-							{refreshing ? "refreshing..." : "refresh"}
-						</button>
-					)}
-				</div>
+				<PageHeader
+					path="/blog"
+					title="blog"
+					subtitle="thoughts, notes, and ramblings"
+					count={loading ? undefined : posts.length}
+					countLabel="posts"
+					action={
+						isAdmin ? (
+							<button
+								type="button"
+								onClick={handleRefresh}
+								disabled={refreshing}
+								className="px-3 py-1.5 text-sm border border-rose/50 bg-rose/10 text-rose rounded-lg hover:bg-rose/20 hover:border-rose transition-all disabled:opacity-50"
+							>
+								{refreshing ? "refreshing..." : "refresh"}
+							</button>
+						) : undefined
+					}
+				/>
 
 				{/* Search and filters */}
 				<div className="space-y-3">
@@ -185,83 +184,53 @@ export default function BlogPage() {
 					</div>
 
 					{/* Filter row */}
-					<div className="flex flex-wrap items-center gap-2">
+					<div className="flex flex-wrap items-center gap-x-3 gap-y-2">
 						{/* Year filter */}
-						<div className="flex items-center gap-1">
-							<span className="text-xs text-muted-foreground">year:</span>
-							<div className="flex gap-1">
-								<button
-									onClick={() => {
-										setYearFilter(null);
-										track("filter_use", { page: "blog", filter_type: "year", value: "all" });
-									}}
-									className={`px-2 py-1 text-xs rounded transition-colors ${
-										yearFilter === null
-											? "bg-rose/20 text-rose border border-rose/50"
-											: "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-									}`}
-								>
-									all
-								</button>
-								{years.map((year) => (
-									<button
-										key={year}
-										onClick={() => {
-											setYearFilter(year);
-											track("filter_use", { page: "blog", filter_type: "year", value: year });
-										}}
-										className={`px-2 py-1 text-xs rounded transition-colors ${
-											yearFilter === year
-												? "bg-rose/20 text-rose border border-rose/50"
-												: "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-										}`}
-									>
-										{year}
-									</button>
-								))}
-							</div>
-						</div>
+						<FilterPills
+							size="sm"
+							label="year:"
+							options={[
+								{ value: null, label: "all" },
+								...years.map((year) => ({ value: year, label: year })),
+							]}
+							value={yearFilter}
+							onChange={(value) => {
+								setYearFilter(value);
+								track("filter_use", {
+									page: "blog",
+									filter_type: "year",
+									value: value ?? "all",
+								});
+							}}
+						/>
 
 						<span className="text-border">|</span>
 
 						{/* Sort order */}
-						<div className="flex items-center gap-1">
-							<span className="text-xs text-muted-foreground">sort:</span>
-							<div className="flex gap-1">
-								<button
-									onClick={() => {
-										setSortOrder("newest");
-										track("filter_use", { page: "blog", filter_type: "sort", value: "newest" });
-									}}
-									className={`px-2 py-1 text-xs rounded transition-colors ${
-										sortOrder === "newest"
-											? "bg-rose/20 text-rose border border-rose/50"
-											: "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-									}`}
-								>
-									newest
-								</button>
-								<button
-									onClick={() => {
-										setSortOrder("oldest");
-										track("filter_use", { page: "blog", filter_type: "sort", value: "oldest" });
-									}}
-									className={`px-2 py-1 text-xs rounded transition-colors ${
-										sortOrder === "oldest"
-											? "bg-rose/20 text-rose border border-rose/50"
-											: "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-									}`}
-								>
-									oldest
-								</button>
-							</div>
-						</div>
+						<FilterPills
+							size="sm"
+							label="sort:"
+							options={[
+								{ value: "newest" as SortOrder, label: "newest" },
+								{ value: "oldest" as SortOrder, label: "oldest" },
+							]}
+							value={sortOrder}
+							onChange={(value) => {
+								setSortOrder(value);
+								track("filter_use", {
+									page: "blog",
+									filter_type: "sort",
+									value,
+								});
+							}}
+						/>
 
 						{/* Clear all filters */}
 						{(search || yearFilter || sortOrder !== "newest") && (
 							<>
 								<span className="text-border">|</span>
 								<button
+									type="button"
 									onClick={() => {
 										setSearch("");
 										setYearFilter(null);
@@ -315,11 +284,13 @@ export default function BlogPage() {
 						<div className="inline-block animate-pulse-subtle">loading...</div>
 					</div>
 				) : filteredPosts.length === 0 ? (
-					<div className="text-muted-foreground py-8 text-center">
-						{search || yearFilter
-							? "no posts match your filters"
-							: "no posts yet"}
-					</div>
+					<EmptyState
+						message={
+							search || yearFilter
+								? "no posts match your filters"
+								: "no posts yet"
+						}
+					/>
 				) : (
 					<div className="space-y-3">
 					{filteredPosts.map((post, index) => (
@@ -327,7 +298,7 @@ export default function BlogPage() {
 							key={post.id}
 							href={`/blog/${post.slug}`}
 							onClick={() => track("blog_post_click", { title: post.title, slug: post.slug })}
-							className="block p-4 bg-surface border border-border rounded-lg hover:border-rose/50 transition-all hover-lift group"
+							className="block p-4 tcard tcard-hover group"
 							style={{ animationDelay: `${index * 30}ms` }}
 						>
 								<div className="flex items-start justify-between gap-4">

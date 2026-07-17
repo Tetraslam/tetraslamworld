@@ -3,6 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { useCallback, useState } from "react";
+import { PageHeader } from "@/components/page-header";
 import { useDevice } from "@/hooks/use-device";
 import { api } from "../../../convex/_generated/api";
 
@@ -101,12 +102,11 @@ export default function PixelsPage() {
 	return (
 		<div className="max-w-4xl mx-auto px-4 py-12">
 			<div className="space-y-6 animate-fade-in">
-				<div>
-					<h1 className="text-3xl font-bold">pixel board</h1>
-					<p className="text-muted-foreground mt-1">
-						collaborative pixel art - leave your mark
-					</p>
-				</div>
+				<PageHeader
+					path="/pixels"
+					title="pixel board"
+					subtitle="collaborative pixel art - leave your mark"
+				/>
 
 				{/* Color picker + Info */}
 				<div className="flex flex-col md:flex-row gap-4 p-4 bg-surface border border-border rounded-lg">

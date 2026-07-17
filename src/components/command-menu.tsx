@@ -5,7 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { track } from "@vercel/analytics";
 import { Command } from "cmdk";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDevice } from "@/hooks/use-device";
 
 const ADMIN_USER_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || "")
@@ -259,16 +259,54 @@ export function CommandMenu() {
       : []),
   ];
 
-  // Toggle with cmd+k / ctrl+k
+  // Keep refs in sync so the global keydown handler stays stable
+  const commandsRef = useRef<CommandItem[]>(commands);
+  commandsRef.current = commands;
+  const openRef = useRef(open);
+  openRef.current = open;
+
+  // Toggle with cmd+k / ctrl+k, plus global single-key shortcuts
   useEffect(() => {
+    const isTypingTarget = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false;
+      return (
+        target.isContentEditable ||
+        ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
+      );
+    };
+
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((o) => !o);
+        return;
       }
       // Escape to close
       if (e.key === "Escape") {
         setOpen(false);
+        return;
+      }
+
+      // Global single-key shortcuts (the ones shown as kbd hints in the
+      // palette). Only when the palette is closed and focus isn't in a
+      // text field.
+      if (
+        openRef.current ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        isTypingTarget(e.target)
+      ) {
+        return;
+      }
+      const key = e.key.toUpperCase();
+      const match = commandsRef.current.find(
+        (cmd) => cmd.shortcut?.length === 1 && cmd.shortcut[0] === key,
+      );
+      if (match) {
+        e.preventDefault();
+        track("cmdk_shortcut", { key, command: match.id });
+        match.action();
       }
     };
 

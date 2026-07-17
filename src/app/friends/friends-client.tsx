@@ -3,10 +3,12 @@
 import { type Preloaded, usePreloadedQuery } from "convex/react";
 import Image from "next/image";
 import Masonry from "react-masonry-css";
+import { EmptyState } from "@/components/empty-state";
 import { Markdown } from "@/components/markdown";
+import { PageHeader } from "@/components/page-header";
+import { BLUR_DATA_URL, isGif } from "@/lib/media";
 import { api } from "../../../convex/_generated/api";
 
-const isGif = (url: string) => url.toLowerCase().includes(".gif");
 
 export function FriendsClient({
 	preloadedFriends,
@@ -27,10 +29,13 @@ export function FriendsClient({
 			<div className="space-y-8 animate-fade-in">
 				{/* Header + intro */}
 				<div className="space-y-4">
-					<div>
-						<h1 className="text-3xl font-bold">friends</h1>
-						<p className="text-muted-foreground mt-1">people i think are cool</p>
-					</div>
+					<PageHeader
+						path="/friends"
+						title="friends"
+						subtitle="people i think are cool"
+						count={friends?.length}
+						countLabel="people"
+					/>
 
 					{/* Intro section */}
 					<div className="p-5 bg-surface/50 border border-border/50 rounded-lg">
@@ -42,9 +47,7 @@ export function FriendsClient({
 				</div>
 
 				{friends.length === 0 ? (
-					<div className="text-muted-foreground py-8 text-center">
-						no friends added yet
-					</div>
+					<EmptyState message="no friends added yet" />
 				) : (
 					<Masonry
 						breakpointCols={breakpointColumns}
@@ -54,7 +57,7 @@ export function FriendsClient({
 						{sortedFriends.map((friend, index) => (
 							<div
 								key={friend._id}
-								className="mb-4 p-5 bg-surface border border-border rounded-lg hover:border-rose/30 transition-all hover-lift group"
+								className="mb-4 p-5 tcard tcard-hover group"
 								style={{ animationDelay: `${index * 50}ms` }}
 							>
 								<div className="flex items-start gap-4">
@@ -68,7 +71,7 @@ export function FriendsClient({
 												sizes="64px"
 												unoptimized={isGif(friend.imageUrl)}
 												placeholder={isGif(friend.imageUrl) ? "empty" : "blur"}
-												blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAIhAAAQMEAQUAAAAAAAAAAAAAAQIDBAAFBhEhEiIxQVH/xAAVAQEBAAAAAAAAAAAAAAAAAAADBP/EABkRAQADAQEAAAAAAAAAAAAAAAEAAhEhA//aAAwDAQACEQMRAD8AyTG8guNjvEW5Q3AttJ3zjpChpQ4I+g6pMnymXyM/Xp3kl6YkqkOrUoqWtRJJJJJJJJPJJNKUq7V+CJE9J//Z"
+												blurDataURL={BLUR_DATA_URL}
 										/>
 										</div>
 									) : (

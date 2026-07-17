@@ -3,63 +3,15 @@
 import { track } from "@vercel/analytics";
 import { type Preloaded, usePreloadedQuery } from "convex/react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { EmptyState } from "@/components/empty-state";
+import { FilterPills } from "@/components/filter-pills";
 import { Markdown } from "@/components/markdown";
+import { MarqueeText } from "@/components/marquee-text";
+import { PageHeader } from "@/components/page-header";
+import { SectionHeading } from "@/components/section-heading";
+import { BLUR_DATA_URL, isGif } from "@/lib/media";
 import { api } from "../../../convex/_generated/api";
-
-// Helper to check if URL is a GIF
-const isGif = (url: string) => url.toLowerCase().includes(".gif");
-
-// iPod-style marquee text component for overflowing titles
-function MarqueeText({ text, className }: { text: string; className?: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLSpanElement>(null);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-  const [textWidth, setTextWidth] = useState(0);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: need to recheck on text change
-  useEffect(() => {
-    const checkOverflow = () => {
-      if (containerRef.current && textRef.current) {
-        const containerWidth = containerRef.current.offsetWidth;
-        const scrollWidth = textRef.current.scrollWidth;
-        setIsOverflowing(scrollWidth > containerWidth);
-        setTextWidth(scrollWidth);
-      }
-    };
-
-    checkOverflow();
-    window.addEventListener("resize", checkOverflow);
-    return () => window.removeEventListener("resize", checkOverflow);
-  }, [text]);
-
-  // Calculate animation duration based on text length (slower for longer text)
-  const duration = Math.max(8, textWidth / 20);
-
-  return (
-    <div ref={containerRef} className={`overflow-hidden ${className || ""}`}>
-      <span
-        ref={textRef}
-        className={`inline-block whitespace-nowrap ${isOverflowing ? "animate-marquee" : ""}`}
-        style={
-          isOverflowing
-            ? {
-                animationDuration: `${duration}s`,
-                paddingRight: "2rem",
-              }
-            : undefined
-        }
-      >
-        {text}
-        {isOverflowing && (
-          <span className="pl-8" aria-hidden="true">
-            {text}
-          </span>
-        )}
-      </span>
-    </div>
-  );
-}
 
 const typeLabels: Record<string, string> = {
   anime: "anime",
@@ -171,52 +123,31 @@ export function MediaClient({
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="space-y-8 animate-fade-in">
-        <div>
-          <h1 className="text-3xl font-bold">media</h1>
-          <p className="text-muted-foreground mt-1">
-            things i've consumed and enjoyed
-          </p>
-        </div>
+        <PageHeader
+          path="/media"
+          title="media"
+          subtitle="things i've consumed and enjoyed"
+          count={media?.length}
+        />
 
         {/* Filter tabs */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              setFilter(null);
-              track("filter_use", { page: "media", filter: "all" });
-            }}
-            className={`px-3 py-1 text-sm rounded border transition-colors ${
-              filter === null
-                ? "border-rose bg-rose/10 text-rose"
-                : "border-border text-muted-foreground hover:border-rose/50"
-            }`}
-          >
-            all
-          </button>
-          {sortedTypes.map((type) => (
-            <button
-              type="button"
-              key={type}
-              onClick={() => {
-                setFilter(type);
-                track("filter_use", { page: "media", filter: type });
-              }}
-              className={`px-3 py-1 text-sm rounded border transition-colors ${
-                filter === type
-                  ? "border-rose bg-rose/10 text-rose"
-                  : "border-border text-muted-foreground hover:border-rose/50"
-              }`}
-            >
-              {typeLabels[type]}
-            </button>
-          ))}
-        </div>
+        <FilterPills
+          options={[
+            { value: null, label: "all" },
+            ...sortedTypes.map((type) => ({
+              value: type,
+              label: typeLabels[type],
+            })),
+          ]}
+          value={filter}
+          onChange={(value) => {
+            setFilter(value);
+            track("filter_use", { page: "media", filter: value ?? "all" });
+          }}
+        />
 
         {media.length === 0 ? (
-          <div className="text-muted-foreground py-8 text-center">
-            no media added yet
-          </div>
+          <EmptyState message="no media added yet" />
         ) : (
           <div className="space-y-10">
             {sortedTypes
@@ -229,9 +160,10 @@ export function MediaClient({
 
                 return (
                   <section key={type}>
-                    <h2 className="text-xl font-semibold text-rose mb-4">
-                      {typeLabels[type]}
-                    </h2>
+                    <SectionHeading
+                      title={typeLabels[type]}
+                      count={items.length}
+                    />
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       {displayItems.map((item) => (
                         <MediaCard
@@ -301,7 +233,7 @@ function MediaCard({
     <button
       type="button"
       onClick={onExpand}
-      className="group relative bg-surface border border-border rounded overflow-hidden hover:border-rose/50 transition-all hover-lift text-left w-full"
+      className="group relative tcard tcard-hover overflow-hidden text-left w-full"
     >
       <div className="relative w-full aspect-[3/4] overflow-hidden bg-surface">
         {images.length > 0 ? (
@@ -322,7 +254,7 @@ function MediaCard({
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                   unoptimized={isGif(url)}
                   placeholder={isGif(url) ? "empty" : "blur"}
-                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAIhAAAQMEAQUAAAAAAAAAAAAAAQIDBAAFBhEhEiIxQVH/xAAVAQEBAAAAAAAAAAAAAAAAAAADBP/EABkRAQADAQEAAAAAAAAAAAAAAAEAAhEhA//aAAwDAQACEQMRAD8AyTG8guNjvEW5Q3AttJ3zjpChpQ4I+g6pMnymXyM/Xp3kl6YkqkOrUoqWtRJJJJJJJJPJJNKUq7V+CJE9J//Z"
+                  blurDataURL={BLUR_DATA_URL}
                 />
               </div>
             ))}
@@ -450,7 +382,7 @@ function MediaModal({
           onClick={onClose}
           className="absolute top-3 right-3 text-muted-foreground hover:text-foreground z-10 text-xl"
         >
-          x
+          &times;
         </button>
 
         {/* Image gallery */}
@@ -473,7 +405,7 @@ function MediaModal({
                     sizes="(max-width: 768px) 100vw, 512px"
                     unoptimized={isGif(url)}
                     placeholder={isGif(url) ? "empty" : "blur"}
-                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAIhAAAQMEAQUAAAAAAAAAAAAAAQIDBAAFBhEhEiIxQVH/xAAVAQEBAAAAAAAAAAAAAAAAAAADBP/EABkRAQADAQEAAAAAAAAAAAAAAAEAAhEhA//aAAwDAQACEQMRAD8AyTG8guNjvEW5Q3AttJ3zjpChpQ4I+g6pMnymXyM/Xp3kl6YkqkOrUoqWtRJJJJJJJJPJJNKUq7V+CJE9J//Z"
+                    blurDataURL={BLUR_DATA_URL}
                   />
                 </div>
               ))}

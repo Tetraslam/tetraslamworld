@@ -131,7 +131,7 @@
 }
 
 .blog-post-content p {
-  @apply mb-4 text-justify;
+  @apply mb-4;
 }
 
 .blog-post-content h1,
@@ -253,6 +253,17 @@
 }
 
 .hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(232, 166, 166, 0.1);
+}
+
+/* Standard content card. One card, every page. */
+.tcard {
+  @apply bg-surface/90 border border-border rounded-lg transition-all duration-200;
+}
+
+.tcard-hover:hover {
+  @apply border-rose/40;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(232, 166, 166, 0.1);
 }

@@ -3,6 +3,9 @@
 import { track } from "@vercel/analytics";
 import { type Preloaded, usePreloadedQuery } from "convex/react";
 import { useMemo, useRef, useState } from "react";
+import { EmptyState } from "@/components/empty-state";
+import { FilterPills } from "@/components/filter-pills";
+import { PageHeader } from "@/components/page-header";
 import { TasteCard } from "@/components/taste-card";
 import { TasteListItem } from "@/components/taste-list-item";
 import { api } from "../../../convex/_generated/api";
@@ -93,12 +96,12 @@ export function TasteClient({
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
       <div className="space-y-6 animate-fade-in">
-        <div>
-          <h1 className="text-3xl font-bold">taste</h1>
-          <p className="text-muted-foreground mt-1">
-            design inspiration and aesthetic references
-          </p>
-        </div>
+        <PageHeader
+          path="/taste"
+          title="taste"
+          subtitle="design inspiration and aesthetic references"
+          count={items?.length}
+        />
 
         {/* Search and filters */}
         <div className="space-y-3">
@@ -122,60 +125,44 @@ export function TasteClient({
           </div>
 
           {/* Filter row */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             {/* Tag filter */}
             {allTags.length > 0 && (
               <>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">tag:</span>
-                  <div className="flex flex-wrap gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setTagFilter(null)}
-                      className={`px-2 py-1 text-xs rounded transition-colors ${
-                        tagFilter === null
-                          ? "bg-rose/20 text-rose border border-rose/50"
-                          : "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-                      }`}
+                <div className="flex flex-wrap items-center gap-2">
+                  <FilterPills
+                    size="sm"
+                    label="tag:"
+                    options={[
+                      { value: null, label: "all" },
+                      ...allTags
+                        .slice(0, 5)
+                        .map((tag) => ({ value: tag, label: tag })),
+                    ]}
+                    value={tagFilter}
+                    onChange={(value) => {
+                      setTagFilter(value);
+                      track("filter_use", {
+                        page: "taste",
+                        filter_type: "tag",
+                        value: value ?? "all",
+                      });
+                    }}
+                  />
+                  {allTags.length > 5 && (
+                    <select
+                      value={tagFilter || ""}
+                      onChange={(e) => setTagFilter(e.target.value || null)}
+                      className="px-2.5 py-1 text-xs rounded-lg bg-surface border border-border text-muted-foreground focus:outline-none focus:border-rose/50"
                     >
-                      all
-                    </button>
-                    {allTags.slice(0, 5).map((tag) => (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => {
-                          setTagFilter(tag);
-                          track("filter_use", {
-                            page: "taste",
-                            filter_type: "tag",
-                            value: tag,
-                          });
-                        }}
-                        className={`px-2 py-1 text-xs rounded transition-colors ${
-                          tagFilter === tag
-                            ? "bg-rose/20 text-rose border border-rose/50"
-                            : "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-                        }`}
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                    {allTags.length > 5 && (
-                      <select
-                        value={tagFilter || ""}
-                        onChange={(e) => setTagFilter(e.target.value || null)}
-                        className="px-2 py-1 text-xs rounded bg-surface border border-border text-muted-foreground focus:outline-none focus:border-rose/30"
-                      >
-                        <option value="">more...</option>
-                        {allTags.slice(5).map((tag) => (
-                          <option key={tag} value={tag}>
-                            {tag}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
+                      <option value="">more...</option>
+                      {allTags.slice(5).map((tag) => (
+                        <option key={tag} value={tag}>
+                          {tag}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 <span className="text-border">|</span>
@@ -183,76 +170,48 @@ export function TasteClient({
             )}
 
             {/* Sort order */}
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-muted-foreground">sort:</span>
-              <div className="flex gap-1">
-                {(
-                  [
-                    ["manual", "curated"],
-                    ["newest", "newest"],
-                    ["oldest", "oldest"],
-                    ["alpha", "a-z"],
-                  ] as const
-                ).map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => {
-                      setSortOrder(value);
-                      track("filter_use", {
-                        page: "taste",
-                        filter_type: "sort",
-                        value,
-                      });
-                    }}
-                    className={`px-2 py-1 text-xs rounded transition-colors ${
-                      sortOrder === value
-                        ? "bg-rose/20 text-rose border border-rose/50"
-                        : "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <FilterPills
+              size="sm"
+              label="sort:"
+              options={(
+                [
+                  ["manual", "curated"],
+                  ["newest", "newest"],
+                  ["oldest", "oldest"],
+                  ["alpha", "a-z"],
+                ] as const
+              ).map(([value, label]) => ({ value, label }))}
+              value={sortOrder}
+              onChange={(value) => {
+                setSortOrder(value);
+                track("filter_use", {
+                  page: "taste",
+                  filter_type: "sort",
+                  value,
+                });
+              }}
+            />
 
             <span className="text-border">|</span>
 
             {/* View toggle */}
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-muted-foreground">view:</span>
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setViewMode("cards");
-                    track("filter_use", { page: "taste", filter_type: "view", value: "cards" });
-                  }}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
-                    viewMode === "cards"
-                      ? "bg-rose/20 text-rose border border-rose/50"
-                      : "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-                  }`}
-                >
-                  cards
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setViewMode("list");
-                    track("filter_use", { page: "taste", filter_type: "view", value: "list" });
-                  }}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
-                    viewMode === "list"
-                      ? "bg-rose/20 text-rose border border-rose/50"
-                      : "bg-surface border border-border text-muted-foreground hover:border-rose/30"
-                  }`}
-                >
-                  list
-                </button>
-              </div>
-            </div>
+            <FilterPills
+              size="sm"
+              label="view:"
+              options={[
+                { value: "cards" as ViewMode, label: "cards" },
+                { value: "list" as ViewMode, label: "list" },
+              ]}
+              value={viewMode}
+              onChange={(value) => {
+                setViewMode(value);
+                track("filter_use", {
+                  page: "taste",
+                  filter_type: "view",
+                  value,
+                });
+              }}
+            />
 
             {/* Clear all filters */}
             {hasActiveFilters && (
@@ -281,11 +240,13 @@ export function TasteClient({
 
         {/* Content */}
         {filtered.length === 0 ? (
-          <div className="text-muted-foreground py-8 text-center">
-            {hasActiveFilters
-              ? "no entries match your filters"
-              : "no taste entries yet"}
-          </div>
+          <EmptyState
+            message={
+              hasActiveFilters
+                ? "no entries match your filters"
+                : "no taste entries yet"
+            }
+          />
         ) : viewMode === "cards" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filtered.map((item, index) => (

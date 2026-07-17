@@ -4,9 +4,12 @@ import { track } from "@vercel/analytics";
 import { type Preloaded, usePreloadedQuery } from "convex/react";
 import Image from "next/image";
 import { useState } from "react";
+import Masonry from "react-masonry-css";
+import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
+import { BLUR_DATA_URL, isGif } from "@/lib/media";
 import { api } from "../../../convex/_generated/api";
 
-const isGif = (url: string) => url.toLowerCase().includes(".gif");
 
 export function GalleryClient({
 	preloadedImages,
@@ -25,23 +28,19 @@ export function GalleryClient({
 		500: 1,
 	};
 
-	// Dynamic import for Masonry to avoid SSR issues
-	const Masonry = require("react-masonry-css").default;
-
 	return (
 		<div className="max-w-6xl mx-auto px-4 py-12">
 			<div className="space-y-8 animate-fade-in">
-				<div>
-					<h1 className="text-3xl font-bold">gallery</h1>
-					<p className="text-muted-foreground mt-1">
-						random snapshots and visual ephemera
-					</p>
-				</div>
+				<PageHeader
+					path="/gallery"
+					title="gallery"
+					subtitle="random snapshots and visual ephemera"
+					count={images?.length}
+					countLabel="photos"
+				/>
 
 				{sortedImages.length === 0 ? (
-					<div className="text-muted-foreground py-8 text-center">
-						no images yet
-					</div>
+					<EmptyState message="no images yet" />
 				) : (
 					<Masonry
 						breakpointCols={breakpointColumns}
@@ -67,7 +66,7 @@ export function GalleryClient({
 									sizes="(max-width: 500px) 100vw, (max-width: 700px) 50vw, (max-width: 1100px) 33vw, 25vw"
 									unoptimized={isGif(image.imageUrl)}
 									placeholder={isGif(image.imageUrl) ? "empty" : "blur"}
-									blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAIhAAAQMEAQUAAAAAAAAAAAAAAQIDBAAFBhEhEiIxQVH/xAAVAQEBAAAAAAAAAAAAAAAAAAADBP/EABkRAQADAQEAAAAAAAAAAAAAAAEAAhEhA//aAAwDAQACEQMRAD8AyTG8guNjvEW5Q3AttJ3zjpChpQ4I+g6pMnymXyM/Xp3kl6YkqkOrUoqWtRJJJJJJJJPJJNKUq7V+CJE9J//Z"
+									blurDataURL={BLUR_DATA_URL}
 								/>
 								{image.caption && (
 									<div className="absolute inset-0 bg-linear-to-t from-background/90 via-transparent to-transparent opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-end p-3">
@@ -94,7 +93,7 @@ export function GalleryClient({
 						onClick={() => setLightbox(null)}
 					className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-2xl z-10"
 					>
-						x
+						&times;
 					</button>
 					<div
 						className="relative max-w-full max-h-[90vh] w-[90vw] h-[90vh]"

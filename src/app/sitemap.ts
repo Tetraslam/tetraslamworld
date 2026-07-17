@@ -11,7 +11,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		"/friends",
 		"/media",
 		"/links",
+		"/taste",
 		"/travel",
+		"/gallery",
 		"/pixels",
 	];
 

@@ -3,6 +3,7 @@
 import { track } from "@vercel/analytics";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
+import { isGif } from "@/lib/media";
 
 interface TasteItem {
   _id: string;
@@ -31,10 +32,6 @@ export function TasteListItem({
   } catch {
     domain = item.url;
   }
-
-  const isGif = (url: string) =>
-    url.toLowerCase().endsWith(".gif") ||
-    url.toLowerCase().includes("format=gif");
 
   return (
     <div

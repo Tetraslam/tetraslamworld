@@ -107,6 +107,16 @@ export default function BlogPostPage() {
 	// Use full URL for comments (keeps existing comments working)
 	const postUrl = post?.id || `https://blog.tetraslam.world/${slug}`;
 
+	// Estimated reading time from the post HTML
+	const readingTime = useMemo(() => {
+		if (!post?.content) return null;
+		const words = post.content
+			.replace(/<[^>]*>/g, " ")
+			.split(/\s+/)
+			.filter(Boolean).length;
+		return Math.max(1, Math.round(words / 220));
+	}, [post?.content]);
+
 	// Get paginated comments
 	const paginatedResult = useQuery(
 		api.comments.getPaginated,
@@ -283,7 +293,7 @@ export default function BlogPostPage() {
 
 	if (loading) {
 		return (
-			<div className="max-w-4xl mx-auto px-4 py-12">
+			<div className="max-w-3xl mx-auto px-4 py-12">
 				<div className="text-muted-foreground text-center animate-pulse-subtle">
 					loading...
 				</div>
@@ -293,7 +303,7 @@ export default function BlogPostPage() {
 
 	if (!post) {
 		return (
-			<div className="max-w-4xl mx-auto px-4 py-12">
+			<div className="max-w-3xl mx-auto px-4 py-12">
 				<div className="text-center">
 					<h1 className="text-2xl font-bold text-rose">post not found</h1>
 					<Link
@@ -308,7 +318,7 @@ export default function BlogPostPage() {
 	}
 
 	return (
-		<div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in">
+		<div className="max-w-3xl mx-auto px-4 py-12 animate-fade-in">
 			<Link href="/blog" className="text-sm text-rose-deep hover:text-rose mb-4 inline-block">
 				&larr; back to blog
 			</Link>
@@ -342,13 +352,21 @@ export default function BlogPostPage() {
 					<article className="blog-content">
 						<header className="mb-8">
 							<h1 className="text-3xl font-bold">{post.title}</h1>
-							<time className="text-sm text-muted-foreground block mt-2">
-								{new Date(post.published).toLocaleDateString("en-US", {
-									year: "numeric",
-									month: "long",
-									day: "numeric",
-								})}
-							</time>
+							<p className="text-sm text-muted-foreground mt-2">
+								<time>
+									{new Date(post.published).toLocaleDateString("en-US", {
+										year: "numeric",
+										month: "long",
+										day: "numeric",
+									})}
+								</time>
+								{readingTime && (
+									<span className="text-muted-foreground/60">
+										{" "}
+										· {readingTime} min read
+									</span>
+								)}
+							</p>
 							<a
 								href={post.link}
 								target="_blank"
