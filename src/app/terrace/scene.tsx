@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { createCatRoutine, drawCat, sampleCat, wakeCat } from "./cat-motion";
 import styles from "./terrace.module.css";
 
 // Coordinates belong to the 1536 × 1024 painting. Keep moving water clear of
@@ -9,6 +10,8 @@ import styles from "./terrace.module.css";
 export function TerraceScene() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const elapsed = useRef(0);
+  const catRoutine = useRef(createCatRoutine());
+  const [assetsReady, setAssetsReady] = useState(false);
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(true);
 
@@ -24,12 +27,19 @@ export function TerraceScene() {
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
     if (!canvas || !context) return;
-    if (paused || reducedMotion) {
+    if (reducedMotion) {
       context.clearRect(0, 0, 1536, 1024);
       return;
     }
+    // Preserve the exact current pose on manual pause.
+    if (paused) return;
 
     const painting = new window.Image();
+    const cat = new window.Image();
+    const scratchCanvas = document.createElement("canvas");
+    scratchCanvas.width = scratchCanvas.height = 384;
+    const scratch = scratchCanvas.getContext("2d");
+    if (!scratch) return;
     let disposed = false;
     let frame = 0;
     let previous = 0;
@@ -47,6 +57,7 @@ export function TerraceScene() {
       elapsed.current += delta;
       const time = elapsed.current;
       context.clearRect(0, 0, 1536, 1024);
+      context.drawImage(painting, 0, 0, 1536, 1024);
       context.save();
       context.clip(water);
       // Move the actual painted reflections, rather than laying a generic
@@ -78,6 +89,11 @@ export function TerraceScene() {
         }
         context.globalAlpha = 1;
       }
+      const pose = sampleCat(catRoutine.current, time);
+      drawCat(context, cat, scratch, pose, time);
+      canvas.dataset.catPhase = pose.phase;
+      canvas.dataset.catPose = String(pose.to);
+      canvas.dataset.sceneTime = time.toFixed(2);
     };
 
     let loaded = false;
@@ -94,14 +110,29 @@ export function TerraceScene() {
     });
     observer.observe(canvas);
     document.addEventListener("visibilitychange", resume);
-    painting.onload = () => {
-      loaded = true;
-      resume();
-    };
-    painting.src = "/terrace.webp";
+    const load = (image: HTMLImageElement, src: string) =>
+      new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = reject;
+        image.src = src;
+      });
+    Promise.all([
+      load(painting, "/terrace/clean.webp"),
+      load(cat, "/terrace/cat-motion.webp"),
+    ])
+      .then(() => {
+        if (disposed) return;
+        loaded = true;
+        setAssetsReady(true);
+        resume();
+      })
+      .catch(() => {
+        if (disposed) return;
+        context.clearRect(0, 0, 1536, 1024);
+        setAssetsReady(false);
+      });
     return () => {
       disposed = true;
-      painting.onload = null;
       cancelAnimationFrame(frame);
       observer.disconnect();
       document.removeEventListener("visibilitychange", resume);
@@ -128,14 +159,26 @@ export function TerraceScene() {
         aria-hidden="true"
       />
       {!reducedMotion && (
-        <button
-          type="button"
-          className={styles.controls}
-          onClick={() => setPaused(!paused)}
-          aria-pressed={paused}
-        >
-          {paused ? "resume motion" : "pause motion"}
-        </button>
+        <>
+          {assetsReady && (
+            <button
+              type="button"
+              className={styles.catHotspot}
+              aria-label="Say hello to the cat"
+              title="say hello"
+              disabled={paused}
+              onClick={() => wakeCat(catRoutine.current, elapsed.current)}
+            />
+          )}
+          <button
+            type="button"
+            className={styles.controls}
+            onClick={() => setPaused(!paused)}
+            aria-pressed={paused}
+          >
+            {paused ? "resume motion" : "pause motion"}
+          </button>
+        </>
       )}
     </div>
   );

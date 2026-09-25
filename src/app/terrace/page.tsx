@@ -22,7 +22,7 @@ export default function TerracePage() {
         <TerraceScene />
         <figcaption className={styles.caption}>
           <span>a little further into the future.</span>
-          <span>study no. 01</span>
+          <span>study no. 02</span>
         </figcaption>
       </figure>
       <section className={styles.introduction} aria-label="About Shresht">

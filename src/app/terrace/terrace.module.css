@@ -65,6 +65,25 @@
 .canvas {
   pointer-events: none;
 }
+.catHotspot {
+  position: absolute;
+  left: 15%;
+  top: 66%;
+  width: 12%;
+  height: 13%;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.catHotspot:disabled {
+  cursor: default;
+}
+.catHotspot:focus-visible {
+  outline-offset: 1px;
+}
 .controls {
   position: absolute;
   right: 1%;
