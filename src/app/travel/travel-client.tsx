@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Markdown } from "@/components/markdown";
 import { PageHeader } from "@/components/page-header";
-import { RevealRegion } from "@/components/reveal-region";
 import { SoftImage as Image } from "@/components/soft-image";
 import type { api } from "../../../convex/_generated/api";
 
@@ -28,7 +27,6 @@ export function TravelClient({
   const data = usePreloadedQuery(preloadedLocations);
   const locations = [...data].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const [selected, setSelected] = useState(initialPlace);
-  const [showMap, setShowMap] = useState(false);
   const notes = useRef<HTMLElement>(null);
   const active =
     locations.find((place) => place._id === selected) ?? locations[0];
@@ -69,30 +67,16 @@ export function TravelClient({
   }, []);
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
-      <PageHeader
-        path="/travel"
-        title="travel"
-        subtitle=""
-        action={
-          process.env.NEXT_PUBLIC_MAPBOX_TOKEN ? (
-            <button
-              type="button"
-              aria-expanded={showMap}
-              aria-controls="travel-map"
-              onClick={() => setShowMap(!showMap)}
-            >
-              {showMap ? "hide map" : "show map"}
-            </button>
-          ) : undefined
-        }
-      />
-      <RevealRegion id="travel-map" open={showMap}>
-        <TravelMap
-          locations={locations}
-          active={active}
-          onSelect={selectPlace}
-        />
-      </RevealRegion>
+      <PageHeader path="/travel" title="travel" subtitle="" />
+      {process.env.NEXT_PUBLIC_MAPBOX_TOKEN && (
+        <div id="travel-map" className="enter-item">
+          <TravelMap
+            locations={locations}
+            active={active}
+            onSelect={selectPlace}
+          />
+        </div>
+      )}
       <div className="travel-index">
         <nav aria-label="Places">
           {locations.map((place) => (

@@ -1,5 +1,7 @@
 # V5 public-site design
 
+Current travel presentation: the map always mounts on arrival when configured, with its existing fixed-size loading placeholder and entrance motion. There is no show/hide control. This supersedes the optional-map behaviour described in the historical arrival and motion passes below.
+
 ## Arrival and loading contract
 
 Primary reading content is server-rendered from the existing cached feed and Convex preloads. The page shell remains stable during navigation; route-specific, non-animated placeholders reserve the content area while a server query completes. Image frames reserve their final size. The painting uses responsive image delivery and retains its aspect ratio.
