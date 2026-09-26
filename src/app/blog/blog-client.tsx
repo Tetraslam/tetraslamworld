@@ -5,6 +5,8 @@ import { useCallback, useState } from "react";
 import { IntentLink as Link } from "@/components/intent-link";
 import { PageHeader } from "@/components/page-header";
 import { Subscribe } from "@/components/subscribe";
+import { useListMotion } from "@/hooks/use-list-motion";
+import { entranceStyle } from "@/lib/motion";
 
 interface Post {
   id: string;
@@ -16,6 +18,7 @@ interface Post {
 const admins = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS ?? "").split(",");
 
 export function BlogClient({ initialPosts }: { initialPosts: Post[] }) {
+  const motionRoot = useListMotion();
   const { user } = useUser();
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [search, setSearch] = useState("");
@@ -43,7 +46,7 @@ export function BlogClient({ initialPosts }: { initialPosts: Post[] }) {
     ...new Set(filtered.map((post) => new Date(post.published).getFullYear())),
   ];
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <div ref={motionRoot} className="max-w-4xl mx-auto px-4 py-12 motion-list">
       <PageHeader
         path="/blog"
         title="writing"
@@ -103,8 +106,13 @@ export function BlogClient({ initialPosts }: { initialPosts: Post[] }) {
                 .filter(
                   (post) => new Date(post.published).getFullYear() === year,
                 )
-                .map((post) => (
-                  <article key={post.id}>
+                .map((post, index) => (
+                  <article
+                    key={post.id}
+                    className="enter-item"
+                    data-motion-key={post.id}
+                    style={entranceStyle(index)}
+                  >
                     <h3>
                       <Link href={`/blog/${post.slug}`}>{post.title}</Link>
                     </h3>

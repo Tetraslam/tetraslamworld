@@ -2,12 +2,14 @@
 
 import { track } from "@vercel/analytics";
 import { type Preloaded, usePreloadedQuery } from "convex/react";
-import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EmptyState } from "@/components/empty-state";
+import { ImageSwap } from "@/components/image-swap";
 import { PageHeader } from "@/components/page-header";
+import { SoftImage as Image } from "@/components/soft-image";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { BLUR_DATA_URL, isGif } from "@/lib/media";
+import { entranceStyle } from "@/lib/motion";
 import type { api } from "../../../convex/_generated/api";
 
 export function GalleryClient({
@@ -17,6 +19,7 @@ export function GalleryClient({
 }) {
   const images = usePreloadedQuery(preloadedImages);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement | null>(null);
 
   const sortedImages = useMemo(
@@ -38,7 +41,7 @@ export function GalleryClient({
     [activeIndex, sortedImages],
   );
   useEffect(() => {
-    if (!lightbox) return;
+    if (!lightbox || !viewerOpen) return;
     const key = (event: KeyboardEvent) => {
       if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
         event.preventDefault();
@@ -47,7 +50,7 @@ export function GalleryClient({
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [lightbox, move]);
+  }, [lightbox, move, viewerOpen]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
@@ -71,11 +74,13 @@ export function GalleryClient({
                 onClick={(event) => {
                   trigger.current = event.currentTarget;
                   setLightbox(image.imageUrl);
+                  setViewerOpen(true);
                   track("gallery_image_view", {
                     caption: image.caption || "untitled",
                   });
                 }}
-                className="mb-7 group relative cursor-pointer block w-full text-left"
+                className="mb-7 group relative cursor-pointer block w-full text-left enter-item"
+                style={entranceStyle(index)}
               >
                 <span className="gallery-thumb">
                   <Image
@@ -104,9 +109,9 @@ export function GalleryClient({
       {/* Lightbox */}
       {lightbox && (
         <Dialog
-          open
+          open={viewerOpen}
           onOpenChange={(open) => {
-            if (!open) setLightbox(null);
+            if (!open) setViewerOpen(false);
           }}
         >
           <DialogContent
@@ -122,7 +127,7 @@ export function GalleryClient({
                 "Photograph"}
             </DialogTitle>
             <div className="relative w-full h-full">
-              <Image
+              <ImageSwap
                 src={lightbox}
                 alt={sortedImages[activeIndex]?.caption || "Photograph"}
                 fill

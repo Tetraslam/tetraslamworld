@@ -1,11 +1,12 @@
 "use client";
 
 import { type Preloaded, usePreloadedQuery } from "convex/react";
-import Image from "next/image";
 import { EmptyState } from "@/components/empty-state";
 import { Markdown } from "@/components/markdown";
 import { PageHeader } from "@/components/page-header";
+import { SoftImage as Image } from "@/components/soft-image";
 import { BLUR_DATA_URL, isGif } from "@/lib/media";
+import { entranceStyle } from "@/lib/motion";
 import type { api } from "../../../convex/_generated/api";
 
 export function FriendsClient({
@@ -40,8 +41,8 @@ export function FriendsClient({
             {sortedFriends.map((friend, index) => (
               <div
                 key={friend._id}
-                className="mb-4 p-5 tcard"
-                style={{ animationDelay: `${index * 50}ms` }}
+                className="mb-4 p-5 tcard enter-item"
+                style={entranceStyle(index)}
               >
                 <div className="flex items-start gap-4">
                   {friend.imageUrl ? (

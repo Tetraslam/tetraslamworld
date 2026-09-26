@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./paper.css";
+import "./motion.css";
 
 const iosevka = localFont({
   src: [

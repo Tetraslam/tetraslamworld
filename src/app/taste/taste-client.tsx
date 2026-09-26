@@ -4,6 +4,7 @@ import { type Preloaded, usePreloadedQuery } from "convex/react";
 import { useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { TasteCard } from "@/components/taste-card";
+import { useListMotion } from "@/hooks/use-list-motion";
 import type { api } from "../../../convex/_generated/api";
 
 export function TasteClient({
@@ -12,6 +13,7 @@ export function TasteClient({
   preloadedItems: Preloaded<typeof api.taste.list>;
 }) {
   const items = usePreloadedQuery(preloadedItems);
+  const motionRoot = useListMotion();
   const [search, setSearch] = useState("");
   const [topic, setTopic] = useState("");
   const topics = [...new Set(items.flatMap((item) => item.tags ?? []))].sort();
@@ -29,7 +31,7 @@ export function TasteClient({
         b.createdAt - a.createdAt,
     );
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12">
+    <div ref={motionRoot} className="max-w-5xl mx-auto px-4 py-12 motion-list">
       <PageHeader path="/taste" title="taste" subtitle="" />
       <div className="collection-tools">
         <div className="collection-search">
@@ -75,8 +77,12 @@ export function TasteClient({
         </output>
       )}
       <div className="taste-journal">
-        {filtered.map((item) => (
-          <TasteCard key={item._id} item={item} />
+        {filtered.map((item, index) => (
+          <TasteCard
+            key={item._id}
+            item={item}
+            delay={search || topic ? 0 : index}
+          />
         ))}
       </div>
       {!filtered.length && <p>no references match your search.</p>}

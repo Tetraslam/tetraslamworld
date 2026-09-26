@@ -1,13 +1,16 @@
 "use client";
 
 import { type Preloaded, usePreloadedQuery } from "convex/react";
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { FilterPills } from "@/components/filter-pills";
+import { ImageSwap } from "@/components/image-swap";
 import { Markdown } from "@/components/markdown";
 import { PageHeader } from "@/components/page-header";
+import { SoftImage as Image } from "@/components/soft-image";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useListMotion } from "@/hooks/use-list-motion";
 import { isGif } from "@/lib/media";
+import { entranceStyle } from "@/lib/motion";
 import type { api } from "../../../convex/_generated/api";
 import type { Doc } from "../../../convex/_generated/dataModel";
 
@@ -45,7 +48,9 @@ export function MediaClient({
   preloadedMedia: Preloaded<typeof api.media.list>;
 }) {
   const media = usePreloadedQuery(preloadedMedia);
+  const motionRoot = useListMotion();
   const [category, setCategory] = useState<string | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
   const [selection, setSelection] = useState<{
     id: string;
     category: string;
@@ -78,7 +83,7 @@ export function MediaClient({
         ?.items.find((item) => item._id === selection.id)
     : null;
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12">
+    <div ref={motionRoot} className="max-w-5xl mx-auto px-4 py-12 motion-list">
       <PageHeader path="/media" title="media" subtitle="" />
       <FilterPills
         options={[
@@ -102,11 +107,14 @@ export function MediaClient({
                   <button
                     type="button"
                     key={item._id}
-                    className="media-cover"
+                    className="media-cover enter-item"
+                    data-motion-key={`${group.type}-${item._id}`}
+                    style={entranceStyle(index)}
                     aria-label={`Read about ${item.title}`}
                     onClick={(event) => {
                       trigger.current = event.currentTarget;
                       setSelection({ id: item._id, category: group.type });
+                      setViewerOpen(true);
                     }}
                   >
                     <span className="cover-image">
@@ -141,7 +149,8 @@ export function MediaClient({
         <MediaViewer
           key={`${selected._id}-${selection?.category}`}
           item={selected}
-          onClose={() => setSelection(null)}
+          open={viewerOpen}
+          onClose={() => setViewerOpen(false)}
           restoreFocus={() => trigger.current?.focus()}
         />
       )}
@@ -151,16 +160,19 @@ export function MediaClient({
 
 function MediaViewer({
   item,
+  open,
   onClose,
   restoreFocus,
 }: {
   item: Item;
+  open: boolean;
   onClose: () => void;
   restoreFocus: () => void;
 }) {
   const images = imagesFor(item);
   const [index, setIndex] = useState(0);
   useEffect(() => {
+    if (!open) return;
     function key(event: KeyboardEvent) {
       if (images.length < 2 || event.altKey || event.ctrlKey || event.metaKey)
         return;
@@ -175,10 +187,10 @@ function MediaViewer({
     }
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [images.length]);
+  }, [images.length, open]);
   return (
     <Dialog
-      open
+      open={open}
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
@@ -194,7 +206,7 @@ function MediaViewer({
         <DialogTitle>{item.title}</DialogTitle>
         {images.length > 0 && (
           <div className="viewer-picture">
-            <Image
+            <ImageSwap
               src={images[index]}
               alt={`${item.title}, image ${index + 1}`}
               fill

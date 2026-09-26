@@ -2,10 +2,11 @@
 
 import { type Preloaded, usePreloadedQuery } from "convex/react";
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Markdown } from "@/components/markdown";
 import { PageHeader } from "@/components/page-header";
+import { RevealRegion } from "@/components/reveal-region";
+import { SoftImage as Image } from "@/components/soft-image";
 import type { api } from "../../../convex/_generated/api";
 
 const TravelMap = dynamic(() => import("./travel-map"), {
@@ -85,15 +86,13 @@ export function TravelClient({
           ) : undefined
         }
       />
-      {showMap && (
-        <div id="travel-map">
-          <TravelMap
-            locations={locations}
-            active={active}
-            onSelect={selectPlace}
-          />
-        </div>
-      )}
+      <RevealRegion id="travel-map" open={showMap}>
+        <TravelMap
+          locations={locations}
+          active={active}
+          onSelect={selectPlace}
+        />
+      </RevealRegion>
       <div className="travel-index">
         <nav aria-label="Places">
           {locations.map((place) => (
@@ -119,7 +118,8 @@ export function TravelClient({
         </nav>
         {active ? (
           <article
-            className="travel-place"
+            key={active._id}
+            className="travel-place enter-item"
             ref={notes}
             tabIndex={-1}
             aria-label={active.location}

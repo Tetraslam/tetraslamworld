@@ -366,8 +366,6 @@ export function CommandMenu() {
     {} as Record<string, CommandItem[]>,
   );
 
-  if (!open) return null;
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent

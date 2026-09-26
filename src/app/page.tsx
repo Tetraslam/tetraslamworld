@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { IntentLink as Link } from "@/components/intent-link";
+import { SoftImage as Image } from "@/components/soft-image";
 
 export default function HomePage() {
   return (

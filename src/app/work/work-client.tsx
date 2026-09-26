@@ -1,9 +1,10 @@
 "use client";
 
 import { type Preloaded, usePreloadedQuery } from "convex/react";
-import Image from "next/image";
 import { Markdown } from "@/components/markdown";
 import { PageHeader } from "@/components/page-header";
+import { SoftImage as Image } from "@/components/soft-image";
+import { entranceStyle } from "@/lib/motion";
 import type { api } from "../../../convex/_generated/api";
 import type { Doc } from "../../../convex/_generated/dataModel";
 
@@ -52,8 +53,12 @@ export function WorkClient({
       <section className="experience-list" aria-label="Experience">
         {work
           .filter((item) => item.type === "job")
-          .map((item) => (
-            <article key={item._id}>
+          .map((item, index) => (
+            <article
+              key={item._id}
+              className="enter-item"
+              style={entranceStyle(index)}
+            >
               <div>
                 <h2>{item.title}</h2>
                 {item.content && <Markdown content={item.content} />}
@@ -71,10 +76,11 @@ export function WorkClient({
           <h2 id="selected-work" className="section-title">
             selected projects
           </h2>
-          {selected.map((item) => (
+          {selected.map((item, index) => (
             <article
               key={item._id}
-              className={`work-feature ${item.imageUrl ? "" : "work-feature-text"}`}
+              className={`work-feature enter-item ${item.imageUrl ? "" : "work-feature-text"}`}
+              style={entranceStyle(index)}
             >
               {item.imageUrl && (
                 <Image
@@ -111,8 +117,12 @@ export function WorkClient({
         .map((group) => (
           <section key={group.title} className="work-rest">
             <h2 className="section-title">{group.title}</h2>
-            {group.items.map((item) => (
-              <article key={item._id}>
+            {group.items.map((item, index) => (
+              <article
+                key={item._id}
+                className="enter-item"
+                style={entranceStyle(index)}
+              >
                 <h3>{item.title}</h3>
                 {item.content && <Markdown content={item.content} />}
                 <WorkLinks item={item} />

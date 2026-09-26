@@ -10,6 +10,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useListMotion } from "@/hooks/use-list-motion";
+import { entranceStyle } from "@/lib/motion";
 import { api } from "../../../convex/_generated/api";
 
 export function LinksClient({
@@ -18,6 +20,7 @@ export function LinksClient({
   preloadedLinks: Preloaded<typeof api.links.list>;
 }) {
   const links = usePreloadedQuery(preloadedLinks);
+  const motionRoot = useListMotion();
   const suggest = useMutation(api.linkSuggestions.create);
   const [search, setSearch] = useState("");
   const [topic, setTopic] = useState("");
@@ -47,7 +50,7 @@ export function LinksClient({
             b.createdAt - a.createdAt,
     );
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <div ref={motionRoot} className="max-w-4xl mx-auto px-4 py-12 motion-list">
       <Dialog
         open={open}
         onOpenChange={(value) => {
@@ -207,13 +210,18 @@ export function LinksClient({
         </output>
       )}
       <div className="bookmark-list">
-        {filtered.slice(0, limit).map((link) => {
+        {filtered.slice(0, limit).map((link, index) => {
           let domain = link.url;
           try {
             domain = new URL(link.url).hostname.replace(/^www\./, "");
           } catch {}
           return (
-            <article key={link._id}>
+            <article
+              key={link._id}
+              className="enter-item"
+              data-motion-key={link._id}
+              style={entranceStyle(search || topic ? 0 : index)}
+            >
               <h2>
                 <a href={link.url} target="_blank" rel="noreferrer">
                   {link.title} <span aria-hidden="true">↗</span>

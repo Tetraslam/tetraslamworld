@@ -1,9 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { isGif } from "@/lib/media";
+import { entranceStyle } from "@/lib/motion";
+import { ImageSwap } from "./image-swap";
 import { Markdown } from "./markdown";
+import { SoftImage as Image } from "./soft-image";
 
 interface TasteItem {
   _id: string;
@@ -15,7 +17,13 @@ interface TasteItem {
   tags?: string[];
 }
 
-export function TasteCard({ item }: { item: TasteItem; delay?: number }) {
+export function TasteCard({
+  item,
+  delay = 0,
+}: {
+  item: TasteItem;
+  delay?: number;
+}) {
   const [selected, setSelected] = useState(0);
   const images = item.screenshotUrls ?? [];
   const active = images[selected] ?? images[0];
@@ -24,7 +32,11 @@ export function TasteCard({ item }: { item: TasteItem; delay?: number }) {
     domain = new URL(item.url).hostname.replace(/^www\./, "");
   } catch {}
   return (
-    <article className="taste-entry">
+    <article
+      className="taste-entry enter-item"
+      data-motion-key={item._id}
+      style={entranceStyle(delay)}
+    >
       {active && (
         <a
           href={item.url}
@@ -32,7 +44,7 @@ export function TasteCard({ item }: { item: TasteItem; delay?: number }) {
           rel="noreferrer"
           className="relative block aspect-video overflow-hidden bg-surface"
         >
-          <Image
+          <ImageSwap
             src={active}
             alt={`${item.title} screenshot`}
             fill
