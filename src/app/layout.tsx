@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import "./paper.css";
 
 const iosevka = localFont({
   src: [
@@ -31,7 +32,6 @@ const iosevka = localFont({
 });
 
 import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
 import { Analytics } from "@vercel/analytics/next";
 import { AgentHint } from "@/components/agent-hint";
 import { ConvexClientProvider } from "@/components/providers/convex-provider";
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
       "building cool stuff :D / mts @ stealth neolab. prev natural.co, mit media lab.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/social.png",
         width: 1200,
         height: 630,
         alt: "tetraslam's world",
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     description:
       "building cool stuff :D / mts @ stealth neolab. prev natural.co, mit media lab.",
     creator: "@tetraslam",
-    images: ["/og-image.png"],
+    images: ["/social.png"],
   },
   icons: {
     icon: "/favicon.svg",
@@ -99,7 +99,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`dark ${iosevka.variable}`}>
+    <html lang="en" className={iosevka.variable}>
       <head>
         <link
           rel="alternate"
@@ -108,18 +108,17 @@ export default function RootLayout({
           title="LLM-friendly site directory"
         />
       </head>
-      <body className="font-mono antialiased">
+      <body className="antialiased">
         <AgentHint />
         <ClerkProvider
           appearance={{
-            baseTheme: dark,
             variables: {
-              colorPrimary: "#E8A6A6",
-              colorBackground: "#221F22",
-              colorInputBackground: "#2B262B",
-              colorInputText: "#F7F4F1",
-              colorText: "#F7F4F1",
-              colorTextSecondary: "#9A8F94",
+              colorPrimary: "#986a54",
+              colorBackground: "#ffffff",
+              colorInputBackground: "#f7f7f2",
+              colorInputText: "#363c35",
+              colorText: "#363c35",
+              colorTextSecondary: "#687061",
               borderRadius: "0.5rem",
             },
             elements: {

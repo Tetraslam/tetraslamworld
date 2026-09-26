@@ -3,15 +3,15 @@
 import { track } from "@vercel/analytics";
 import { type Preloaded, usePreloadedQuery } from "convex/react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { FilterPills } from "@/components/filter-pills";
 import { Markdown } from "@/components/markdown";
-import { MarqueeText } from "@/components/marquee-text";
 import { PageHeader } from "@/components/page-header";
 import { SectionHeading } from "@/components/section-heading";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { BLUR_DATA_URL, isGif } from "@/lib/media";
-import { api } from "../../../convex/_generated/api";
+import type { api } from "../../../convex/_generated/api";
 
 const typeLabels: Record<string, string> = {
   anime: "anime",
@@ -80,6 +80,7 @@ export function MediaClient({
   const media = usePreloadedQuery(preloadedMedia);
   const [filter, setFilter] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const trigger = useRef<HTMLButtonElement | null>(null);
 
   const grouped = media?.reduce(
     (acc, item) => {
@@ -170,11 +171,15 @@ export function MediaClient({
                           key={item._id}
                           item={item}
                           isExpanded={expanded === item._id}
-                          onExpand={() => {
+                          onExpand={(event) => {
+                            trigger.current = event.currentTarget;
                             const isOpening = expanded !== item._id;
                             setExpanded(isOpening ? item._id : null);
                             if (isOpening) {
-                              track("media_expand", { title: item.title, type: item.type });
+                              track("media_expand", {
+                                title: item.title,
+                                type: item.type,
+                              });
                             }
                           }}
                         />
@@ -201,6 +206,7 @@ export function MediaClient({
         <MediaModal
           item={media?.find((m) => m._id === expanded) || null}
           onClose={() => setExpanded(null)}
+          restoreFocus={() => trigger.current?.focus()}
         />
       )}
     </div>
@@ -213,21 +219,9 @@ function MediaCard({
 }: {
   item: MediaItem;
   isExpanded: boolean;
-  onExpand: () => void;
+  onExpand: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }) {
   const images = getMediaImages(item);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  // Auto-slide every 4 seconds
-  useEffect(() => {
-    if (images.length <= 1) return;
-
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [images.length]);
 
   return (
     <button
@@ -237,41 +231,14 @@ function MediaCard({
     >
       <div className="relative w-full aspect-[3/4] overflow-hidden bg-surface">
         {images.length > 0 ? (
-          <>
-            {images.map((url, index) => (
-              <div
-                key={url}
-                className="absolute inset-0 transition-transform duration-500 ease-in-out"
-                style={{
-                  transform: `translateX(${(index - currentIndex) * 100}%)`,
-                }}
-              >
-                <Image
-                  src={url}
-                  alt={`${item.title} ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                  unoptimized={isGif(url)}
-                  placeholder={isGif(url) ? "empty" : "blur"}
-                  blurDataURL={BLUR_DATA_URL}
-                />
-              </div>
-            ))}
-            {/* Slide indicators */}
-            {images.length > 1 && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-                {images.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                      index === currentIndex ? "bg-rose" : "bg-white/40"
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-          </>
+          <Image
+            src={images[0]}
+            alt={item.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+            unoptimized={isGif(images[0])}
+          />
         ) : (
           <div className="w-full h-full bg-background flex items-center justify-center text-muted-foreground text-xs">
             no image
@@ -280,12 +247,11 @@ function MediaCard({
       </div>
       {/* Always visible title at bottom */}
       <div className="p-2 border-t border-border/50 flex items-center justify-between gap-1">
-        <h3 className="text-sm font-medium flex-1 min-w-0">
-          <MarqueeText text={item.title} />
-        </h3>
+        <h3 className="text-sm font-medium flex-1 min-w-0">{item.title}</h3>
         {/* Mobile tap indicator - shows notes icon if there's content */}
         {item.content ? (
           <svg
+            aria-hidden="true"
             className="md:hidden w-4 h-4 text-rose/70 shrink-0"
             fill="none"
             stroke="currentColor"
@@ -299,9 +265,7 @@ function MediaCard({
             />
           </svg>
         ) : (
-          <span className="md:hidden text-[10px] text-rose/60 shrink-0">
-            tap
-          </span>
+          <span className="md:hidden text-[10px] text-rose/60 shrink-0">↗</span>
         )}
       </div>
       {/* Hover overlay - desktop only */}
@@ -309,6 +273,7 @@ function MediaCard({
         {item.content ? (
           <>
             <svg
+              aria-hidden="true"
               className="w-4 h-4 text-rose"
               fill="none"
               stroke="currentColor"
@@ -334,15 +299,15 @@ function MediaCard({
 function MediaModal({
   item,
   onClose,
+  restoreFocus,
 }: {
   item: MediaItem | null;
   onClose: () => void;
+  restoreFocus: () => void;
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  if (!item) return null;
-
-  const images = getMediaImages(item);
+  const images = item ? getMediaImages(item) : [];
 
   const goNext = () => {
     if (images.length > 1) {
@@ -359,32 +324,33 @@ function MediaModal({
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") goPrev();
-      if (e.key === "ArrowRight") goNext();
-      if (e.key === "Escape") onClose();
+      if (images.length < 2) return;
+      if (e.key === "ArrowLeft")
+        setCurrentIndex((index) => (index - 1 + images.length) % images.length);
+      if (e.key === "ArrowRight")
+        setCurrentIndex((index) => (index + 1) % images.length);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [images.length]);
 
+  if (!item) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="relative bg-surface border border-border rounded-lg max-w-lg w-full max-h-[80vh] overflow-auto animate-fade-in">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-3 right-3 text-muted-foreground hover:text-foreground z-10 text-xl"
-        >
-          &times;
-        </button>
-
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          restoreFocus();
+        }}
+        className="max-w-lg max-h-[90vh] overflow-auto p-6 bg-background"
+        aria-describedby={undefined}
+      >
         {/* Image gallery */}
         {images.length > 0 && (
           <div className="relative">
@@ -434,9 +400,9 @@ function MediaModal({
             {/* Dots indicator */}
             {images.length > 1 && (
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
-                {images.map((_, index) => (
+                {images.map((url, index) => (
                   <button
-                    key={index}
+                    key={url}
                     type="button"
                     onClick={() => setCurrentIndex(index)}
                     aria-label={`Go to image ${index + 1}`}
@@ -460,7 +426,9 @@ function MediaModal({
         )}
 
         <div className="p-4 space-y-3">
-          <h2 className="text-xl font-bold text-rose">{item.title}</h2>
+          <DialogTitle className="text-2xl font-normal">
+            {item.title}
+          </DialogTitle>
 
           <p className="text-xs text-muted-foreground uppercase">
             {typeLabels[item.type] || item.type}
@@ -487,9 +455,9 @@ function MediaModal({
 
           {item.links && item.links.length > 0 && (
             <div className="flex flex-wrap gap-2 pt-2">
-              {item.links.map((link, i) => (
+              {item.links.map((link) => (
                 <a
-                  key={i}
+                  key={link.url}
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -501,7 +469,7 @@ function MediaModal({
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

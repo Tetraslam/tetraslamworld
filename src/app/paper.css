@@ -1,0 +1,327 @@
+:root {
+  color-scheme: light;
+  --radius: 0.2rem;
+  --background: #fff;
+  --foreground: #363c35;
+  --surface: #f7f7f2;
+  --card: #fff;
+  --card-foreground: #363c35;
+  --popover: #fff;
+  --popover-foreground: #363c35;
+  --rose: #58694e;
+  --rose-deep: #94634c;
+  --primary: #58694e;
+  --primary-foreground: #fff;
+  --secondary: #f4f4ed;
+  --secondary-foreground: #363c35;
+  --muted: #f4f4ed;
+  --muted-foreground: #707367;
+  --accent: #eeeee5;
+  --accent-foreground: #363c35;
+  --destructive: #a44035;
+  --border: #e2e3d9;
+  --input: #d3d6c9;
+  --ring: #94634c;
+}
+
+.public-site {
+  min-height: 100svh;
+  font-size: 17px;
+  line-height: 1.65;
+}
+.public-site h1,
+.public-site h2,
+.public-site h3 {
+  color: var(--foreground);
+  font-weight: 400;
+}
+.public-site a {
+  text-underline-offset: 4px;
+}
+.public-site :focus-visible {
+  outline: 2px solid #94634c;
+  outline-offset: 4px;
+}
+.site-header {
+  max-width: 1200px;
+  margin: auto;
+  padding: 34px 36px 20px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+}
+.site-wordmark {
+  color: #363c35;
+  font-size: 21px;
+  white-space: nowrap;
+  letter-spacing: -0.6px;
+}
+.site-header nav {
+  display: flex;
+  gap: 21px;
+  flex-wrap: wrap;
+  font-size: 15px;
+}
+.site-header nav a {
+  color: #777b6e;
+}
+.site-header nav a:hover,
+.site-header nav a[aria-current] {
+  color: #94634c;
+  text-decoration: underline;
+}
+.skip-link {
+  position: absolute;
+  left: -10000px;
+}
+.skip-link:focus {
+  left: 20px;
+  top: 8px;
+  background: white;
+  z-index: 100;
+}
+.site-content {
+  min-height: 65vh;
+}
+.site-content > div:not(.home-page) {
+  padding-top: 64px;
+  padding-bottom: 36px;
+}
+.site-footer {
+  max-width: 1056px;
+  margin: 80px auto 0;
+  padding: 24px 0 32px;
+  border-top: 1px solid #e8e9e1;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  color: #7a7d72;
+  font-size: 13px;
+}
+.site-footer nav {
+  display: flex;
+  gap: 20px;
+}
+.site-footer a {
+  color: inherit;
+}
+.home-page {
+  padding: 12px 32px 0;
+}
+.home-painting {
+  width: 100%;
+  max-width: 1120px;
+  height: auto;
+  margin: 0 auto;
+}
+.home-intro {
+  max-width: 570px;
+  margin: 56px auto 0;
+  font-size: 18px;
+  line-height: 1.85;
+}
+.home-intro h1 {
+  font-size: 32px;
+  letter-spacing: -0.8px;
+  margin-bottom: 22px;
+}
+.home-intro p {
+  margin: 18px 0;
+}
+.home-intro p a {
+  text-decoration: underline;
+  text-decoration-color: #c7b8a5;
+}
+.home-contact {
+  display: flex;
+  gap: 24px;
+  margin-top: 28px;
+  font-size: 16px;
+}
+.page-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 42px;
+}
+.page-heading h1 {
+  font-size: 42px;
+  line-height: 1.2;
+  letter-spacing: -1.3px;
+}
+.page-heading button,
+.page-heading a {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #94634c;
+  font-size: 15px;
+}
+.public-site .tcard {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #e2e3d9;
+  border-radius: 0;
+  box-shadow: none;
+}
+.public-site .tcard-hover:hover,
+.public-site .hover-lift:hover {
+  transform: none;
+  box-shadow: none;
+}
+.public-site .tcard h3 {
+  font-size: 21px;
+  line-height: 1.4;
+}
+.public-site .tcard .text-sm {
+  font-size: 16px;
+  line-height: 1.75;
+}
+.public-site .tcard .text-xs {
+  font-size: 12px;
+}
+.public-site .tcard > .p-2 h3 {
+  font-size: 16px;
+}
+.public-site .tcard.p-4,
+.public-site .tcard.p-5 {
+  padding: 24px 0 30px;
+}
+.public-site .animate-fade-in {
+  animation: none;
+}
+.public-site input[type="text"],
+.public-site input[type="search"] {
+  background: transparent;
+  border-radius: 0;
+  border-width: 0 0 1px;
+  padding-left: 0;
+  font-size: 17px;
+}
+.public-site select {
+  border-radius: 2px;
+}
+.public-site .blog-post-content {
+  font-size: 19px;
+  line-height: 1.9;
+}
+.public-site .blog-post-content p {
+  margin-bottom: 24px;
+}
+.public-site .blog-post-content h2 {
+  font-size: 29px;
+}
+.public-site .blog-post-content code {
+  font-family: var(--font-iosevka), monospace;
+}
+.admin-theme {
+  background: var(--background);
+  color: var(--foreground);
+  min-height: 100svh;
+  font-family: var(--font-iosevka), monospace;
+}
+.admin-theme .site-header {
+  padding-top: 20px;
+}
+.admin-theme .site-wordmark {
+  color: var(--foreground);
+}
+.travel-map {
+  height: 390px;
+  background: #f3f4ed;
+  margin: 0 0 36px;
+}
+.travel-index {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 42px;
+}
+.travel-index nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+}
+.travel-index nav button {
+  color: #707367;
+  text-align: left;
+  cursor: pointer;
+}
+.travel-index nav button[aria-pressed="true"] {
+  color: #94634c;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.travel-place h2 {
+  font-size: 29px;
+  margin-bottom: 12px;
+}
+.travel-photos {
+  columns: 2;
+  column-gap: 16px;
+  margin-top: 24px;
+}
+.travel-photos img {
+  width: 100%;
+  height: auto;
+  margin-bottom: 16px;
+}
+.mapboxgl-popup-content {
+  font-family: Georgia, serif;
+  color: #363c35;
+}
+@media (max-width: 900px) {
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 17px;
+    padding: 26px 24px 14px;
+  }
+  .site-header nav {
+    gap: 8px 20px;
+  }
+  .site-footer {
+    margin-left: 24px;
+    margin-right: 24px;
+  }
+}
+@media (max-width: 600px) {
+  .home-page {
+    padding: 16px 10px 0;
+  }
+  .home-intro {
+    margin: 34px 14px 0;
+    font-size: 17px;
+  }
+  .home-intro h1 {
+    font-size: 29px;
+  }
+  .site-content > div:not(.home-page) {
+    padding: 38px 24px 24px;
+  }
+  .page-heading {
+    margin-bottom: 30px;
+  }
+  .page-heading h1 {
+    font-size: 35px;
+  }
+  .site-footer {
+    margin-top: 56px;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+  .travel-index {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .travel-index nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+  }
+  .travel-map {
+    height: 260px;
+  }
+}

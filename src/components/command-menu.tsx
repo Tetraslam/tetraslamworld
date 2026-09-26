@@ -6,7 +6,6 @@ import { track } from "@vercel/analytics";
 import { Command } from "cmdk";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useDevice } from "@/hooks/use-device";
 
 const ADMIN_USER_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || "")
   .split(",")
@@ -28,7 +27,6 @@ export function CommandMenu() {
   > | null>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const { isMobile, isMac } = useDevice();
   const { user } = useUser();
 
   const isAdmin = useMemo(() => {
@@ -42,7 +40,7 @@ export function CommandMenu() {
     (async () => {
       const cal = await getCalApi({ namespace: "30min" });
       cal("ui", {
-        theme: "dark",
+        theme: "light",
         cssVarsPerTheme: {
           light: { "cal-brand": "#2B262B" },
           dark: { "cal-brand": "#E8A6A6" },
@@ -92,16 +90,76 @@ export function CommandMenu() {
     // Admin subroutes (only on /admin pages, shown first for priority)
     ...(isAdmin && pathname.startsWith("/admin")
       ? [
-          { id: "admin-overview", label: "admin / overview", action: () => navigate("/admin"), group: "admin pages", icon: "~" },
-          { id: "admin-work", label: "admin / work", action: () => navigate("/admin/work"), group: "admin pages", icon: ">" },
-          { id: "admin-friends", label: "admin / friends", action: () => navigate("/admin/friends"), group: "admin pages", icon: "@" },
-          { id: "admin-media", label: "admin / media", action: () => navigate("/admin/media"), group: "admin pages", icon: "*" },
-          { id: "admin-links", label: "admin / links", action: () => navigate("/admin/links"), group: "admin pages", icon: "&" },
-          { id: "admin-taste", label: "admin / taste", action: () => navigate("/admin/taste"), group: "admin pages", icon: "<>" },
-          { id: "admin-suggestions", label: "admin / suggestions", action: () => navigate("/admin/link-suggestions"), group: "admin pages", icon: "?" },
-          { id: "admin-travel", label: "admin / travel", action: () => navigate("/admin/travel"), group: "admin pages", icon: "^" },
-          { id: "admin-gallery", label: "admin / gallery", action: () => navigate("/admin/gallery"), group: "admin pages", icon: "[]" },
-          { id: "admin-emails", label: "admin / emails", action: () => navigate("/admin/emails"), group: "admin pages", icon: "✉" },
+          {
+            id: "admin-overview",
+            label: "admin / overview",
+            action: () => navigate("/admin"),
+            group: "admin pages",
+            icon: "~",
+          },
+          {
+            id: "admin-work",
+            label: "admin / work",
+            action: () => navigate("/admin/work"),
+            group: "admin pages",
+            icon: ">",
+          },
+          {
+            id: "admin-friends",
+            label: "admin / friends",
+            action: () => navigate("/admin/friends"),
+            group: "admin pages",
+            icon: "@",
+          },
+          {
+            id: "admin-media",
+            label: "admin / media",
+            action: () => navigate("/admin/media"),
+            group: "admin pages",
+            icon: "*",
+          },
+          {
+            id: "admin-links",
+            label: "admin / links",
+            action: () => navigate("/admin/links"),
+            group: "admin pages",
+            icon: "&",
+          },
+          {
+            id: "admin-taste",
+            label: "admin / taste",
+            action: () => navigate("/admin/taste"),
+            group: "admin pages",
+            icon: "<>",
+          },
+          {
+            id: "admin-suggestions",
+            label: "admin / suggestions",
+            action: () => navigate("/admin/link-suggestions"),
+            group: "admin pages",
+            icon: "?",
+          },
+          {
+            id: "admin-travel",
+            label: "admin / travel",
+            action: () => navigate("/admin/travel"),
+            group: "admin pages",
+            icon: "^",
+          },
+          {
+            id: "admin-gallery",
+            label: "admin / gallery",
+            action: () => navigate("/admin/gallery"),
+            group: "admin pages",
+            icon: "[]",
+          },
+          {
+            id: "admin-emails",
+            label: "admin / emails",
+            action: () => navigate("/admin/emails"),
+            group: "admin pages",
+            icon: "✉",
+          },
         ]
       : []),
     // Navigation
@@ -324,25 +382,14 @@ export function CommandMenu() {
     {} as Record<string, CommandItem[]>,
   );
 
-  // Hide command menu button on mobile
-  if (!open) {
-    if (isMobile) return null;
-    return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 px-3 py-1.5 text-xs text-muted-foreground bg-surface border border-border rounded hover:border-rose/50 transition-colors z-50"
-      >
-        <span className="opacity-60">press</span>{" "}
-        <kbd className="text-rose">{isMac ? "cmd" : "ctrl"}+k</kbd>
-      </button>
-    );
-  }
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        aria-label="Close navigation"
         className="absolute inset-0 bg-background/80 backdrop-blur-sm"
         onClick={() => setOpen(false)}
       />

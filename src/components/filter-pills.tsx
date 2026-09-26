@@ -17,10 +17,10 @@ export function FilterPills<T extends string | null>({
   onChange: (value: T) => void;
   size?: "md" | "sm";
 }) {
-  const sizing = size === "md" ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs";
+  const sizing = size === "md" ? "py-1 text-base" : "py-1 text-sm";
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
       {label && (
         <span className="text-xs text-muted-foreground select-none">
           {label}
@@ -30,11 +30,12 @@ export function FilterPills<T extends string | null>({
         <button
           key={String(option.value)}
           type="button"
+          aria-pressed={value === option.value}
           onClick={() => onChange(option.value)}
-          className={`${sizing} rounded-lg border transition-all ${
+          className={`${sizing} border-b transition-colors ${
             value === option.value
-              ? "border-rose bg-rose/10 text-rose"
-              : "border-border text-muted-foreground hover:border-rose/50 hover:bg-surface"
+              ? "border-rose-deep text-rose-deep"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           {option.label}

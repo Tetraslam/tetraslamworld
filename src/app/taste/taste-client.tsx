@@ -8,7 +8,7 @@ import { FilterPills } from "@/components/filter-pills";
 import { PageHeader } from "@/components/page-header";
 import { TasteCard } from "@/components/taste-card";
 import { TasteListItem } from "@/components/taste-list-item";
-import { api } from "../../../convex/_generated/api";
+import type { api } from "../../../convex/_generated/api";
 
 type SortOrder = "manual" | "newest" | "oldest" | "alpha";
 type ViewMode = "cards" | "list";
@@ -229,7 +229,7 @@ export function TasteClient({
           </div>
 
           {/* Results count */}
-          {items && (
+          {items && hasActiveFilters && (
             <div className="text-xs text-muted-foreground">
               {filtered.length} of {items.length} entr
               {items.length !== 1 ? "ies" : "y"}
