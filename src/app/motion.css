@@ -51,7 +51,6 @@
 .public-site .enter-item {
   animation: settle-in 280ms var(--settle) var(--enter-delay, 0ms) backwards;
 }
-.public-site .page-heading,
 .public-site .blog-content > header {
   animation: settle-in 240ms var(--settle) backwards;
 }

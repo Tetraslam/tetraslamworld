@@ -82,8 +82,20 @@ export function useListMotion() {
     };
     preference.addEventListener("change", reset);
     window.addEventListener("resize", reset);
+    const observer = new ResizeObserver(() => {
+      const container = root.current;
+      if (!container) return;
+      for (const element of container.querySelectorAll<HTMLElement>(
+        "[data-motion-key]",
+      )) {
+        const key = element.dataset.motionKey;
+        if (key) positions.current.set(key, position(element, container));
+      }
+    });
+    if (root.current) observer.observe(root.current);
     return () => {
       reset();
+      observer.disconnect();
       preference.removeEventListener("change", reset);
       window.removeEventListener("resize", reset);
     };

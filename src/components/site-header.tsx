@@ -3,17 +3,18 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { IntentLink as Link } from "./intent-link";
+import { ShortcutLabel } from "./shortcut-label";
 
 const pages = [
-  ["/work", "work"],
-  ["/blog", "writing"],
-  ["/friends", "friends"],
-  ["/media", "media"],
-  ["/links", "links"],
+  ["/work", "work", "W"],
+  ["/blog", "writing", "R"],
+  ["/friends", "friends", "F"],
+  ["/media", "media", "M"],
+  ["/links", "links", "L"],
   ["/taste", "taste"],
-  ["/travel", "travel"],
-  ["/gallery", "gallery"],
-  ["/pixels", "pixels"],
+  ["/travel", "travel", "T"],
+  ["/gallery", "gallery", "G"],
+  ["/pixels", "pixels", "P"],
 ];
 
 export function SiteHeader() {
@@ -27,17 +28,18 @@ export function SiteHeader() {
         tetraslam’s world
       </Link>
       <nav aria-label="Main navigation">
-        {pages.map(([href, label]) => (
+        {pages.map(([href, label, shortcut]) => (
           <Link
             key={href}
             href={href}
+            aria-keyshortcuts={shortcut}
             aria-current={
               pathname === href || pathname.startsWith(`${href}/`)
                 ? "page"
                 : undefined
             }
           >
-            {label}
+            <ShortcutLabel label={label} shortcut={shortcut} />
           </Link>
         ))}
       </nav>

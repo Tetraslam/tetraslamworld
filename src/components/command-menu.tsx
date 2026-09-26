@@ -6,6 +6,7 @@ import { Command } from "cmdk";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { ShortcutLabel } from "./shortcut-label";
 
 const ADMIN_USER_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || "")
   .split(",")
@@ -164,9 +165,9 @@ export function CommandMenu() {
       icon: ">",
     },
     {
-      id: "blog",
-      label: "blog",
-      shortcut: ["B"],
+      id: "writing",
+      label: "writing",
+      shortcut: ["R"],
       action: () => navigate("/blog"),
       group: "navigation",
       icon: "#",
@@ -262,7 +263,6 @@ export function CommandMenu() {
     {
       id: "resume",
       label: "resume",
-      shortcut: ["R"],
       action: openResume,
       group: "meta",
       icon: "pdf",
@@ -280,7 +280,7 @@ export function CommandMenu() {
     },
     {
       id: "rss",
-      label: "blog rss",
+      label: "writing rss",
       action: () =>
         openExternal("https://blog.tetraslam.world/rss", "blog_rss"),
       group: "meta",
@@ -318,6 +318,7 @@ export function CommandMenu() {
     };
 
     const down = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || e.isComposing || e.repeat) return;
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((o) => !o);
@@ -329,7 +330,7 @@ export function CommandMenu() {
         return;
       }
 
-      // Global single-key shortcuts (the ones shown as kbd hints in the
+      // Global single-key shortcuts (underlined in the
       // palette). Only when the palette is closed and focus isn't in a
       // text field.
       if (
@@ -337,6 +338,7 @@ export function CommandMenu() {
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
+        document.querySelector('[role="dialog"]') ||
         isTypingTarget(e.target)
       ) {
         return;
@@ -402,6 +404,7 @@ export function CommandMenu() {
                   <Command.Item
                     key={item.id}
                     value={item.label}
+                    aria-keyshortcuts={item.shortcut?.join(" ")}
                     onSelect={item.action}
                     className="flex items-center gap-3 px-3 py-2 rounded cursor-pointer text-foreground data-[selected=true]:bg-rose/10 data-[selected=true]:text-rose transition-colors"
                   >
@@ -410,19 +413,12 @@ export function CommandMenu() {
                         {item.icon}
                       </span>
                     )}
-                    <span className="flex-1">{item.label}</span>
-                    {item.shortcut && (
-                      <div className="flex gap-1">
-                        {item.shortcut.map((key) => (
-                          <kbd
-                            key={key}
-                            className="px-1.5 py-0.5 text-xs bg-background rounded border border-border text-muted-foreground"
-                          >
-                            {key}
-                          </kbd>
-                        ))}
-                      </div>
-                    )}
+                    <span className="flex-1">
+                      <ShortcutLabel
+                        label={item.label}
+                        shortcut={item.shortcut?.[0]}
+                      />
+                    </span>
                   </Command.Item>
                 ))}
               </Command.Group>

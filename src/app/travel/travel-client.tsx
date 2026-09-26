@@ -27,9 +27,33 @@ export function TravelClient({
   const data = usePreloadedQuery(preloadedLocations);
   const locations = [...data].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const [selected, setSelected] = useState(initialPlace);
+  const [placeSearch, setPlaceSearch] = useState("");
+  const placeList = useRef<HTMLElement>(null);
   const notes = useRef<HTMLElement>(null);
   const active =
     locations.find((place) => place._id === selected) ?? locations[0];
+  const visiblePlaces = locations.filter((place) =>
+    place.location
+      .toLocaleLowerCase()
+      .includes(placeSearch.trim().toLocaleLowerCase()),
+  );
+  useEffect(() => {
+    if (
+      !active ||
+      !active.location
+        .toLocaleLowerCase()
+        .includes(placeSearch.trim().toLocaleLowerCase())
+    )
+      return;
+    const list = placeList.current;
+    const link = list?.querySelector<HTMLElement>('[aria-current="location"]');
+    if (!list || !link) return;
+    const box = list.getBoundingClientRect(),
+      item = link.getBoundingClientRect();
+    if (item.top < box.top) list.scrollTop += item.top - box.top;
+    else if (item.bottom > box.bottom)
+      list.scrollTop += item.bottom - box.bottom;
+  }, [active, placeSearch]);
   const selectPlace = useCallback((id: string) => {
     const url = new URL(window.location.href);
     url.searchParams.set("place", id);
@@ -78,28 +102,49 @@ export function TravelClient({
         </div>
       )}
       <div className="travel-index">
-        <nav aria-label="Places">
-          {locations.map((place) => (
-            <a
-              key={place._id}
-              href={`?place=${place._id}`}
-              aria-current={active?._id === place._id ? "location" : undefined}
-              onClick={(event) => {
-                if (
-                  event.metaKey ||
-                  event.ctrlKey ||
-                  event.shiftKey ||
-                  event.altKey
-                )
-                  return;
-                event.preventDefault();
-                selectPlace(place._id);
-              }}
-            >
-              {place.location}
-            </a>
-          ))}
-        </nav>
+        <aside className="travel-place-index">
+          <div className="collection-search place-search">
+            <input
+              type="search"
+              aria-label="Search places"
+              placeholder="find a place"
+              value={placeSearch}
+              onChange={(event) => setPlaceSearch(event.target.value)}
+            />
+            {placeSearch && (
+              <button type="button" onClick={() => setPlaceSearch("")}>
+                clear
+              </button>
+            )}
+          </div>
+          <nav ref={placeList} aria-label="Places" className="place-list">
+            {visiblePlaces.map((place) => (
+              <a
+                key={place._id}
+                href={`?place=${place._id}`}
+                aria-current={
+                  active?._id === place._id ? "location" : undefined
+                }
+                onClick={(event) => {
+                  if (
+                    event.metaKey ||
+                    event.ctrlKey ||
+                    event.shiftKey ||
+                    event.altKey
+                  )
+                    return;
+                  event.preventDefault();
+                  selectPlace(place._id);
+                }}
+              >
+                {place.location}
+              </a>
+            ))}
+          </nav>
+          {!visiblePlaces.length && (
+            <p className="place-empty">no places match.</p>
+          )}
+        </aside>
         {active ? (
           <article
             key={active._id}

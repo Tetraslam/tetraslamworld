@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { isGif } from "@/lib/media";
 import { entranceStyle } from "@/lib/motion";
+import { ExpandableMarkdown } from "./expandable-markdown";
 import { ImageSwap } from "./image-swap";
-import { Markdown } from "./markdown";
 import { SoftImage as Image } from "./soft-image";
 
 interface TasteItem {
@@ -85,13 +85,13 @@ export function TasteCard({
       <p className="text-xs text-muted-foreground mt-1">{domain}</p>
       {item.content && (
         <div className="mt-3 text-base">
-          <Markdown content={item.content} />
+          <ExpandableMarkdown content={item.content} />
         </div>
       )}
       {item.designNotes && (
         <div className="taste-notes">
           <div>
-            <Markdown content={item.designNotes} />
+            <ExpandableMarkdown content={item.designNotes} />
           </div>
         </div>
       )}

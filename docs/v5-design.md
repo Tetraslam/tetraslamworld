@@ -1,5 +1,17 @@
 # V5 public-site design
 
+## Collection refinement contract
+
+Desktop artwork keeps its full aspect ratio and is capped by viewport height so the introduction remains within reach. Cmd+K uses R for writing; resume has no hotkey. Underlined label characters are the visible shortcut affordance, and letter shortcuts do not fire while typing or inside another dialog. Books precede the unchanged remaining media categories. Long taste copy uses a plain, word-boundary excerpt and native expandable details containing the complete original Markdown, without hidden focusable links in the excerpt. Expansion animates the details box, while reduced-motion and no-JS retain native behaviour. Travel keeps the always-visible map and uses a searchable, height-bounded place index with stable shareable links; selection must remain independent of the search filter. Gallery cards have a clear expand affordance for mouse, keyboard, and touch, with restrained image motion on hover/focus.
+
+Navbar and command palette share the same shortcut-label renderer. Only letters with assigned shortcuts are underlined. Skeleton handoffs use the real PageHeader component, the same Tailwind container widths/padding as each destination, and collection-specific controls and image frames. Page headings stay stationary rather than replaying their entrance when a suspense fallback is replaced. Work rows, writing years, filters, media shelves, gallery frames, the travel map, and the mosaic reserve corresponding shapes; variable-length text can still change lower-page height once known.
+
+All changes are presentation-only; existing content and Convex mutations are unchanged and no live submissions are used for verification. Build candidate output is isolated via Next's native `distDir` option (`NEXT_BUILD_DIR=.next-review` for this pass), leaving the running `.next` preview intact until the tested build is switched in.
+
+Refinement verification: the introduction heading is within the first viewport at 1366×768, 1440×900, and 2560×1440, with the whole illustration preserved. Cmd+K and navbar both underline R in writing; pressing R navigates to writing, resume has no shortcut, and typing R in place search does not navigate. Media order is books, anime, manga, games, music for the current records. Taste expands/collapses by Enter/Space and still expands with client JavaScript blocked. Place search, bounded scrolling, selected notes, and mobile focus work without horizontal overflow. Gallery focus/expansion restores focus; hover transforms were checked with the desktop media rule enabled in the headless browser (whose pointer media defaults to none). Actual frame sampling across suspense handoffs found identical title x/y/width/height on work, media, links, taste, travel, friends, and gallery; mobile map/gallery frame coordinates were exact and the first media cover differed by 0.25px. Variable-length lower-page text is not predicted by the skeleton.
+
+For future local builds, never build into the directory currently served by the preview. Alternate `.next` and `.next-review`, then start the tested output using the matching `NEXT_BUILD_DIR`. The local preview after this pass serves `.next-review`.
+
 Current travel presentation: the map always mounts on arrival when configured, with its existing fixed-size loading placeholder and entrance motion. There is no show/hide control. This supersedes the optional-map behaviour described in the historical arrival and motion passes below.
 
 ## Arrival and loading contract

@@ -15,9 +15,9 @@ import type { api } from "../../../convex/_generated/api";
 import type { Doc } from "../../../convex/_generated/dataModel";
 
 const categories: Record<string, string> = {
+  book: "books",
   anime: "anime",
   manga: "manga",
-  book: "books",
   game: "games",
   music: "music",
   movie: "movies",

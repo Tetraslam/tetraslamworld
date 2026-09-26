@@ -71,6 +71,7 @@ export function GalleryClient({
               <button
                 key={image._id}
                 type="button"
+                aria-label={`Open photograph: ${image.caption || `photo ${index + 1}`}`}
                 onClick={(event) => {
                   trigger.current = event.currentTarget;
                   setLightbox(image.imageUrl);
@@ -79,7 +80,7 @@ export function GalleryClient({
                     caption: image.caption || "untitled",
                   });
                 }}
-                className="mb-7 group relative cursor-pointer block w-full text-left enter-item"
+                className="gallery-card mb-7 relative block w-full text-left enter-item"
                 style={entranceStyle(index)}
               >
                 <span className="gallery-thumb">
@@ -94,9 +95,20 @@ export function GalleryClient({
                     placeholder={isGif(image.imageUrl) ? "empty" : "blur"}
                     blurDataURL={BLUR_DATA_URL}
                   />
+                  <span className="gallery-expand" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      aria-hidden="true"
+                    >
+                      <path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5" />
+                    </svg>
+                  </span>
                 </span>
                 {image.caption && (
-                  <div className="pt-2">
+                  <div className="gallery-caption pt-2">
                     <p className="text-sm text-foreground">{image.caption}</p>
                   </div>
                 )}
