@@ -3,7 +3,7 @@
 import { track } from "@vercel/analytics";
 import { type Preloaded, usePreloadedQuery } from "convex/react";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Masonry from "react-masonry-css";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
@@ -20,9 +20,35 @@ export function GalleryClient({
   const [lightbox, setLightbox] = useState<string | null>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
 
-  const sortedImages = [...images].sort(
-    (a, b) => (a.order ?? 0) - (b.order ?? 0),
+  const sortedImages = useMemo(
+    () => [...images].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
+    [images],
   );
+  const activeIndex = sortedImages.findIndex(
+    (image) => image.imageUrl === lightbox,
+  );
+  const move = useCallback(
+    (direction: number) => {
+      if (activeIndex < 0 || !sortedImages.length) return;
+      setLightbox(
+        sortedImages[
+          (activeIndex + direction + sortedImages.length) % sortedImages.length
+        ].imageUrl,
+      );
+    },
+    [activeIndex, sortedImages],
+  );
+  useEffect(() => {
+    if (!lightbox) return;
+    const key = (event: KeyboardEvent) => {
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        move(event.key === "ArrowLeft" ? -1 : 1);
+      }
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [lightbox, move]);
 
   const breakpointColumns = {
     default: 4,
@@ -98,7 +124,7 @@ export function GalleryClient({
               event.preventDefault();
               trigger.current?.focus();
             }}
-            className="sm:max-w-[94vw] h-[94vh] bg-background p-4"
+            className="sm:max-w-[94vw] h-[94svh] bg-background p-6 grid-rows-[minmax(0,1fr)_auto]"
             aria-describedby={undefined}
           >
             <DialogTitle className="sr-only">
@@ -108,13 +134,39 @@ export function GalleryClient({
             <div className="relative w-full h-full">
               <Image
                 src={lightbox}
-                alt="Full size"
+                alt={sortedImages[activeIndex]?.caption || "Photograph"}
                 fill
                 className="object-contain"
                 sizes="90vw"
                 unoptimized={isGif(lightbox)}
                 priority
               />
+            </div>
+            <div className="viewer-controls">
+              {sortedImages.length > 1 && (
+                <button
+                  type="button"
+                  aria-label="Previous photograph"
+                  onClick={() => move(-1)}
+                >
+                  ←
+                </button>
+              )}
+              <span>{sortedImages[activeIndex]?.caption}</span>
+              {sortedImages.length > 1 && (
+                <>
+                  <output aria-live="polite">
+                    {activeIndex + 1} / {sortedImages.length}
+                  </output>
+                  <button
+                    type="button"
+                    aria-label="Next photograph"
+                    onClick={() => move(1)}
+                  >
+                    →
+                  </button>
+                </>
+              )}
             </div>
           </DialogContent>
         </Dialog>

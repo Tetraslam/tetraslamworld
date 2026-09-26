@@ -41,6 +41,17 @@ export function SiteHeader() {
           </Link>
         ))}
       </nav>
+      {!pathname.startsWith("/admin") && (
+        <button
+          type="button"
+          className="nav-search"
+          aria-label="Search site"
+          title="Search (Ctrl/⌘ K)"
+          onClick={() => document.dispatchEvent(new CustomEvent("site:search"))}
+        >
+          search
+        </button>
+      )}
       {pathname.startsWith("/admin") && (
         <div>
           <SignedOut>

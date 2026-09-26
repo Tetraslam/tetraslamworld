@@ -1,347 +1,137 @@
 "use client";
 
-import { useClerk, useUser } from "@clerk/nextjs";
-import { track } from "@vercel/analytics";
-import { useMutation, useQuery } from "convex/react";
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { EmptyState } from "@/components/empty-state";
-import { FilterPills } from "@/components/filter-pills";
+import { useCallback, useEffect, useState } from "react";
 import { PageHeader } from "@/components/page-header";
-import { api } from "../../../convex/_generated/api";
+import { Subscribe } from "@/components/subscribe";
 
-interface BlogPost {
+interface Post {
   id: string;
   slug: string;
   title: string;
-  link: string;
   published: string;
   summary?: string;
 }
-
-type SortOrder = "newest" | "oldest";
-
-const ADMIN_USER_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || "")
-  .split(",")
-  .filter(Boolean);
+const admins = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS ?? "").split(",");
 
 export default function BlogPage() {
-  const { user, isSignedIn } = useUser();
-  const { openSignIn } = useClerk();
-  const isAdmin = user && ADMIN_USER_IDS.includes(user.id);
-
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { user } = useUser();
+  const [posts, setPosts] = useState<Post[]>([]);
   const [search, setSearch] = useState("");
-  const [yearFilter, setYearFilter] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Email subscription
-  const emails = useQuery(api.emailList.list, {});
-  const addEmails = useMutation(api.emailList.add);
-  const [subscribing, setSubscribing] = useState(false);
-  const [subscribeStatus, setSubscribeStatus] = useState<
-    "idle" | "success" | "already"
-  >("idle");
-
-  const userEmail = user?.primaryEmailAddress?.emailAddress;
-  const isSubscribed =
-    userEmail && emails?.some((e) => e.email === userEmail.toLowerCase());
-
-  const handleSubscribe = async () => {
-    if (!isSignedIn) {
-      openSignIn();
-      return;
-    }
-    if (!userEmail) return;
-
-    setSubscribing(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const load = useCallback(async () => {
+    setError(false);
     try {
-      const result = await addEmails({ emails: [userEmail] });
-      if (result.added.length > 0) {
-        setSubscribeStatus("success");
-        track("email_subscribe", { source: "blog" });
-      } else {
-        setSubscribeStatus("already");
-      }
+      const response = await fetch("/api/blog");
+      if (!response.ok) throw new Error("feed unavailable");
+      const data = await response.json();
+      setPosts(data.posts ?? []);
+    } catch {
+      setError(true);
     } finally {
-      setSubscribing(false);
-    }
-  };
-
-  // Track search queries with debounce
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    if (value.trim()) {
-      searchTimeoutRef.current = setTimeout(() => {
-        track("search_query", { page: "blog", query: value.trim() });
-      }, 1000);
-    }
-  };
-
-  const fetchPosts = useCallback(async () => {
-    try {
-      const res = await fetch("/api/blog");
-      const data = await res.json();
-      setPosts(data.posts || []);
-    } catch (err) {
-      console.error("Failed to fetch posts:", err);
+      setLoading(false);
     }
   }, []);
-
   useEffect(() => {
-    fetchPosts().finally(() => setLoading(false));
-  }, [fetchPosts]);
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await fetch("/api/blog/revalidate", { method: "POST" });
-      await fetchPosts();
-    } catch (err) {
-      console.error("Failed to refresh:", err);
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  // Extract unique years from posts
-  const years = useMemo(() => {
-    const yearSet = new Set<string>();
-    posts.forEach((post) => {
-      const year = new Date(post.published).getFullYear().toString();
-      yearSet.add(year);
-    });
-    return Array.from(yearSet).sort((a, b) => Number(b) - Number(a));
-  }, [posts]);
-
-  // Filter and sort posts
-  const filteredPosts = useMemo(() => {
-    const result = posts.filter((post) => {
-      // Text search
-      const matchesSearch =
-        !search ||
-        post.title.toLowerCase().includes(search.toLowerCase()) ||
-        post.summary?.toLowerCase().includes(search.toLowerCase());
-
-      // Year filter
-      const matchesYear =
-        !yearFilter ||
-        new Date(post.published).getFullYear().toString() === yearFilter;
-
-      return matchesSearch && matchesYear;
-    });
-
-    // Sort
-    result.sort((a, b) => {
-      const dateA = new Date(a.published).getTime();
-      const dateB = new Date(b.published).getTime();
-      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-    });
-
-    return result;
-  }, [posts, search, yearFilter, sortOrder]);
-
+    void load();
+  }, [load]);
+  const filtered = posts
+    .filter((post) =>
+      `${post.title} ${post.summary ?? ""}`
+        .toLowerCase()
+        .includes(search.trim().toLowerCase()),
+    )
+    .sort((a, b) => Date.parse(b.published) - Date.parse(a.published));
+  const years = [
+    ...new Set(filtered.map((post) => new Date(post.published).getFullYear())),
+  ];
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
-      <div className="space-y-6 animate-fade-in">
-        <PageHeader
-          path="/blog"
-          title="blog"
-          subtitle="thoughts, notes, and ramblings"
-          count={loading ? undefined : posts.length}
-          countLabel="posts"
-          action={
-            isAdmin ? (
-              <button
-                type="button"
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="px-3 py-1.5 text-sm border border-rose/50 bg-rose/10 text-rose rounded-lg hover:bg-rose/20 hover:border-rose transition-all disabled:opacity-50"
-              >
-                {refreshing ? "refreshing..." : "refresh"}
-              </button>
-            ) : undefined
-          }
-        />
-
-        {/* Search and filters */}
-        <div className="space-y-3">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="search posts..."
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full px-4 py-3 bg-surface border border-border rounded-lg focus:outline-none focus:border-rose/50 text-foreground placeholder:text-muted-foreground transition-colors"
-            />
-            {search && (
-              <button
-                type="button"
-                aria-label="Clear search"
-                onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                &times;
-              </button>
-            )}
-          </div>
-
-          {/* Filter row */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            {/* Year filter */}
-            <FilterPills
-              size="sm"
-              label="year:"
-              options={[
-                { value: null, label: "all" },
-                ...years.map((year) => ({ value: year, label: year })),
-              ]}
-              value={yearFilter}
-              onChange={(value) => {
-                setYearFilter(value);
-                track("filter_use", {
-                  page: "blog",
-                  filter_type: "year",
-                  value: value ?? "all",
-                });
-              }}
-            />
-
-            <span className="text-border">|</span>
-
-            {/* Sort order */}
-            <FilterPills
-              size="sm"
-              label="sort:"
-              options={[
-                { value: "newest" as SortOrder, label: "newest" },
-                { value: "oldest" as SortOrder, label: "oldest" },
-              ]}
-              value={sortOrder}
-              onChange={(value) => {
-                setSortOrder(value);
-                track("filter_use", {
-                  page: "blog",
-                  filter_type: "sort",
-                  value,
-                });
-              }}
-            />
-
-            {/* Clear all filters */}
-            {(search || yearFilter || sortOrder !== "newest") && (
-              <>
-                <span className="text-border">|</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearch("");
-                    setYearFilter(null);
-                    setSortOrder("newest");
-                  }}
-                  className="px-2 py-1 text-xs text-muted-foreground hover:text-rose transition-colors"
-                >
-                  clear all
-                </button>
-              </>
-            )}
-          </div>
-
-          {/* Results count */}
-          {!loading && (search || yearFilter) && (
-            <div className="text-xs text-muted-foreground">
-              {filteredPosts.length} post{filteredPosts.length !== 1 ? "s" : ""}
-              {(search || yearFilter) && " found"}
-            </div>
-          )}
-        </div>
-
-        {/* Subscribe box - show only if confirmed not subscribed */}
-        {subscribeStatus !== "success" &&
-          (isSignedIn ? emails && !isSubscribed : true) && (
-            <div className="py-2">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div className="text-center sm:text-left">
-                  <a
-                    href="https://blog.tetraslam.world/rss"
-                    className="text-sm"
-                  >
-                    rss
-                  </a>
-                </div>
-                {subscribeStatus === "already" ? (
-                  <span className="text-sm text-muted-foreground">
-                    already subscribed!
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={isSignedIn ? handleSubscribe : () => openSignIn()}
-                    disabled={subscribing}
-                    className="px-4 py-2 text-sm bg-rose text-background rounded-lg hover:bg-rose-deep transition-colors disabled:opacity-50"
-                  >
-                    {subscribing ? "subscribing..." : "subscribe by email"}
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-        {loading ? (
-          <div className="text-muted-foreground py-8 text-center">
-            <div className="inline-block animate-pulse-subtle">loading...</div>
-          </div>
-        ) : filteredPosts.length === 0 ? (
-          <EmptyState
-            message={
-              search || yearFilter
-                ? "no posts match your filters"
-                : "no posts yet"
-            }
-          />
-        ) : (
-          <div className="space-y-3">
-            {filteredPosts.map((post, index) => (
-              <Link
-                key={post.id}
-                href={`/blog/${post.slug}`}
-                onClick={() =>
-                  track("blog_post_click", {
-                    title: post.title,
-                    slug: post.slug,
-                  })
+      <PageHeader
+        path="/blog"
+        title="writing"
+        subtitle=""
+        action={
+          user && admins.includes(user.id) ? (
+            <button
+              type="button"
+              disabled={refreshing}
+              onClick={async () => {
+                setRefreshing(true);
+                try {
+                  const response = await fetch("/api/blog/revalidate", {
+                    method: "POST",
+                  });
+                  if (!response.ok) throw new Error();
+                  await load();
+                } catch {
+                  setError(true);
+                } finally {
+                  setRefreshing(false);
                 }
-                className="block p-4 tcard tcard-hover group"
-                style={{ animationDelay: `${index * 30}ms` }}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-lg font-medium text-rose group-hover:text-rose-deep transition-colors">
-                      {post.title}
-                    </h2>
-                    {post.summary && (
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                        {post.summary}
-                      </p>
-                    )}
-                  </div>
-                  <time className="text-xs text-muted-foreground whitespace-nowrap">
-                    {new Date(post.published).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </time>
-                </div>
-              </Link>
-            ))}
-          </div>
+              }}
+            >
+              {refreshing ? "refreshing…" : "refresh"}
+            </button>
+          ) : undefined
+        }
+      />
+      <div className="collection-search">
+        <input
+          type="search"
+          aria-label="Search writing"
+          placeholder="search writing"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+        {search && (
+          <button type="button" onClick={() => setSearch("")}>
+            clear
+          </button>
         )}
       </div>
+      {loading ? (
+        <output>loading…</output>
+      ) : error ? (
+        <p>
+          couldn’t load the writing.{" "}
+          <button type="button" className="text-action" onClick={load}>
+            try again
+          </button>
+        </p>
+      ) : filtered.length ? (
+        years.map((year) => (
+          <section key={year} className="writing-year">
+            <h2>{year}</h2>
+            <div>
+              {filtered
+                .filter(
+                  (post) => new Date(post.published).getFullYear() === year,
+                )
+                .map((post) => (
+                  <article key={post.id}>
+                    <h3>
+                      <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+                    </h3>
+                    {post.summary && <p>{post.summary}</p>}
+                    <time dateTime={post.published}>
+                      {new Date(post.published).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </time>
+                  </article>
+                ))}
+            </div>
+          </section>
+        ))
+      ) : (
+        <p>no posts{search ? " match your search" : " yet"}.</p>
+      )}
+      <Subscribe />
     </div>
   );
 }

@@ -77,14 +77,11 @@ export function TasteCard({ item }: { item: TasteItem; delay?: number }) {
         </div>
       )}
       {item.designNotes && (
-        <details className="mt-4 text-base">
-          <summary className="cursor-pointer text-rose-deep">
-            design notes
-          </summary>
-          <div className="mt-3">
+        <div className="taste-notes">
+          <div>
             <Markdown content={item.designNotes} />
           </div>
-        </details>
+        </div>
       )}
     </article>
   );

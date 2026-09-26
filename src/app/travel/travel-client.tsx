@@ -3,7 +3,7 @@
 import { type Preloaded, usePreloadedQuery } from "convex/react";
 import mapboxgl from "mapbox-gl";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Markdown } from "@/components/markdown";
 import { PageHeader } from "@/components/page-header";
 import type { api } from "../../../convex/_generated/api";
@@ -17,6 +17,33 @@ export function TravelClient({
   const data = usePreloadedQuery(preloadedLocations);
   const locations = [...data].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const [selected, setSelected] = useState<string | null>(null);
+  const notes = useRef<HTMLElement>(null);
+  const selectPlace = useCallback((id: string) => {
+    if (window.location.hash !== `#${id}`)
+      window.history.pushState(null, "", `#${id}`);
+    setSelected(id);
+    if (window.matchMedia("(max-width: 600px)").matches)
+      requestAnimationFrame(() => {
+        notes.current?.focus({ preventScroll: true });
+        notes.current?.scrollIntoView({
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+            .matches
+            ? "instant"
+            : "smooth",
+          block: "start",
+        });
+      });
+  }, []);
+  useEffect(() => {
+    const restore = () => setSelected(window.location.hash.slice(1) || null);
+    restore();
+    window.addEventListener("hashchange", restore);
+    window.addEventListener("popstate", restore);
+    return () => {
+      window.removeEventListener("hashchange", restore);
+      window.removeEventListener("popstate", restore);
+    };
+  }, []);
   const active =
     locations.find((place) => place._id === selected) ?? locations[0];
   const container = useRef<HTMLDivElement>(null);
@@ -67,15 +94,17 @@ export function TravelClient({
         border: "2px solid white",
         cursor: "pointer",
       });
-      button.addEventListener("click", () => setSelected(place._id));
-      return new mapboxgl.Marker({ element: button })
+      button.addEventListener("click", () => selectPlace(place._id));
+      const marker = new mapboxgl.Marker({ element: button })
         .setLngLat([place.coordinates.lng, place.coordinates.lat])
         .addTo(map.current as mapboxgl.Map);
+      button.setAttribute("role", "button");
+      return marker;
     });
     return () => {
       for (const marker of markers) marker.remove();
     };
-  }, [data, ready]);
+  }, [data, ready, selectPlace]);
 
   useEffect(() => {
     if (!selected || !active || !ready) return;
@@ -101,18 +130,33 @@ export function TravelClient({
       <div className="travel-index">
         <nav aria-label="Places">
           {locations.map((place) => (
-            <button
-              type="button"
+            <a
+              href={`#${place._id}`}
               key={place._id}
-              aria-pressed={active?._id === place._id}
-              onClick={() => setSelected(place._id)}
+              aria-current={active?._id === place._id ? "location" : undefined}
+              onClick={(event) => {
+                if (
+                  event.metaKey ||
+                  event.ctrlKey ||
+                  event.shiftKey ||
+                  event.altKey
+                )
+                  return;
+                event.preventDefault();
+                selectPlace(place._id);
+              }}
             >
               {place.location}
-            </button>
+            </a>
           ))}
         </nav>
         {active ? (
-          <article className="travel-place">
+          <article
+            className="travel-place"
+            ref={notes}
+            tabIndex={-1}
+            aria-label={active.location}
+          >
             <h2>{active.location}</h2>
             {active.dates?.start && (
               <p className="text-sm text-muted-foreground mb-5">

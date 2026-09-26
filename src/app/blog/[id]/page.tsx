@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "convex/react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Subscribe } from "@/components/subscribe";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
@@ -41,39 +42,6 @@ export default function BlogPostPage() {
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
-
-  // Email subscription
-  const emails = useQuery(api.emailList.list, {});
-  const addEmails = useMutation(api.emailList.add);
-  const [subscribing, setSubscribing] = useState(false);
-  const [subscribeStatus, setSubscribeStatus] = useState<
-    "idle" | "success" | "already"
-  >("idle");
-
-  const userEmail = user?.primaryEmailAddress?.emailAddress;
-  const isSubscribed =
-    userEmail && emails?.some((e) => e.email === userEmail.toLowerCase());
-
-  const handleSubscribe = async () => {
-    if (!isSignedIn) {
-      openSignIn();
-      return;
-    }
-    if (!userEmail) return;
-
-    setSubscribing(true);
-    try {
-      const result = await addEmails({ emails: [userEmail] });
-      if (result.added.length > 0) {
-        setSubscribeStatus("success");
-        track("email_subscribe", { source: "blog_post", slug });
-      } else {
-        setSubscribeStatus("already");
-      }
-    } finally {
-      setSubscribing(false);
-    }
-  };
 
   // Restore saved comment from localStorage on mount and scroll to input
   useEffect(() => {
@@ -378,20 +346,7 @@ export default function BlogPostPage() {
             )}
           </article>
 
-          {subscribeStatus !== "success" && !isSubscribed && (
-            <button
-              type="button"
-              onClick={handleSubscribe}
-              disabled={subscribing}
-              className="text-sm text-rose-deep"
-            >
-              {subscribeStatus === "already"
-                ? "already subscribed"
-                : subscribing
-                  ? "subscribing…"
-                  : "subscribe by email"}
-            </button>
-          )}
+          <Subscribe />
 
           {/* Comments section */}
           <section className="border-t border-border pt-8">

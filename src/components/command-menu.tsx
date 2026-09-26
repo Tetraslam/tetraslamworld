@@ -6,6 +6,7 @@ import { track } from "@vercel/analytics";
 import { Command } from "cmdk";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 const ADMIN_USER_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || "")
   .split(",")
@@ -22,6 +23,11 @@ interface CommandItem {
 
 export function CommandMenu() {
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const show = () => setOpen(true);
+    document.addEventListener("site:search", show);
+    return () => document.removeEventListener("site:search", show);
+  }, []);
   const [calApi, setCalApi] = useState<Awaited<
     ReturnType<typeof getCalApi>
   > | null>(null);
@@ -385,25 +391,24 @@ export function CommandMenu() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50">
-      {/* Backdrop */}
-      <button
-        type="button"
-        aria-label="Close navigation"
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-        onClick={() => setOpen(false)}
-      />
-
-      {/* Command palette */}
-      <div className="absolute left-1/2 top-[20%] -translate-x-1/2 w-full max-w-lg">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent
+        className="p-0 overflow-hidden"
+        aria-describedby={undefined}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          document.querySelector<HTMLButtonElement>(".nav-search")?.focus();
+        }}
+      >
+        <DialogTitle className="sr-only">Find a page</DialogTitle>
         <Command
           className="bg-surface border border-border rounded-lg shadow-2xl overflow-hidden"
           loop
         >
           <Command.Input
-            placeholder="where to?"
+            placeholder="find a page"
+            aria-label="Find a page"
             className="w-full px-4 py-3 bg-transparent border-b border-border text-foreground placeholder:text-muted-foreground outline-none"
-            autoFocus
           />
 
           <Command.List className="max-h-80 overflow-y-auto p-2">
@@ -469,7 +474,7 @@ export function CommandMenu() {
             </span>
           </div>
         </Command>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

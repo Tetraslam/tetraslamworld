@@ -50,7 +50,7 @@ export function FriendsClient({
             {sortedFriends.map((friend, index) => (
               <div
                 key={friend._id}
-                className="mb-4 p-5 tcard tcard-hover group"
+                className="mb-4 p-5 tcard"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="flex items-start gap-4">
@@ -60,7 +60,7 @@ export function FriendsClient({
                         src={friend.imageUrl}
                         alt={friend.name}
                         fill
-                        className="rounded-full object-cover border-2 border-border group-hover:border-rose/50 transition-colors"
+                        className="rounded-full object-cover border border-border"
                         sizes="64px"
                         unoptimized={isGif(friend.imageUrl)}
                         placeholder={isGif(friend.imageUrl) ? "empty" : "blur"}
@@ -73,9 +73,7 @@ export function FriendsClient({
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg text-rose group-hover:text-rose-deep transition-colors">
-                      {friend.name}
-                    </h3>
+                    <h3 className="text-lg">{friend.name}</h3>
                     {friend.content && (
                       <div className="text-sm text-muted-foreground mt-2 leading-relaxed">
                         <Markdown content={friend.content} />
@@ -89,7 +87,7 @@ export function FriendsClient({
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs px-2.5 py-1 bg-background rounded border border-border hover:border-rose/50 text-rose-deep hover:text-rose transition-colors"
+                            className="friend-link"
                           >
                             {link.label}
                           </a>
