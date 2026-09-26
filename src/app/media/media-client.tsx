@@ -98,7 +98,7 @@ export function MediaClient({
             <section key={group.type}>
               <h2 className="section-title">{categories[group.type]}</h2>
               <div className="media-shelf">
-                {group.items.map((item) => (
+                {group.items.map((item, index) => (
                   <button
                     type="button"
                     key={item._id}
@@ -112,6 +112,12 @@ export function MediaClient({
                     <span className="cover-image">
                       {imagesFor(item)[0] ? (
                         <Image
+                          loading={
+                            index < 4 &&
+                            (category !== null || group.type === groups[0].type)
+                              ? "eager"
+                              : "lazy"
+                          }
                           src={imagesFor(item)[0]}
                           alt=""
                           fill

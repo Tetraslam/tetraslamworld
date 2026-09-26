@@ -1,6 +1,5 @@
 "use client";
 
-import { getCalApi } from "@calcom/embed-react";
 import { useUser } from "@clerk/nextjs";
 import { track } from "@vercel/analytics";
 import { Command } from "cmdk";
@@ -28,9 +27,6 @@ export function CommandMenu() {
     document.addEventListener("site:search", show);
     return () => document.removeEventListener("site:search", show);
   }, []);
-  const [calApi, setCalApi] = useState<Awaited<
-    ReturnType<typeof getCalApi>
-  > | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useUser();
@@ -41,33 +37,15 @@ export function CommandMenu() {
     );
   }, [user]);
 
-  // Initialize Cal.com
-  useEffect(() => {
-    (async () => {
-      const cal = await getCalApi({ namespace: "30min" });
-      cal("ui", {
-        theme: "light",
-        cssVarsPerTheme: {
-          light: { "cal-brand": "#2B262B" },
-          dark: { "cal-brand": "#E8A6A6" },
-        },
-        hideEventTypeDetails: false,
-        layout: "month_view",
-      });
-      setCalApi(() => cal);
-    })();
-  }, []);
-
   const openBooking = useCallback(() => {
     track("book_call_click", { source: "cmdk" });
-    if (calApi) {
-      calApi("modal", {
-        calLink: "tetraslam/30min",
-        config: { layout: "month_view", theme: "dark" },
-      });
-    }
+    window.open(
+      "https://cal.com/tetraslam/30min",
+      "_blank",
+      "noopener,noreferrer",
+    );
     setOpen(false);
-  }, [calApi]);
+  }, []);
 
   const navigate = useCallback(
     (path: string) => {

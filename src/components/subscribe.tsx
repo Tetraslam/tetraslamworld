@@ -6,9 +6,13 @@ import { useRef, useState } from "react";
 import { api } from "../../convex/_generated/api";
 
 export function Subscribe() {
+  const [expanded, setExpanded] = useState(false);
   const { user, isSignedIn } = useUser();
   const { openSignIn } = useClerk();
-  const emails = useQuery(api.emailList.list, isSignedIn ? {} : "skip");
+  const emails = useQuery(
+    api.emailList.list,
+    isSignedIn && expanded ? {} : "skip",
+  );
   const add = useMutation(api.emailList.add);
   const email = user?.primaryEmailAddress?.emailAddress;
   const [status, setStatus] = useState<
@@ -37,7 +41,7 @@ export function Subscribe() {
   }
   return (
     <div className="subscription">
-      <details>
+      <details onToggle={(event) => setExpanded(event.currentTarget.open)}>
         <summary>subscribe by email</summary>
         <div className="subscription-body">
           {subscribed ? (

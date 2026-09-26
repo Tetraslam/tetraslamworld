@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/intent-link";
 
 export default function HomePage() {
   return (
@@ -9,7 +9,7 @@ export default function HomePage() {
         width={1536}
         height={1024}
         preload
-        unoptimized
+        sizes="(max-width: 600px) 100vw, (max-width: 1200px) calc(100vw - 64px), 1120px"
         className="home-painting"
         alt="A shaded terrace above a canal-side neighbourhood, with workshops, gardens, a sleeping cat, and solar-covered hills across the harbour."
       />

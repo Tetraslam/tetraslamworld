@@ -28,7 +28,7 @@ const iosevka = localFont({
   ],
   variable: "--font-iosevka",
   display: "swap",
-  preload: true,
+  preload: false,
 });
 
 import { ClerkProvider } from "@clerk/nextjs";

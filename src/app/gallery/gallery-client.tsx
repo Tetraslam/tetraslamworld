@@ -4,7 +4,6 @@ import { track } from "@vercel/analytics";
 import { type Preloaded, usePreloadedQuery } from "convex/react";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Masonry from "react-masonry-css";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -50,13 +49,6 @@ export function GalleryClient({
     return () => window.removeEventListener("keydown", key);
   }, [lightbox, move]);
 
-  const breakpointColumns = {
-    default: 4,
-    1100: 3,
-    700: 2,
-    500: 1,
-  };
-
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="space-y-8 animate-fade-in">
@@ -71,12 +63,8 @@ export function GalleryClient({
         {sortedImages.length === 0 ? (
           <EmptyState message="no images yet" />
         ) : (
-          <Masonry
-            breakpointCols={breakpointColumns}
-            className="flex -ml-4 w-auto"
-            columnClassName="pl-4 bg-clip-padding"
-          >
-            {sortedImages.map((image) => (
+          <div className="gallery-grid">
+            {sortedImages.map((image, index) => (
               <button
                 key={image._id}
                 type="button"
@@ -89,17 +77,19 @@ export function GalleryClient({
                 }}
                 className="mb-7 group relative cursor-pointer block w-full text-left"
               >
-                <Image
-                  src={image.imageUrl}
-                  alt={image.caption || "Gallery image"}
-                  width={400}
-                  height={300}
-                  className="w-full h-auto object-cover"
-                  sizes="(max-width: 500px) 100vw, (max-width: 700px) 50vw, (max-width: 1100px) 33vw, 25vw"
-                  unoptimized={isGif(image.imageUrl)}
-                  placeholder={isGif(image.imageUrl) ? "empty" : "blur"}
-                  blurDataURL={BLUR_DATA_URL}
-                />
+                <span className="gallery-thumb">
+                  <Image
+                    src={image.imageUrl}
+                    alt={image.caption || "Gallery image"}
+                    fill
+                    loading={index < 3 ? "eager" : "lazy"}
+                    className="object-cover"
+                    sizes="(max-width: 600px) calc(100vw - 48px), (max-width: 900px) 45vw, 360px"
+                    unoptimized={isGif(image.imageUrl)}
+                    placeholder={isGif(image.imageUrl) ? "empty" : "blur"}
+                    blurDataURL={BLUR_DATA_URL}
+                  />
+                </span>
                 {image.caption && (
                   <div className="pt-2">
                     <p className="text-sm text-foreground">{image.caption}</p>
@@ -107,7 +97,7 @@ export function GalleryClient({
                 )}
               </button>
             ))}
-          </Masonry>
+          </div>
         )}
       </div>
 

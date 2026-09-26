@@ -2,7 +2,6 @@
 
 import { type Preloaded, usePreloadedQuery } from "convex/react";
 import Image from "next/image";
-import Masonry from "react-masonry-css";
 import { EmptyState } from "@/components/empty-state";
 import { Markdown } from "@/components/markdown";
 import { PageHeader } from "@/components/page-header";
@@ -19,11 +18,6 @@ export function FriendsClient({
   const sortedFriends = [...friends].sort(
     (a, b) => (a.order ?? 0) - (b.order ?? 0),
   );
-
-  const breakpointColumns = {
-    default: 2,
-    640: 1,
-  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -42,11 +36,7 @@ export function FriendsClient({
         {friends.length === 0 ? (
           <EmptyState message="no friends added yet" />
         ) : (
-          <Masonry
-            breakpointCols={breakpointColumns}
-            className="flex -ml-4 w-auto"
-            columnClassName="pl-4 bg-clip-padding"
-          >
+          <div className="friends-grid">
             {sortedFriends.map((friend, index) => (
               <div
                 key={friend._id}
@@ -57,6 +47,7 @@ export function FriendsClient({
                   {friend.imageUrl ? (
                     <div className="relative w-16 h-16 shrink-0">
                       <Image
+                        loading={index < 4 ? "eager" : "lazy"}
                         src={friend.imageUrl}
                         alt={friend.name}
                         fill
@@ -98,7 +89,7 @@ export function FriendsClient({
                 </div>
               </div>
             ))}
-          </Masonry>
+          </div>
         )}
       </div>
     </div>
