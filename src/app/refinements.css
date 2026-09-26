@@ -20,7 +20,7 @@
 .skeleton-bar {
   display: block;
   max-width: 100%;
-  background: #f1f2ec;
+  background: var(--skeleton);
 }
 .skeleton-lines {
   display: grid;
@@ -45,7 +45,7 @@
   margin-top: 6px;
 }
 .skeleton-picture {
-  background: #f7f7f2;
+  background: var(--surface);
 }
 .skeleton-reference {
   aspect-ratio: 16 / 9;
@@ -72,7 +72,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #f7f7f2;
+  background: var(--surface);
 }
 .skeleton-mosaic {
   aspect-ratio: 1;
@@ -102,10 +102,10 @@
 }
 .copy-more,
 .copy-less {
-  color: #94634c;
+  color: var(--rose-deep);
   font-size: 14px;
   text-decoration: underline;
-  text-decoration-color: #c9b49e;
+  text-decoration-color: var(--link-border);
   text-underline-offset: 4px;
 }
 .copy-more {
@@ -147,7 +147,7 @@
   overflow-y: auto;
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
-  scrollbar-color: #c7cbbd transparent;
+  scrollbar-color: var(--input) transparent;
   padding-right: 12px;
   padding-bottom: 4px;
   flex-direction: column;
@@ -160,7 +160,7 @@
 }
 .place-empty {
   font-size: 14px;
-  color: #707367;
+  color: var(--muted-foreground);
 }
 
 .gallery-card {
@@ -168,7 +168,7 @@
 }
 .gallery-thumb {
   overflow: hidden;
-  outline: 1px solid #363c3512;
+  outline: 1px solid var(--hairline);
   transition:
     transform 240ms var(--settle),
     box-shadow 240ms var(--settle);
@@ -184,9 +184,9 @@
   place-items: center;
   width: 30px;
   height: 30px;
-  color: #363c35;
-  background: #fffffff0;
-  border: 1px solid #363c351a;
+  color: var(--foreground);
+  background: var(--veil);
+  border: 1px solid var(--hairline);
   opacity: 0.8;
   transition:
     opacity 160ms ease,
@@ -197,13 +197,13 @@
   height: 17px;
 }
 .gallery-card:focus-visible .gallery-thumb {
-  box-shadow: 0 8px 24px #363c351c;
+  box-shadow: 0 8px 24px var(--shadow);
 }
 .gallery-card:focus-visible .gallery-expand {
   opacity: 1;
 }
 .gallery-caption p {
-  text-decoration-color: #c9b49e;
+  text-decoration-color: var(--link-border);
   text-underline-offset: 4px;
 }
 .gallery-card:focus-visible .gallery-caption p {
@@ -212,7 +212,7 @@
 @media (hover: hover) and (pointer: fine) {
   .gallery-card:hover .gallery-thumb {
     transform: translateY(-3px) rotate(-0.35deg);
-    box-shadow: 0 10px 28px #363c3524;
+    box-shadow: 0 10px 28px var(--shadow);
   }
   .gallery-card:nth-child(even):hover .gallery-thumb {
     transform: translateY(-3px) rotate(0.35deg);

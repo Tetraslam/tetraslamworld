@@ -94,6 +94,7 @@ export default function AdminPage() {
       <div className="p-4 bg-surface border border-border rounded">
         <h2 className="font-semibold mb-2">quick actions</h2>
         <div className="flex flex-wrap gap-2">
+          <Link href="/admin/homepage" className="px-3 py-1.5 text-sm bg-rose/10 text-rose rounded hover:bg-rose/20 transition-colors">edit homepage bio</Link>
           <Link
             href="/admin/work?new=true"
             className="px-3 py-1.5 text-sm bg-rose/10 text-rose rounded hover:bg-rose/20 transition-colors"

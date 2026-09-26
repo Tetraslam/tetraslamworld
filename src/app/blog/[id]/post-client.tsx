@@ -265,7 +265,7 @@ export function BlogPostClient({ post }: { post: BlogPost }) {
         href="/blog"
         className="text-sm text-rose-deep hover:text-rose mb-4 inline-block"
       >
-        &larr; back to blog
+        &larr; writing
       </Link>
 
       <div className="pt-6">
@@ -284,7 +284,7 @@ export function BlogPostClient({ post }: { post: BlogPost }) {
                   })}
                 </time>
                 {readingTime && (
-                  <span className="text-muted-foreground/60">
+                  <span className="text-muted-foreground">
                     {" "}
                     · {readingTime} min read
                   </span>

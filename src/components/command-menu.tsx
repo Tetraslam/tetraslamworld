@@ -1,16 +1,13 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { track } from "@vercel/analytics";
 import { Command } from "cmdk";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { isAdminUser } from "@/lib/admin";
 import { ShortcutLabel } from "./shortcut-label";
-
-const ADMIN_USER_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || "")
-  .split(",")
-  .filter(Boolean);
 
 interface CommandItem {
   id: string;
@@ -19,6 +16,7 @@ interface CommandItem {
   action: () => void;
   icon?: string;
   group: string;
+  disabled?: boolean;
 }
 
 export function CommandMenu() {
@@ -30,12 +28,18 @@ export function CommandMenu() {
   }, []);
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+  const { openSignIn, openUserProfile, signOut } = useClerk();
+  const pendingAccountAction = useRef<(() => void) | null>(null);
+  const [accountError, setAccountError] = useState("");
+  const closeThen = (action: () => void) => {
+    pendingAccountAction.current = action;
+    setAccountError("");
+    setOpen(false);
+  };
 
   const isAdmin = useMemo(() => {
-    return (
-      user && ADMIN_USER_IDS.length > 0 && ADMIN_USER_IDS.includes(user.id)
-    );
+    return isAdminUser(user?.id);
   }, [user]);
 
   const openBooking = useCallback(() => {
@@ -75,6 +79,13 @@ export function CommandMenu() {
     // Admin subroutes (only on /admin pages, shown first for priority)
     ...(isAdmin && pathname.startsWith("/admin")
       ? [
+          {
+            id: "admin-homepage",
+            label: "admin / homepage bio",
+            action: () => navigate("/admin/homepage"),
+            group: "admin pages",
+            icon: "~",
+          },
           {
             id: "admin-overview",
             label: "admin / overview",
@@ -286,19 +297,47 @@ export function CommandMenu() {
       group: "meta",
       icon: "rss",
     },
-    // Admin (only visible to admins)
-    ...(isAdmin
+    {
+      id: "admin",
+      label: "admin dashboard",
+      shortcut: isAdmin ? ["A"] : undefined,
+      action: () => navigate("/admin"),
+      group: "account",
+      icon: "!",
+    },
+    ...(user
       ? [
           {
-            id: "admin",
-            label: "admin dashboard",
-            shortcut: ["A"],
-            action: () => navigate("/admin"),
-            group: "admin",
-            icon: "!",
+            id: "account",
+            label: "manage account",
+            action: () => closeThen(() => openUserProfile()),
+            group: "account",
+            icon: "@",
+          },
+          {
+            id: "sign-out",
+            label: "sign out",
+            action: () =>
+              closeThen(() => {
+                void signOut({ redirectUrl: "/" }).catch(() => {
+                  setAccountError("couldn’t sign out. please try again.");
+                  setOpen(true);
+                });
+              }),
+            group: "account",
+            icon: "↗",
           },
         ]
-      : []),
+      : [
+          {
+            id: "sign-in",
+            label: "sign in",
+            disabled: !isLoaded,
+            action: () => closeThen(() => openSignIn()),
+            group: "account",
+            icon: "@",
+          },
+        ]),
   ];
 
   // Keep refs in sync so the global keydown handler stays stable
@@ -375,7 +414,15 @@ export function CommandMenu() {
         aria-describedby={undefined}
         onCloseAutoFocus={(event) => {
           event.preventDefault();
-          document.querySelector<HTMLButtonElement>(".nav-search")?.focus();
+          document
+            .querySelector<HTMLButtonElement>(".nav-search")
+            ?.focus({ preventScroll: true });
+          if (pendingAccountAction.current) {
+            const action = pendingAccountAction.current;
+            pendingAccountAction.current = null;
+            action();
+            return;
+          }
         }}
       >
         <DialogTitle className="sr-only">Find a page</DialogTitle>
@@ -406,6 +453,7 @@ export function CommandMenu() {
                     value={item.label}
                     aria-keyshortcuts={item.shortcut?.join(" ")}
                     onSelect={item.action}
+                    disabled={item.disabled}
                     className="flex items-center gap-3 px-3 py-2 rounded cursor-pointer text-foreground data-[selected=true]:bg-rose/10 data-[selected=true]:text-rose transition-colors"
                   >
                     {item.icon && (
@@ -424,6 +472,11 @@ export function CommandMenu() {
               </Command.Group>
             ))}
           </Command.List>
+          {accountError && (
+            <p className="px-4 py-2 text-sm text-destructive" role="alert">
+              {accountError}
+            </p>
+          )}
 
           <div className="px-4 py-2 border-t border-border text-xs text-muted-foreground flex justify-between">
             <span>

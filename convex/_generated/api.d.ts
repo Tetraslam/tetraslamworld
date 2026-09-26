@@ -13,6 +13,7 @@ import type * as emailList from "../emailList.js";
 import type * as files from "../files.js";
 import type * as friends from "../friends.js";
 import type * as gallery from "../gallery.js";
+import type * as homepage from "../homepage.js";
 import type * as imageMigration from "../imageMigration.js";
 import type * as linkSuggestions from "../linkSuggestions.js";
 import type * as links from "../links.js";
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   files: typeof files;
   friends: typeof friends;
   gallery: typeof gallery;
+  homepage: typeof homepage;
   imageMigration: typeof imageMigration;
   linkSuggestions: typeof linkSuggestions;
   links: typeof links;

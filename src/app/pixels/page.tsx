@@ -162,7 +162,7 @@ export default function PixelsPage() {
                           style={{
                             backgroundColor: active
                               ? color
-                              : pixel?.color || "#FAF8F1",
+                              : pixel?.color || "var(--pixel-empty)",
                           }}
                           className={
                             active ? "mosaic-cell selected" : "mosaic-cell"

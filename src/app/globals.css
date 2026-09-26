@@ -52,51 +52,6 @@
 
 .admin-theme {
   --radius: 0.5rem;
-
-  /* tetraslam palette - dark by default */
-  --background: #221f22;
-  --foreground: #f7f4f1;
-  --surface: #2b262b;
-  --card: #2b262b;
-  --card-foreground: #f7f4f1;
-  --popover: #2b262b;
-  --popover-foreground: #f7f4f1;
-
-  /* Rose accents */
-  --rose: #e8a6a6;
-  --rose-deep: #d46a7a;
-  --primary: #e8a6a6;
-  --primary-foreground: #221f22;
-
-  --secondary: #2b262b;
-  --secondary-foreground: #f7f4f1;
-  --muted: #2b262b;
-  --muted-foreground: #9a8f94;
-  --accent: #d46a7a;
-  --accent-foreground: #f7f4f1;
-  --destructive: #d46a7a;
-
-  /* Borders */
-  --border: #4a3b46;
-  --input: #4a3b46;
-  --ring: #e8a6a6;
-
-  /* Charts - rose tones */
-  --chart-1: #e8a6a6;
-  --chart-2: #d46a7a;
-  --chart-3: #b85a6a;
-  --chart-4: #9a4a5a;
-  --chart-5: #7c3a4a;
-
-  /* Sidebar */
-  --sidebar: #221f22;
-  --sidebar-foreground: #f7f4f1;
-  --sidebar-primary: #e8a6a6;
-  --sidebar-primary-foreground: #221f22;
-  --sidebar-accent: #2b262b;
-  --sidebar-accent-foreground: #f7f4f1;
-  --sidebar-border: #4a3b46;
-  --sidebar-ring: #e8a6a6;
 }
 
 @layer base {
@@ -126,8 +81,8 @@
 
 /* Selection color */
 ::selection {
-  background: #e9ddcc;
-  color: #363c35;
+  background: var(--selection);
+  color: var(--foreground);
 }
 
 /* Blog post content styling */
@@ -260,7 +215,7 @@
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(232, 166, 166, 0.1);
+  box-shadow: 0 4px 12px var(--shadow);
 }
 
 /* Standard content card. One card, every page. */
@@ -271,7 +226,7 @@
 .tcard-hover:hover {
   @apply border-rose/40;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(232, 166, 166, 0.1);
+  box-shadow: 0 4px 12px var(--shadow);
 }
 
 /* Gentle bob animation */

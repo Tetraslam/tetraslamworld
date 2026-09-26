@@ -62,19 +62,19 @@
 .public-site .collection-tools .collection-search {
   animation: none;
 }
-.home-intro > * {
+.home-intro > h1, .home-bio > *, .home-contact {
   animation: settle-in 280ms var(--settle) backwards;
 }
-.home-intro > :nth-child(2) {
+.home-bio > :nth-child(1) {
   animation-delay: 32ms;
 }
-.home-intro > :nth-child(3) {
+.home-bio > :nth-child(2) {
   animation-delay: 64ms;
 }
-.home-intro > :nth-child(4) {
+.home-bio > :nth-child(3) {
   animation-delay: 96ms;
 }
-.home-intro > :nth-child(5) {
+.home-contact {
   animation-delay: 128ms;
 }
 .home-painting {
@@ -103,8 +103,8 @@
   position: absolute;
   inset: auto 0 0;
   padding: 8px;
-  background: #fffffff0;
-  color: #94634c;
+  background: var(--veil);
+  color: var(--rose-deep);
   font-size: 13px;
   text-align: center;
 }
@@ -180,6 +180,11 @@
   .public-site *,
   .public-site *::before,
   .public-site *::after,
+  .admin-theme *,
+  .admin-theme *::before,
+  .admin-theme *::after,
+  .cl-modalBackdrop,
+  .cl-cardBox,
   [data-slot="dialog-content"],
   [data-slot="dialog-overlay"],
   .subscription details::details-content {

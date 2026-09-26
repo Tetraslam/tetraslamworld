@@ -1,5 +1,6 @@
 import { fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
+import { getHomeContent } from "@/lib/home-content";
 import { api } from "../../../../../convex/_generated/api";
 
 const SITE_URL = "https://tetraslam.world";
@@ -311,6 +312,10 @@ export async function GET(
 ) {
   const { path } = await params;
   const page = path[0];
+  if(page === "home" && path.length===1) {
+    const home=await getHomeContent();
+    return new NextResponse(`# ${home.heading}\n\n${home.body}\n`,{headers:{"Content-Type":"text/markdown; charset=utf-8","Cache-Control":"no-store"}});
+  }
 
   // WET_MODE.md: a single editable markdown blob (not a collection)
   if (page === "WET_MODE") {

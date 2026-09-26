@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./paper.css";
 import "./refinements.css";
+import "./themes.css";
 import "./motion.css";
 
 const iosevka = localFont({
@@ -33,11 +34,17 @@ const iosevka = localFont({
   preload: false,
 });
 
-import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
 import { AgentHint } from "@/components/agent-hint";
-import { ConvexClientProvider } from "@/components/providers/convex-provider";
+import { AppProviders } from "@/components/providers/app-providers";
 import { SiteFrame } from "@/components/site-frame";
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#171e20" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: {
@@ -101,7 +108,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={iosevka.variable}>
+    <html lang="en" className={iosevka.variable} suppressHydrationWarning>
       <head>
         <link
           rel="alternate"
@@ -112,32 +119,9 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <AgentHint />
-        <ClerkProvider
-          appearance={{
-            variables: {
-              colorPrimary: "#986a54",
-              colorBackground: "#ffffff",
-              colorInputBackground: "#f7f7f2",
-              colorInputText: "#363c35",
-              colorText: "#363c35",
-              colorTextSecondary: "#687061",
-              borderRadius: "0.5rem",
-            },
-            elements: {
-              card: "bg-surface border border-border",
-              headerTitle: "text-rose",
-              headerSubtitle: "text-muted-foreground",
-              socialButtonsBlockButton:
-                "bg-surface border border-border hover:border-rose/50",
-              formButtonPrimary: "bg-rose hover:bg-rose-deep text-background",
-              footerActionLink: "text-rose-deep hover:text-rose",
-            },
-          }}
-        >
-          <ConvexClientProvider>
-            <SiteFrame>{children}</SiteFrame>
-          </ConvexClientProvider>
-        </ClerkProvider>
+        <AppProviders>
+          <SiteFrame>{children}</SiteFrame>
+        </AppProviders>
         <Analytics />
       </body>
     </html>

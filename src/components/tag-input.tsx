@@ -168,7 +168,7 @@ export function TagInput({ tags, allTags, onChange }: TagInputProps) {
         </div>
       )}
 
-      <p className="text-xs text-muted-foreground/60 mt-1">
+      <p className="text-xs text-muted-foreground mt-1">
         press enter or comma to add, backspace to remove
       </p>
     </div>

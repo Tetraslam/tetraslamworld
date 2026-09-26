@@ -4,6 +4,7 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { IntentLink as Link } from "./intent-link";
 import { ShortcutLabel } from "./shortcut-label";
+import { ThemeControl } from "./theme-control";
 
 const pages = [
   ["/work", "work", "W"],
@@ -43,7 +44,7 @@ export function SiteHeader() {
           </Link>
         ))}
       </nav>
-      {!pathname.startsWith("/admin") && (
+      <div className="header-tools">
         <button
           type="button"
           className="nav-search"
@@ -53,19 +54,20 @@ export function SiteHeader() {
         >
           search
         </button>
-      )}
-      {pathname.startsWith("/admin") && (
-        <div>
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button type="button">sign in</button>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
-        </div>
-      )}
+        <ThemeControl />
+        {pathname.startsWith("/admin") && (
+          <div>
+            <SignedOut>
+              <SignInButton mode="modal" forceRedirectUrl={pathname}>
+                <button type="button">sign in</button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
+          </div>
+        )}
+      </div>
     </header>
   );
 }

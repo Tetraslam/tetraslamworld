@@ -159,7 +159,7 @@ export default function AdminTastePage() {
                 </div>
               ) : (
                 <div className="w-16 h-12 rounded bg-background border border-border shrink-0 flex items-center justify-center">
-                  <span className="text-[8px] text-muted-foreground/40 font-mono">
+                  <span className="text-[10px] text-muted-foreground font-mono">
                     {getDomain(item.url).slice(0, 8)}
                   </span>
                 </div>
@@ -170,7 +170,7 @@ export default function AdminTastePage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-medium truncate">{item.title}</span>
                   {item.designNotes && (
-                    <span className="text-xs text-rose/60 font-mono">
+                    <span className="text-xs text-rose font-mono">
                       [notes]
                     </span>
                   )}

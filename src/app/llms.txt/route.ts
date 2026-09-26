@@ -11,6 +11,7 @@ const content = `# tetraslam.world
 Every page on this site has a machine-readable markdown version. Append \`.md\` to any page URL:
 
 - ${SITE_URL}/taste.md — Design inspiration and aesthetic references
+- ${SITE_URL}/home.md — Current homepage introduction and bio
 - ${SITE_URL}/work.md — Projects, papers, talks, and experience
 - ${SITE_URL}/media.md — Anime, manga, books, games, music, movies, shows
 - ${SITE_URL}/links.md — Curated bookmarks and resources
@@ -22,7 +23,7 @@ Every page on this site has a machine-readable markdown version. Append \`.md\` 
 
 ## About this site
 
-Built with Next.js, Convex (real-time database), and Clerk (auth). The site uses a dusty rose (#E8A6A6) accent on smoky graphite (#221F22) background with Iosevka monospace font.
+Built with Next.js, Convex (real-time database), and Clerk (auth). Serif typography, an illustrated terrace, and light/dark appearances. Public text is available independently of the illustration and theme.
 
 ## Contact
 

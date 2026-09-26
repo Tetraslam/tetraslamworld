@@ -155,7 +155,7 @@ export function TasteAdminForm({
           placeholder="structured design takeaways for AI agents, e.g.:&#10;- spring animations on hover states&#10;- muted color palette with one high-contrast accent&#10;- generous whitespace, content-first layout"
           className="w-full px-3 py-2 bg-background border border-border rounded focus:outline-none focus:border-rose/50 resize-none font-mono text-sm"
         />
-        <p className="text-xs text-muted-foreground/60 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           markdown supported. use bullet points for specific patterns to
           reference.
         </p>

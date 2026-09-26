@@ -2,6 +2,13 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  siteContent: defineTable({
+    key: v.literal("home"),
+    heading: v.string(),
+    body: v.string(),
+    revision: v.number(),
+    updatedAt: v.number(),
+  }).index("by_key", ["key"]),
   // Users for comment authentication
   users: defineTable({
     clerkId: v.string(),
