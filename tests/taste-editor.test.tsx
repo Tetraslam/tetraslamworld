@@ -46,6 +46,14 @@ vi.mock("next/link", () => ({
   ),
 }));
 beforeEach(() => {
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn(() => ({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })),
+  );
   mocks.rows = [
     {
       _id: "entry-id",
@@ -63,6 +71,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.resetAllMocks();
+  vi.unstubAllGlobals();
 });
 
 test("a rejected save retains the complete editable draft", async () => {

@@ -464,6 +464,12 @@ audio.taste-player {
   padding: 0 10px;
   color: var(--muted-foreground);
 }
+.taste-editor-thumbnail {
+  position: relative;
+  width: min(100%, 300px);
+  height: 180px;
+  margin-top: 20px;
+}
 .taste-asset-actions {
   display: flex;
   justify-content: flex-end;

@@ -14,7 +14,7 @@ Verification covers legacy preservation, authentication, revision conflicts, val
 
 ## Presentation decisions
 
-Filters stay visible beside search, without an extra disclosure. Media stays together before the commentary, in the editor's order; the selected cover controls the collection thumbnail only. Detail images use their natural proportions without contrasting letterbox frames. Short observations are not clipped.
+Filters stay visible beside search, without an extra disclosure. Media stays together before the commentary, in the editor's order; the selected cover controls the collection thumbnail only. Detail images use their natural proportions without contrasting letterbox frames. Short observations are not clipped. The editor groups source links together, keeps category/search fields visible, and shows still thumbnails beside each media item's controls.
 
 ## Verification evidence
 
@@ -24,4 +24,4 @@ Filters stay visible beside search, without an extra disclosure. Media stays tog
 - A temporary local-only component fixture exercised real browser video playback: explicit play advances a muted preview, scrolling it offscreen removes it, and the detail player remains paused. KaTeX rendered; an arbitrary embed created no iframe before activation and used an opaque sandbox after activation. The fixture and its synthetic recording were never stored in Convex or published.
 - Authenticated live upload/save and third-party player compatibility remain unproven end-to-end. No live test submissions were made; authorization, file metadata validation, drafts, and saves were checked in the isolated backend tests.
 
-The local preview on port 3105 now serves `.next`. Build the next candidate into `.next-review` before switching it in. Repository-wide lint still reports pre-existing failures outside this change; changed-file checks pass, with only generated Convex type warnings.
+The local preview on port 3105 now serves `.next-review`. Build the next candidate into `.next` before switching it in. Repository-wide lint still reports pre-existing failures outside this change; changed-file checks pass, with only generated Convex type warnings.

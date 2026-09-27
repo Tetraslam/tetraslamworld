@@ -19,7 +19,9 @@ import {
   type TasteDraft,
   type TasteMedia,
 } from "../../shared/taste";
+import { SoftImage } from "./soft-image";
 import { TagInput } from "./tag-input";
+import { imageUnoptimized } from "./taste/text";
 
 export type TasteFormData = TasteDraft;
 type Props = {
@@ -268,6 +270,10 @@ export function TasteAdminForm({
               capture website
             </button>
           </div>
+          <TasteSources
+            sources={form.sources}
+            onChange={(values) => change("sources", values)}
+          />
           <fieldset className="taste-category-picker">
             <legend>what it is</legend>
             {TASTE_CATEGORIES.map((category) => (
@@ -290,12 +296,36 @@ export function TasteAdminForm({
               </label>
             ))}
           </fieldset>
+          <label htmlFor="taste-custom-categories">other categories</label>
+          <TagInput
+            id="taste-custom-categories"
+            tags={form.categories.filter(
+              (value) =>
+                !TASTE_CATEGORIES.some((category) => category.id === value),
+            )}
+            allTags={[]}
+            onChange={(values) =>
+              change("categories", [
+                ...form.categories.filter((value) =>
+                  TASTE_CATEGORIES.some((category) => category.id === value),
+                ),
+                ...values,
+              ])
+            }
+          />
           <label htmlFor="taste-qualities">what you notice</label>
           <TagInput
             id="taste-qualities"
             tags={form.qualities}
             allTags={[...new Set([...TASTE_QUALITIES, ...allQualities])]}
             onChange={(values) => change("qualities", values)}
+          />
+          <label htmlFor="taste-keywords">other search words</label>
+          <TagInput
+            id="taste-keywords"
+            tags={form.tags}
+            allTags={allTags}
+            onChange={(values) => change("tags", values)}
           />
           <label htmlFor="taste-description">
             description <span>(markdown, optional)</span>
@@ -417,6 +447,25 @@ export function TasteAdminForm({
                   remove
                 </button>
               </div>
+              {isWebUrl(
+                asset.poster ||
+                  (asset.kind === "image" && !asset.animated
+                    ? asset.url || ""
+                    : ""),
+              ) && (
+                <div className="taste-editor-thumbnail">
+                  <SoftImage
+                    src={asset.poster || asset.url || ""}
+                    alt={asset.alt || `Media ${index + 1} preview`}
+                    fill
+                    sizes="300px"
+                    className="object-contain object-left"
+                    unoptimized={imageUnoptimized(
+                      asset.poster || asset.url || "",
+                    )}
+                  />
+                </div>
+              )}
               {asset.kind === "text" ? (
                 <>
                   <label>
@@ -681,94 +730,6 @@ export function TasteAdminForm({
             </fieldset>
           ))}
         </section>
-        <details className="taste-editor-extra">
-          <summary>additional sources and search words</summary>
-          <label htmlFor="taste-custom-categories">other categories</label>
-          <TagInput
-            id="taste-custom-categories"
-            tags={form.categories.filter(
-              (value) =>
-                !TASTE_CATEGORIES.some((category) => category.id === value),
-            )}
-            allTags={[]}
-            onChange={(values) =>
-              change("categories", [
-                ...form.categories.filter((value) =>
-                  TASTE_CATEGORIES.some((category) => category.id === value),
-                ),
-                ...values,
-              ])
-            }
-          />
-          {form.sources.map((source, index) => (
-            <div className="taste-editor-pair" key={source.id ?? source.url}>
-              <label>
-                label
-                <input
-                  value={source.label}
-                  onChange={(event) =>
-                    change(
-                      "sources",
-                      form.sources.map((value, i) =>
-                        i === index
-                          ? { ...value, label: event.target.value }
-                          : value,
-                      ),
-                    )
-                  }
-                />
-              </label>
-              <label>
-                URL
-                <input
-                  type="url"
-                  value={source.url}
-                  onChange={(event) =>
-                    change(
-                      "sources",
-                      form.sources.map((value, i) =>
-                        i === index
-                          ? { ...value, url: event.target.value }
-                          : value,
-                      ),
-                    )
-                  }
-                />
-              </label>
-              <button
-                type="button"
-                onClick={() =>
-                  change(
-                    "sources",
-                    form.sources.filter((_, i) => i !== index),
-                  )
-                }
-              >
-                remove source
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            className="text-action"
-            disabled={form.sources.length >= 10}
-            onClick={() =>
-              change("sources", [
-                ...form.sources,
-                { id: crypto.randomUUID(), label: "", url: "" },
-              ])
-            }
-          >
-            add source
-          </button>
-          <label htmlFor="taste-keywords">other search words</label>
-          <TagInput
-            id="taste-keywords"
-            tags={form.tags}
-            allTags={allTags}
-            onChange={(values) => change("tags", values)}
-          />
-        </details>
         <div className="taste-publication">
           <label className="taste-check">
             <input
@@ -800,5 +761,71 @@ export function TasteAdminForm({
         </button>
       </div>
     </form>
+  );
+}
+
+function TasteSources({
+  sources,
+  onChange,
+}: {
+  sources: TasteDraft["sources"];
+  onChange: (sources: TasteDraft["sources"]) => void;
+}) {
+  return (
+    <div className="taste-source-editor">
+      {sources.map((source, index) => (
+        <div className="taste-editor-pair" key={source.id ?? source.url}>
+          <label>
+            source label
+            <input
+              value={source.label}
+              onChange={(event) =>
+                onChange(
+                  sources.map((value, i) =>
+                    i === index
+                      ? { ...value, label: event.target.value }
+                      : value,
+                  ),
+                )
+              }
+            />
+          </label>
+          <label>
+            source URL
+            <input
+              type="url"
+              value={source.url}
+              onChange={(event) =>
+                onChange(
+                  sources.map((value, i) =>
+                    i === index ? { ...value, url: event.target.value } : value,
+                  ),
+                )
+              }
+            />
+          </label>
+          <button
+            type="button"
+            className="text-action"
+            onClick={() => onChange(sources.filter((_, i) => i !== index))}
+          >
+            remove source
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        className="text-action"
+        disabled={sources.length >= 10}
+        onClick={() =>
+          onChange([
+            ...sources,
+            { id: crypto.randomUUID(), label: "", url: "" },
+          ])
+        }
+      >
+        add source
+      </button>
+    </div>
   );
 }
