@@ -18,10 +18,12 @@ Filters stay visible beside search, without an extra disclosure. Media stays tog
 
 ## Verification evidence
 
+The image proxy is part of the embed boundary: a provider frame can navigate to another URL. Proxied SVG documents therefore receive native CSP sandboxing and script blocking, so navigation cannot turn external image content into same-origin executable code. The response is the atomic unit; the proxy owns this policy. A local SVG with a parent-DOM write escaped the original frame in Chrome. With the response policy applied, the same loaded frame could not write to its parent, and the SVG still loaded as a 120×80 image.
+
 - Convex's own typecheck and additive deployment passed. All 13 records retained the exact fingerprint above after deployment.
-- 35 Vitest tests and six Node tests passed, including stale-save rejection and playback interruption. The storage fixture supplies MIME metadata omitted by convex-test's `storeBlob` implementation; it does not simulate an actual upload POST.
+- 36 Vitest tests and six Node tests passed, including stale-save rejection, playback interruption, and the image proxy policy. The storage fixture supplies MIME metadata omitted by convex-test's `storeBlob` implementation; it does not simulate an actual upload POST.
 - A production build served on an isolated local port passed desktop/mobile checks in Chrome, in light and dark appearances. Search/category URLs, detail navigation, image enlargement, arrow keys, Escape, and focus restoration were exercised. Settled public index/detail pages and the editor passed the scoped WCAG A/AA audit.
 - A temporary local-only component fixture exercised real browser video playback: explicit play advances a muted preview, scrolling it offscreen removes it, and the detail player remains paused. KaTeX rendered; an arbitrary embed created no iframe before activation and used an opaque sandbox after activation. The fixture and its synthetic recording were never stored in Convex or published.
 - Authenticated live upload/save and third-party player compatibility remain unproven end-to-end. No live test submissions were made; authorization, file metadata validation, drafts, and saves were checked in the isolated backend tests.
 
-The local preview on port 3105 now serves `.next-review`. Build the next candidate into `.next` before switching it in. Repository-wide lint still reports pre-existing failures outside this change; changed-file checks pass, with only generated Convex type warnings.
+The local preview on port 3105 now serves `.next`. Build the next candidate into `.next-review` before switching it in. Repository-wide lint still reports pre-existing failures outside this change; changed-file checks pass, with only generated Convex type warnings.
