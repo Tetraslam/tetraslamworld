@@ -9,7 +9,7 @@ const pages: Record<string, { title: string; width: string }> = {
   friends: { title: "friends", width: "max-w-4xl" },
   media: { title: "media", width: "max-w-5xl" },
   links: { title: "links", width: "max-w-4xl" },
-  taste: { title: "taste", width: "max-w-5xl" },
+  taste: { title: "taste", width: "max-w-6xl" },
   travel: { title: "travel", width: "max-w-5xl" },
   gallery: { title: "gallery", width: "max-w-6xl" },
   pixels: { title: "pixels", width: "max-w-4xl" },
@@ -110,14 +110,13 @@ function Content({ section }: { section: string }) {
       return (
         <>
           <Search selects={1} />
-          <div className="taste-journal">
-            {slots.slice(0, 2).map((key) => (
+          <div className="taste-collection">
+            {slots.map((key) => (
               <div key={key}>
                 <div className="skeleton-picture skeleton-reference" />
                 <div className="skeleton-caption">
                   <Bar height={28} />
                 </div>
-                <Lines />
               </div>
             ))}
           </div>
@@ -215,7 +214,9 @@ export default function Loading() {
   const section = pathname.split("/")[1];
   const page = pages[section];
   if (!page) return null;
-  const article = section === "blog" && pathname.split("/").length > 2;
+  const article =
+    (section === "blog" || section === "taste") &&
+    pathname.split("/").length > 2;
   return (
     <div
       className={`${article ? "max-w-3xl" : page.width} mx-auto px-4 py-12 loading-shell`}
@@ -229,6 +230,9 @@ export default function Loading() {
             <Bar height={44} />
           </div>
           <Lines />
+          {section === "taste" && (
+            <div className="skeleton-picture skeleton-reference mt-8" />
+          )}
         </div>
       ) : (
         <>

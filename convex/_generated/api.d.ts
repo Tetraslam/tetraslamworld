@@ -20,6 +20,7 @@ import type * as links from "../links.js";
 import type * as media from "../media.js";
 import type * as pixelBoard from "../pixelBoard.js";
 import type * as taste from "../taste.js";
+import type * as tasteFields from "../tasteFields.js";
 import type * as travel from "../travel.js";
 import type * as users from "../users.js";
 import type * as wetMode from "../wetMode.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   media: typeof media;
   pixelBoard: typeof pixelBoard;
   taste: typeof taste;
+  tasteFields: typeof tasteFields;
   travel: typeof travel;
   users: typeof users;
   wetMode: typeof wetMode;

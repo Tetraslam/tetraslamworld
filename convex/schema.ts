@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { tasteAsset } from "./tasteFields";
 
 export default defineSchema({
   siteContent: defineTable({
@@ -147,6 +148,29 @@ export default defineSchema({
 
   // Taste (design inspiration board)
   taste: defineTable({
+    slug: v.optional(v.string()),
+    revision: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+    observation: v.optional(v.string()),
+    context: v.optional(v.string()),
+    scope: v.optional(v.union(v.literal("whole"), v.literal("detail"))),
+    categories: v.optional(v.array(v.string())),
+    qualities: v.optional(v.array(v.string())),
+    media: v.optional(v.array(tasteAsset)),
+    coverId: v.optional(v.string()),
+    prominent: v.optional(v.boolean()),
+    published: v.optional(v.boolean()),
+    creator: v.optional(v.string()),
+    year: v.optional(v.string()),
+    sources: v.optional(
+      v.array(
+        v.object({
+          id: v.optional(v.string()),
+          label: v.string(),
+          url: v.string(),
+        }),
+      ),
+    ),
     title: v.string(),
     url: v.string(),
     content: v.optional(v.string()), // Human description (markdown)
@@ -155,7 +179,9 @@ export default defineSchema({
     tags: v.optional(v.array(v.string())),
     order: v.optional(v.number()),
     createdAt: v.number(),
-  }).index("by_order", ["order"]),
+  })
+    .index("by_order", ["order"])
+    .index("by_slug", ["slug"]),
 
   // Email list
   emailList: defineTable({

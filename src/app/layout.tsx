@@ -4,6 +4,7 @@ import "./globals.css";
 import "./paper.css";
 import "./refinements.css";
 import "./themes.css";
+import "./taste.css";
 import "./motion.css";
 
 const iosevka = localFont({
