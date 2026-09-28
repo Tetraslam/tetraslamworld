@@ -2,6 +2,7 @@
 
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
+import { useDevice } from "@/hooks/use-device";
 import { IntentLink as Link } from "./intent-link";
 import { ShortcutLabel } from "./shortcut-label";
 import { ThemeControl } from "./theme-control";
@@ -20,6 +21,7 @@ const pages = [
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const { isMac } = useDevice();
   return (
     <header className="site-header">
       <a className="skip-link" href="#content">
@@ -49,10 +51,12 @@ export function SiteHeader() {
           type="button"
           className="nav-search"
           aria-label="Search site"
+          aria-keyshortcuts="Control+k Meta+k"
           title="Search (Ctrl/⌘ K)"
           onClick={() => document.dispatchEvent(new CustomEvent("site:search"))}
         >
           search
+          <kbd className="search-shortcut">{isMac ? "⌘ K" : "ctrl K"}</kbd>
         </button>
         <ThemeControl />
         {pathname.startsWith("/admin") && (

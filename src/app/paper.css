@@ -155,6 +155,7 @@
 }
 .home-contact {
   display: flex;
+  flex-wrap: wrap;
   gap: 24px;
   margin-top: 28px;
   font-size: 16px;
@@ -410,11 +411,25 @@
 
 /* Editorial layouts: each collection has its own reading rhythm. */
 .nav-search {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
   font-size: 14px;
   color: var(--muted-foreground);
   cursor: pointer;
   border-bottom: 1px solid var(--border);
   padding: 2px 0;
+}
+.search-shortcut {
+  font-family: var(--font-iosevka), monospace;
+  font-size: 10px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+@media (hover: none) and (pointer: coarse) {
+  .search-shortcut {
+    display: none;
+  }
 }
 .site-header {
   flex-wrap: wrap;

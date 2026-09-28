@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { isAdminUser } from "@/lib/admin";
+import { openBooking as showBooking } from "@/lib/booking";
 import { ShortcutLabel } from "./shortcut-label";
 
 interface CommandItem {
@@ -42,15 +43,12 @@ export function CommandMenu() {
     return isAdminUser(user?.id);
   }, [user]);
 
-  const openBooking = useCallback(() => {
+  const openBooking = () => {
     track("book_call_click", { source: "cmdk" });
-    window.open(
-      "https://cal.com/tetraslam/30min",
-      "_blank",
-      "noopener,noreferrer",
-    );
-    setOpen(false);
-  }, []);
+    const show = () => void showBooking();
+    if (open) closeThen(show);
+    else show();
+  };
 
   const navigate = useCallback(
     (path: string) => {

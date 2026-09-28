@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 import { useRef } from "react";
 import { api } from "../../convex/_generated/api";
 import type { HomeContent } from "../../shared/home-content";
+import { BookCallLink } from "./book-call-link";
 import { HomeCopy } from "./home-copy";
 
 export function HomeIntroduction({
@@ -27,6 +28,7 @@ export function HomeIntroduction({
         <a href="https://x.com/tetraslam">twitter</a>
         <a href="https://github.com/tetraslam">github</a>
         <a href="mailto:bhowmickshresht@gmail.com">email</a>
+        <BookCallLink />
       </nav>
     </section>
   );
