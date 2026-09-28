@@ -1,6 +1,13 @@
+import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
+import { isAdminUser } from "@/lib/admin";
 
 export async function GET(request: NextRequest) {
+  if (!isAdminUser((await auth()).userId))
+    return NextResponse.json(
+      { error: "Administrator access required" },
+      { status: 403 },
+    );
   const url = request.nextUrl.searchParams.get("url");
 
   if (!url) {
@@ -18,12 +25,15 @@ export async function GET(request: NextRequest) {
 
     // Use Microlink API to capture screenshot
     // embed=screenshot.url returns the raw image directly
-    const microlinkUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url&colorScheme=dark`;
+    const theme =
+      request.nextUrl.searchParams.get("theme") === "dark" ? "dark" : "light";
+    const microlinkUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url&colorScheme=${theme}`;
 
     const response = await fetch(microlinkUrl, {
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; ScreenshotCapture/1.0)",
       },
+      signal: AbortSignal.timeout(30000),
     });
 
     if (!response.ok) {

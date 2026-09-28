@@ -1,0 +1,57 @@
+import { v } from "convex/values";
+
+export const tasteAsset = v.object({
+  id: v.string(),
+  kind: v.union(
+    v.literal("image"),
+    v.literal("video"),
+    v.literal("audio"),
+    v.literal("embed"),
+    v.literal("text"),
+  ),
+  url: v.optional(v.string()),
+  storageId: v.optional(v.id("_storage")),
+  poster: v.optional(v.string()),
+  posterStorageId: v.optional(v.id("_storage")),
+  width: v.optional(v.number()),
+  height: v.optional(v.number()),
+  alt: v.optional(v.string()),
+  caption: v.optional(v.string()),
+  credit: v.optional(v.string()),
+  creditUrl: v.optional(v.string()),
+  text: v.optional(v.string()),
+  format: v.optional(
+    v.union(v.literal("markdown"), v.literal("code"), v.literal("math")),
+  ),
+  startSeconds: v.optional(v.number()),
+  endSeconds: v.optional(v.number()),
+  animated: v.optional(v.boolean()),
+  transcript: v.optional(v.string()),
+  captionsUrl: v.optional(v.string()),
+  captionsLanguage: v.optional(v.string()),
+});
+export const tasteDraft = v.object({
+  title: v.string(),
+  url: v.string(),
+  observation: v.string(),
+  context: v.string(),
+  scope: v.union(v.literal("whole"), v.literal("detail")),
+  content: v.string(),
+  designNotes: v.string(),
+  categories: v.array(v.string()),
+  qualities: v.array(v.string()),
+  tags: v.array(v.string()),
+  media: v.array(tasteAsset),
+  coverId: v.string(),
+  prominent: v.boolean(),
+  published: v.boolean(),
+  creator: v.string(),
+  year: v.string(),
+  sources: v.array(
+    v.object({
+      id: v.optional(v.string()),
+      label: v.string(),
+      url: v.string(),
+    }),
+  ),
+});

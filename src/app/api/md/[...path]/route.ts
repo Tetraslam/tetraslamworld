@@ -1,6 +1,9 @@
 import { fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
+import { getHomeContent } from "@/lib/home-content";
 import { api } from "../../../../../convex/_generated/api";
+import { filterTaste } from "../../../../../shared/taste";
+import { tasteMarkdown } from "../../../../../shared/taste-markdown";
 
 const SITE_URL = "https://tetraslam.world";
 
@@ -28,11 +31,22 @@ function stripHtml(html: string): string {
 }
 
 // Generic: render any item's fields as markdown
-function renderItem(item: Record<string, unknown>, opts?: { titleField?: string; skipFields?: string[] }): string {
+function renderItem(
+  item: Record<string, unknown>,
+  opts?: { titleField?: string; skipFields?: string[] },
+): string {
   const titleField = opts?.titleField || "title";
   const skipFields = new Set([
-    "_id", "_creationTime", "order", "altOrder", "altImageOrder", "showInBoth",
-    "createdAt", "featured", "fromSuggestionId", titleField,
+    "_id",
+    "_creationTime",
+    "order",
+    "altOrder",
+    "altImageOrder",
+    "showInBoth",
+    "createdAt",
+    "featured",
+    "fromSuggestionId",
+    titleField,
     ...(opts?.skipFields || []),
   ]);
 
@@ -132,16 +146,24 @@ const pages: Record<string, PageConfig> = {
   taste: {
     title: "taste",
     subtitle: "design inspiration and aesthetic references",
-    fetch: () => fetchQuery(api.taste.list, {}) as Promise<Record<string, unknown>[]>,
+    fetch: () =>
+      fetchQuery(api.taste.list, {}) as Promise<Record<string, unknown>[]>,
     sort: manualThenNewestSort,
   },
   work: {
     title: "work",
     subtitle: "things i've built, written, and done",
-    fetch: () => fetchQuery(api.work.list, {}) as Promise<Record<string, unknown>[]>,
+    fetch: () =>
+      fetchQuery(api.work.list, {}) as Promise<Record<string, unknown>[]>,
     groupBy: {
       field: "type",
-      labels: { job: "Experience", project: "Projects", paper: "Papers", talk: "Talks", other: "Other" },
+      labels: {
+        job: "Experience",
+        project: "Projects",
+        paper: "Papers",
+        talk: "Talks",
+        other: "Other",
+      },
       order: ["job", "project", "paper", "talk", "other"],
     },
     sort: defaultSort,
@@ -149,38 +171,61 @@ const pages: Record<string, PageConfig> = {
   media: {
     title: "media",
     subtitle: "things i've consumed and enjoyed",
-    fetch: () => fetchQuery(api.media.list, {}) as Promise<Record<string, unknown>[]>,
+    fetch: () =>
+      fetchQuery(api.media.list, {}) as Promise<Record<string, unknown>[]>,
     groupBy: {
       field: "type",
-      labels: { anime: "Anime", manga: "Manga", book: "Books", game: "Games", music: "Music", movie: "Movies", show: "Shows", other: "Other" },
-      order: ["anime", "manga", "book", "game", "music", "movie", "show", "other"],
+      labels: {
+        anime: "Anime",
+        manga: "Manga",
+        book: "Books",
+        game: "Games",
+        music: "Music",
+        movie: "Movies",
+        show: "Shows",
+        other: "Other",
+      },
+      order: [
+        "anime",
+        "manga",
+        "book",
+        "game",
+        "music",
+        "movie",
+        "show",
+        "other",
+      ],
     },
     sort: defaultSort,
   },
   links: {
     title: "links",
     subtitle: "bookmarks, resources, and interesting finds",
-    fetch: () => fetchQuery(api.links.list, {}) as Promise<Record<string, unknown>[]>,
+    fetch: () =>
+      fetchQuery(api.links.list, {}) as Promise<Record<string, unknown>[]>,
     sort: manualThenNewestSort,
   },
   friends: {
     title: "friends",
     subtitle: "people i think are cool",
-    fetch: () => fetchQuery(api.friends.list, {}) as Promise<Record<string, unknown>[]>,
+    fetch: () =>
+      fetchQuery(api.friends.list, {}) as Promise<Record<string, unknown>[]>,
     titleField: "name",
     sort: defaultSort,
   },
   gallery: {
     title: "gallery",
     subtitle: "random snapshots and visual ephemera",
-    fetch: () => fetchQuery(api.gallery.list, {}) as Promise<Record<string, unknown>[]>,
+    fetch: () =>
+      fetchQuery(api.gallery.list, {}) as Promise<Record<string, unknown>[]>,
     sort: defaultSort,
     skipFields: ["imageUrl"],
   },
   travel: {
     title: "travel",
     subtitle: "places i've been",
-    fetch: () => fetchQuery(api.travel.list, {}) as Promise<Record<string, unknown>[]>,
+    fetch: () =>
+      fetchQuery(api.travel.list, {}) as Promise<Record<string, unknown>[]>,
     titleField: "location",
     sort: defaultSort,
   },
@@ -207,7 +252,10 @@ async function generatePageMd(config: PageConfig): Promise<string> {
       if (!group?.length) continue;
       out += `## ${labels[type] || type}\n\n`;
       for (const item of group) {
-        out += renderItem(item, { titleField: config.titleField, skipFields: config.skipFields });
+        out += renderItem(item, {
+          titleField: config.titleField,
+          skipFields: config.skipFields,
+        });
       }
     }
   } else if (config.title === "gallery") {
@@ -221,7 +269,10 @@ async function generatePageMd(config: PageConfig): Promise<string> {
     }
   } else {
     for (const item of sorted) {
-      out += renderItem(item, { titleField: config.titleField, skipFields: config.skipFields });
+      out += renderItem(item, {
+        titleField: config.titleField,
+        skipFields: config.skipFields,
+      });
       out += "---\n\n";
     }
   }
@@ -270,18 +321,39 @@ async function blogMd(slug?: string): Promise<string> {
   return out;
 }
 
-function parseAtomEntries(xml: string): { slug: string; title: string; link: string; published: string; summary?: string; content?: string }[] {
-  const posts: { slug: string; title: string; link: string; published: string; summary?: string; content?: string }[] = [];
+function parseAtomEntries(xml: string): {
+  slug: string;
+  title: string;
+  link: string;
+  published: string;
+  summary?: string;
+  content?: string;
+}[] {
+  const posts: {
+    slug: string;
+    title: string;
+    link: string;
+    published: string;
+    summary?: string;
+    content?: string;
+  }[] = [];
   const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
-  let match: RegExpExecArray | null;
-
-  while ((match = entryRegex.exec(xml)) !== null) {
+  for (const match of xml.matchAll(entryRegex)) {
     const entry = match[1];
     const extract = (tag: string) => {
-      const m = entry.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
+      const m = entry.match(
+        new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"),
+      );
       return m ? m[1].trim() : null;
     };
-    const decode = (t: string) => t.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1");
+    const decode = (t: string) =>
+      t
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1");
 
     const id = extract("id") || "";
     const title = decode(extract("title") || "Untitled");
@@ -292,16 +364,25 @@ function parseAtomEntries(xml: string): { slug: string; title: string; link: str
     const link = linkMatch ? linkMatch[1] : id;
 
     let slug = id;
-    try { slug = new URL(id).pathname.replace(/^\//, ""); } catch { slug = id.split("/").pop() || id; }
+    try {
+      slug = new URL(id).pathname.replace(/^\//, "");
+    } catch {
+      slug = id.split("/").pop() || id;
+    }
 
     posts.push({
-      slug, title, link, published,
+      slug,
+      title,
+      link,
+      published,
       summary: summary ? decode(summary) : undefined,
       content: content ? decode(content) : undefined,
     });
   }
 
-  posts.sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
+  posts.sort(
+    (a, b) => new Date(b.published).getTime() - new Date(a.published).getTime(),
+  );
   return posts;
 }
 
@@ -311,6 +392,37 @@ export async function GET(
 ) {
   const { path } = await params;
   const page = path[0];
+  if (page === "taste") {
+    if (path.length > 1) {
+      const item = await fetchQuery(api.taste.getByKey, {
+        key: path.slice(1).join("/"),
+      });
+      return item
+        ? mdResponse(tasteMarkdown(item))
+        : new NextResponse("# Entry not found\n", {
+            status: 404,
+            headers: { "Content-Type": "text/markdown; charset=utf-8" },
+          });
+    }
+    const params = new URL(_request.url).searchParams;
+    const items = filterTaste(await fetchQuery(api.taste.list, {}), {
+      q: params.get("q") ?? "",
+      category: params.get("category") ?? "",
+      quality: params.get("quality") ?? "",
+    });
+    return mdResponse(
+      `# Taste\n\n${items.map(tasteMarkdown).join("\n---\n\n")}`,
+    );
+  }
+  if (page === "home" && path.length === 1) {
+    const home = await getHomeContent();
+    return new NextResponse(`# ${home.heading}\n\n${home.body}\n`, {
+      headers: {
+        "Content-Type": "text/markdown; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
 
   // WET_MODE.md: a single editable markdown blob (not a collection)
   if (page === "WET_MODE") {
@@ -328,7 +440,7 @@ export async function GET(
   const config = pages[page];
   if (!config) {
     return mdResponse(
-      `# 404\n\nPage \`/${path.join("/")}\` not found.\n\nAvailable pages: /taste, /work, /media, /links, /friends, /gallery, /travel, /blog\n\nSee [/llms.txt](${SITE_URL}/llms.txt) for a full directory.`
+      `# 404\n\nPage \`/${path.join("/")}\` not found.\n\nAvailable pages: /taste, /work, /media, /links, /friends, /gallery, /travel, /blog\n\nSee [/llms.txt](${SITE_URL}/llms.txt) for a full directory.`,
     );
   }
 

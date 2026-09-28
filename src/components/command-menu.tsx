@@ -1,16 +1,14 @@
 "use client";
 
-import { getCalApi } from "@calcom/embed-react";
-import { useUser } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { track } from "@vercel/analytics";
 import { Command } from "cmdk";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useDevice } from "@/hooks/use-device";
-
-const ADMIN_USER_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || "")
-  .split(",")
-  .filter(Boolean);
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { isAdminUser } from "@/lib/admin";
+import { openBooking as showBooking } from "@/lib/booking";
+import { ShortcutLabel } from "./shortcut-label";
 
 interface CommandItem {
   id: string;
@@ -19,51 +17,38 @@ interface CommandItem {
   action: () => void;
   icon?: string;
   group: string;
+  disabled?: boolean;
 }
 
 export function CommandMenu() {
   const [open, setOpen] = useState(false);
-  const [calApi, setCalApi] = useState<Awaited<
-    ReturnType<typeof getCalApi>
-  > | null>(null);
+  useEffect(() => {
+    const show = () => setOpen(true);
+    document.addEventListener("site:search", show);
+    return () => document.removeEventListener("site:search", show);
+  }, []);
   const router = useRouter();
   const pathname = usePathname();
-  const { isMobile, isMac } = useDevice();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+  const { openSignIn, openUserProfile, signOut } = useClerk();
+  const pendingAccountAction = useRef<(() => void) | null>(null);
+  const [accountError, setAccountError] = useState("");
+  const closeThen = (action: () => void) => {
+    pendingAccountAction.current = action;
+    setAccountError("");
+    setOpen(false);
+  };
 
   const isAdmin = useMemo(() => {
-    return (
-      user && ADMIN_USER_IDS.length > 0 && ADMIN_USER_IDS.includes(user.id)
-    );
+    return isAdminUser(user?.id);
   }, [user]);
 
-  // Initialize Cal.com
-  useEffect(() => {
-    (async () => {
-      const cal = await getCalApi({ namespace: "30min" });
-      cal("ui", {
-        theme: "dark",
-        cssVarsPerTheme: {
-          light: { "cal-brand": "#2B262B" },
-          dark: { "cal-brand": "#E8A6A6" },
-        },
-        hideEventTypeDetails: false,
-        layout: "month_view",
-      });
-      setCalApi(() => cal);
-    })();
-  }, []);
-
-  const openBooking = useCallback(() => {
+  const openBooking = () => {
     track("book_call_click", { source: "cmdk" });
-    if (calApi) {
-      calApi("modal", {
-        calLink: "tetraslam/30min",
-        config: { layout: "month_view", theme: "dark" },
-      });
-    }
-    setOpen(false);
-  }, [calApi]);
+    const show = () => void showBooking();
+    if (open) closeThen(show);
+    else show();
+  };
 
   const navigate = useCallback(
     (path: string) => {
@@ -92,16 +77,83 @@ export function CommandMenu() {
     // Admin subroutes (only on /admin pages, shown first for priority)
     ...(isAdmin && pathname.startsWith("/admin")
       ? [
-          { id: "admin-overview", label: "admin / overview", action: () => navigate("/admin"), group: "admin pages", icon: "~" },
-          { id: "admin-work", label: "admin / work", action: () => navigate("/admin/work"), group: "admin pages", icon: ">" },
-          { id: "admin-friends", label: "admin / friends", action: () => navigate("/admin/friends"), group: "admin pages", icon: "@" },
-          { id: "admin-media", label: "admin / media", action: () => navigate("/admin/media"), group: "admin pages", icon: "*" },
-          { id: "admin-links", label: "admin / links", action: () => navigate("/admin/links"), group: "admin pages", icon: "&" },
-          { id: "admin-taste", label: "admin / taste", action: () => navigate("/admin/taste"), group: "admin pages", icon: "<>" },
-          { id: "admin-suggestions", label: "admin / suggestions", action: () => navigate("/admin/link-suggestions"), group: "admin pages", icon: "?" },
-          { id: "admin-travel", label: "admin / travel", action: () => navigate("/admin/travel"), group: "admin pages", icon: "^" },
-          { id: "admin-gallery", label: "admin / gallery", action: () => navigate("/admin/gallery"), group: "admin pages", icon: "[]" },
-          { id: "admin-emails", label: "admin / emails", action: () => navigate("/admin/emails"), group: "admin pages", icon: "✉" },
+          {
+            id: "admin-homepage",
+            label: "admin / homepage bio",
+            action: () => navigate("/admin/homepage"),
+            group: "admin pages",
+            icon: "~",
+          },
+          {
+            id: "admin-overview",
+            label: "admin / overview",
+            action: () => navigate("/admin"),
+            group: "admin pages",
+            icon: "~",
+          },
+          {
+            id: "admin-work",
+            label: "admin / work",
+            action: () => navigate("/admin/work"),
+            group: "admin pages",
+            icon: ">",
+          },
+          {
+            id: "admin-friends",
+            label: "admin / friends",
+            action: () => navigate("/admin/friends"),
+            group: "admin pages",
+            icon: "@",
+          },
+          {
+            id: "admin-media",
+            label: "admin / media",
+            action: () => navigate("/admin/media"),
+            group: "admin pages",
+            icon: "*",
+          },
+          {
+            id: "admin-links",
+            label: "admin / links",
+            action: () => navigate("/admin/links"),
+            group: "admin pages",
+            icon: "&",
+          },
+          {
+            id: "admin-taste",
+            label: "admin / taste",
+            action: () => navigate("/admin/taste"),
+            group: "admin pages",
+            icon: "<>",
+          },
+          {
+            id: "admin-suggestions",
+            label: "admin / suggestions",
+            action: () => navigate("/admin/link-suggestions"),
+            group: "admin pages",
+            icon: "?",
+          },
+          {
+            id: "admin-travel",
+            label: "admin / travel",
+            action: () => navigate("/admin/travel"),
+            group: "admin pages",
+            icon: "^",
+          },
+          {
+            id: "admin-gallery",
+            label: "admin / gallery",
+            action: () => navigate("/admin/gallery"),
+            group: "admin pages",
+            icon: "[]",
+          },
+          {
+            id: "admin-emails",
+            label: "admin / emails",
+            action: () => navigate("/admin/emails"),
+            group: "admin pages",
+            icon: "✉",
+          },
         ]
       : []),
     // Navigation
@@ -122,9 +174,9 @@ export function CommandMenu() {
       icon: ">",
     },
     {
-      id: "blog",
-      label: "blog",
-      shortcut: ["B"],
+      id: "writing",
+      label: "writing",
+      shortcut: ["R"],
       action: () => navigate("/blog"),
       group: "navigation",
       icon: "#",
@@ -156,6 +208,7 @@ export function CommandMenu() {
     {
       id: "taste",
       label: "taste",
+      shortcut: ["S"],
       action: () => navigate("/taste"),
       group: "navigation",
       icon: "<>",
@@ -220,7 +273,6 @@ export function CommandMenu() {
     {
       id: "resume",
       label: "resume",
-      shortcut: ["R"],
       action: openResume,
       group: "meta",
       icon: "pdf",
@@ -238,25 +290,53 @@ export function CommandMenu() {
     },
     {
       id: "rss",
-      label: "blog rss",
+      label: "writing rss",
       action: () =>
         openExternal("https://blog.tetraslam.world/rss", "blog_rss"),
       group: "meta",
       icon: "rss",
     },
-    // Admin (only visible to admins)
-    ...(isAdmin
+    {
+      id: "admin",
+      label: "admin dashboard",
+      shortcut: isAdmin ? ["A"] : undefined,
+      action: () => navigate("/admin"),
+      group: "account",
+      icon: "!",
+    },
+    ...(user
       ? [
           {
-            id: "admin",
-            label: "admin dashboard",
-            shortcut: ["A"],
-            action: () => navigate("/admin"),
-            group: "admin",
-            icon: "!",
+            id: "account",
+            label: "manage account",
+            action: () => closeThen(() => openUserProfile()),
+            group: "account",
+            icon: "@",
+          },
+          {
+            id: "sign-out",
+            label: "sign out",
+            action: () =>
+              closeThen(() => {
+                void signOut({ redirectUrl: "/" }).catch(() => {
+                  setAccountError("couldn’t sign out. please try again.");
+                  setOpen(true);
+                });
+              }),
+            group: "account",
+            icon: "↗",
           },
         ]
-      : []),
+      : [
+          {
+            id: "sign-in",
+            label: "sign in",
+            disabled: !isLoaded,
+            action: () => closeThen(() => openSignIn()),
+            group: "account",
+            icon: "@",
+          },
+        ]),
   ];
 
   // Keep refs in sync so the global keydown handler stays stable
@@ -276,6 +356,7 @@ export function CommandMenu() {
     };
 
     const down = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || e.isComposing || e.repeat) return;
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((o) => !o);
@@ -287,7 +368,7 @@ export function CommandMenu() {
         return;
       }
 
-      // Global single-key shortcuts (the ones shown as kbd hints in the
+      // Global single-key shortcuts (underlined in the
       // palette). Only when the palette is closed and focus isn't in a
       // text field.
       if (
@@ -295,6 +376,7 @@ export function CommandMenu() {
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
+        document.querySelector('[role="dialog"]') ||
         isTypingTarget(e.target)
       ) {
         return;
@@ -324,39 +406,33 @@ export function CommandMenu() {
     {} as Record<string, CommandItem[]>,
   );
 
-  // Hide command menu button on mobile
-  if (!open) {
-    if (isMobile) return null;
-    return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 px-3 py-1.5 text-xs text-muted-foreground bg-surface border border-border rounded hover:border-rose/50 transition-colors z-50"
-      >
-        <span className="opacity-60">press</span>{" "}
-        <kbd className="text-rose">{isMac ? "cmd" : "ctrl"}+k</kbd>
-      </button>
-    );
-  }
-
   return (
-    <div className="fixed inset-0 z-50">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-        onClick={() => setOpen(false)}
-      />
-
-      {/* Command palette */}
-      <div className="absolute left-1/2 top-[20%] -translate-x-1/2 w-full max-w-lg">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent
+        className="p-0 overflow-hidden"
+        aria-describedby={undefined}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          document
+            .querySelector<HTMLButtonElement>(".nav-search")
+            ?.focus({ preventScroll: true });
+          if (pendingAccountAction.current) {
+            const action = pendingAccountAction.current;
+            pendingAccountAction.current = null;
+            action();
+            return;
+          }
+        }}
+      >
+        <DialogTitle className="sr-only">Find a page</DialogTitle>
         <Command
           className="bg-surface border border-border rounded-lg shadow-2xl overflow-hidden"
           loop
         >
           <Command.Input
-            placeholder="where to?"
+            placeholder="find a page"
+            aria-label="Find a page"
             className="w-full px-4 py-3 bg-transparent border-b border-border text-foreground placeholder:text-muted-foreground outline-none"
-            autoFocus
           />
 
           <Command.List className="max-h-80 overflow-y-auto p-2">
@@ -374,7 +450,9 @@ export function CommandMenu() {
                   <Command.Item
                     key={item.id}
                     value={item.label}
+                    aria-keyshortcuts={item.shortcut?.join(" ")}
                     onSelect={item.action}
+                    disabled={item.disabled}
                     className="flex items-center gap-3 px-3 py-2 rounded cursor-pointer text-foreground data-[selected=true]:bg-rose/10 data-[selected=true]:text-rose transition-colors"
                   >
                     {item.icon && (
@@ -382,24 +460,22 @@ export function CommandMenu() {
                         {item.icon}
                       </span>
                     )}
-                    <span className="flex-1">{item.label}</span>
-                    {item.shortcut && (
-                      <div className="flex gap-1">
-                        {item.shortcut.map((key) => (
-                          <kbd
-                            key={key}
-                            className="px-1.5 py-0.5 text-xs bg-background rounded border border-border text-muted-foreground"
-                          >
-                            {key}
-                          </kbd>
-                        ))}
-                      </div>
-                    )}
+                    <span className="flex-1">
+                      <ShortcutLabel
+                        label={item.label}
+                        shortcut={item.shortcut?.[0]}
+                      />
+                    </span>
                   </Command.Item>
                 ))}
               </Command.Group>
             ))}
           </Command.List>
+          {accountError && (
+            <p className="px-4 py-2 text-sm text-destructive" role="alert">
+              {accountError}
+            </p>
+          )}
 
           <div className="px-4 py-2 border-t border-border text-xs text-muted-foreground flex justify-between">
             <span>
@@ -422,7 +498,7 @@ export function CommandMenu() {
             </span>
           </div>
         </Command>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

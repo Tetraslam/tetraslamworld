@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery } from "convex/react";
 import mapboxgl from "mapbox-gl";
+import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 import { ImageGalleryUpload } from "@/components/image-gallery-upload";
 import { Markdown } from "@/components/markdown";
@@ -39,7 +40,13 @@ const emptyForm: TravelForm = {
 	order: 0,
 };
 
+function createMarker() {
+  const element=document.createElement("div");element.className="map-marker";
+  return new mapboxgl.Marker({element});
+}
+
 export default function AdminTravelPage() {
+  const {resolvedTheme}=useTheme();
 	const travel = useQuery(api.travel.list, {});
 	const create = useMutation(api.travel.create);
 	const update = useMutation(api.travel.update);
@@ -72,10 +79,10 @@ export default function AdminTravelPage() {
 
 		mapRef.current = new mapboxgl.Map({
 			container: mapContainerRef.current,
-			style: "mapbox://styles/mapbox/dark-v11",
+			style: document.documentElement.classList.contains("dark") ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/light-v11",
 			center: [initialLng, initialLat],
 			zoom: hasCoords ? 8 : 2,
-			attributionControl: false,
+			attributionControl: true,
 		});
 
 		mapRef.current.addControl(
@@ -85,7 +92,7 @@ export default function AdminTravelPage() {
 
 		// Add marker if we have coords
 		if (hasCoords) {
-			markerRef.current = new mapboxgl.Marker({ color: "#E8A6A6" })
+			markerRef.current = createMarker()
 				.setLngLat([initialLng, initialLat])
 				.addTo(mapRef.current);
 		}
@@ -105,7 +112,7 @@ export default function AdminTravelPage() {
 			if (markerRef.current) {
 				markerRef.current.setLngLat([lng, lat]);
 			} else {
-				markerRef.current = new mapboxgl.Marker({ color: "#E8A6A6" })
+				markerRef.current = createMarker()
 					.setLngLat([lng, lat])
 					.addTo(mapRef.current!);
 			}
@@ -117,6 +124,7 @@ export default function AdminTravelPage() {
 			markerRef.current = null;
 		};
 	}, [editing, coordMode]);
+  useEffect(()=>{if(resolvedTheme)mapRef.current?.setStyle(resolvedTheme==="dark"?"mapbox://styles/mapbox/dark-v11":"mapbox://styles/mapbox/light-v11");},[resolvedTheme]);
 
 	// Update marker when coords change from manual input
 	useEffect(() => {
@@ -128,7 +136,7 @@ export default function AdminTravelPage() {
 		if (markerRef.current) {
 			markerRef.current.setLngLat([lng, lat]);
 		} else {
-			markerRef.current = new mapboxgl.Marker({ color: "#E8A6A6" })
+			markerRef.current = createMarker()
 				.setLngLat([lng, lat])
 				.addTo(mapRef.current);
 		}
@@ -472,25 +480,6 @@ export default function AdminTravelPage() {
 				/>
 			)}
 
-			{/* Map styles */}
-			<style jsx global>{`
-				.mapboxgl-ctrl-group {
-					background: rgba(43, 38, 43, 0.9) !important;
-					border: 1px solid #4a3b46 !important;
-				}
-				.mapboxgl-ctrl-group button {
-					background-color: transparent !important;
-				}
-				.mapboxgl-ctrl-group button:hover {
-					background-color: rgba(232, 166, 166, 0.15) !important;
-				}
-				.mapboxgl-ctrl-group button + button {
-					border-top: 1px solid #4a3b46 !important;
-				}
-				.mapboxgl-ctrl button .mapboxgl-ctrl-icon {
-					filter: invert(0.9) sepia(0.2) saturate(0.5) hue-rotate(300deg);
-				}
-			`}</style>
 		</div>
 	);
 }

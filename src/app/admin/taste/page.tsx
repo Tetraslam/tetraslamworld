@@ -1,218 +1,290 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
-import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { ConvexError } from "convex/values";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { SortableList } from "@/components/sortable-list";
-import {
-  emptyTasteForm,
-  TasteAdminForm,
-  type TasteFormData,
-} from "@/components/taste-admin-form";
+import { TasteEntryView } from "@/components/taste/entry";
+import { TasteAdminForm } from "@/components/taste-admin-form";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import {
+  emptyTasteDraft,
+  isWebUrl,
+  sortTaste,
+  type TasteDraft,
+  tasteCover,
+  tasteHref,
+  toTasteDraft,
+  validateTaste,
+} from "../../../../shared/taste";
+
+function message(error: unknown) {
+  return error instanceof ConvexError &&
+    typeof error.data === "object" &&
+    error.data &&
+    "message" in error.data
+    ? String(error.data.message)
+    : "Couldn’t save that change. Your draft is still here; please try again.";
+}
 
 export default function AdminTastePage() {
-  const items = useQuery(api.taste.list, {});
-  const create = useMutation(api.taste.create);
-  const update = useMutation(api.taste.update);
-  const remove = useMutation(api.taste.remove);
-  const reorder = useMutation(api.taste.reorder);
-
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const items = useQuery(api.taste.adminList, isAuthenticated ? {} : "skip");
+  const create = useMutation(api.taste.createEntry),
+    save = useMutation(api.taste.saveEntry),
+    remove = useMutation(api.taste.deleteEntry),
+    reorder = useMutation(api.taste.reorder);
   const [editing, setEditing] = useState<Id<"taste"> | "new" | null>(null);
-  const [form, setForm] = useState<TasteFormData>(emptyTasteForm);
-
-  // Extract unique tags from all entries
-  const allTags = useMemo(() => {
-    const tagSet = new Set<string>();
-    items?.forEach((item) => {
-      if (item.tags) {
-        for (const tag of item.tags) {
-          tagSet.add(tag);
-        }
-      }
-    });
-    return Array.from(tagSet).sort();
-  }, [items]);
-
-  // Sort items by order
-  const sortedItems = items
-    ? [...items].sort((a, b) => {
-        if (a.order !== undefined && b.order !== undefined)
-          return a.order - b.order;
-        if (a.order === undefined && b.order === undefined)
-          return b.createdAt - a.createdAt;
-        if (a.order !== undefined) return -1;
-        return 1;
-      })
-    : [];
-
-  const handleReorder = async (reordered: typeof sortedItems) => {
-    await reorder({ ids: reordered.map((item) => item._id) });
-  };
-
-  const handleEdit = (item: NonNullable<typeof items>[0]) => {
+  const [revision, setRevision] = useState(0);
+  const [form, setForm] = useState<TasteDraft>(emptyTasteDraft);
+  const [saving, setSaving] = useState(false),
+    [uploading, setUploading] = useState(false),
+    [error, setError] = useState("");
+  const [search, setSearch] = useState(""),
+    [preview, setPreview] = useState(false);
+  const [optimistic, setOptimistic] = useState<string[] | null>(null);
+  const pending = useRef(false),
+    previewTrigger = useRef<HTMLButtonElement | null>(null);
+  const sorted = sortTaste(items ?? []);
+  const signature = sorted.map((item) => item._id).join("|");
+  useEffect(() => {
+    if (optimistic && optimistic.join("|") === signature) setOptimistic(null);
+  }, [optimistic, signature]);
+  const ordered = optimistic
+    ? [...sorted].sort(
+        (a, b) => optimistic.indexOf(a._id) - optimistic.indexOf(b._id),
+      )
+    : sorted;
+  const visible = ordered.filter((item) =>
+    `${item.title} ${item.observation ?? ""}`
+      .toLowerCase()
+      .includes(search.trim().toLowerCase()),
+  );
+  function edit(item: NonNullable<typeof items>[number]) {
+    setForm(toTasteDraft(item));
+    setRevision(item.revision ?? 0);
     setEditing(item._id);
-    setForm({
-      title: item.title,
-      url: item.url,
-      content: item.content || "",
-      designNotes: item.designNotes || "",
-      screenshotUrls: item.screenshotUrls || [],
-      tags: item.tags || [],
-    });
-  };
-
-  const handleNew = () => {
-    setEditing("new");
-    setForm(emptyTasteForm);
-  };
-
-  const handleCancel = () => {
-    setEditing(null);
-    setForm(emptyTasteForm);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const data = {
-      title: form.title,
-      url: form.url,
-      content: form.content || undefined,
-      designNotes: form.designNotes || undefined,
-      screenshotUrls:
-        form.screenshotUrls.length > 0 ? form.screenshotUrls : undefined,
-      tags: form.tags.length > 0 ? form.tags : undefined,
-    };
-
-    if (editing === "new") {
-      await create(data);
-    } else if (editing) {
-      await update({ id: editing, ...data });
+    setError("");
+  }
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (pending.current || uploading || !editing) return;
+    const invalid = validateTaste(form);
+    if (invalid) {
+      setError(invalid);
+      return;
     }
-    handleCancel();
-  };
-
-  const handleDelete = async (id: Id<"taste">) => {
-    if (confirm("Delete this taste entry?")) {
-      await remove({ id });
-    }
-  };
-
-  const getDomain = (url: string) => {
+    pending.current = true;
+    setSaving(true);
+    setError("");
     try {
-      return new URL(url).hostname.replace("www.", "");
-    } catch {
-      return url;
+      if (editing === "new") await create({ entry: form });
+      else await save({ id: editing, expectedRevision: revision, entry: form });
+      setEditing(null);
+      setForm(emptyTasteDraft());
+    } catch (error) {
+      setError(message(error));
+    } finally {
+      pending.current = false;
+      setSaving(false);
     }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">taste</h1>
-        <button
-          type="button"
-          onClick={handleNew}
-          className="px-4 py-2 bg-rose text-background rounded hover:bg-rose-deep transition-colors"
-        >
-          + add entry
-        </button>
+  }
+  async function move(next: typeof sorted) {
+    if (pending.current) return;
+    pending.current = true;
+    setSaving(true);
+    setError("");
+    setOptimistic(next.map((item) => item._id));
+    try {
+      await reorder({ ids: next.map((item) => item._id) });
+    } catch (error) {
+      setOptimistic(null);
+      setError(message(error));
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
+  }
+  async function deleteEntry(item: NonNullable<typeof items>[number]) {
+    if (pending.current || !confirm(`Delete “${item.title}”?`)) return;
+    pending.current = true;
+    setSaving(true);
+    setError("");
+    try {
+      await remove({ id: item._id, expectedRevision: item.revision ?? 0 });
+    } catch (error) {
+      setError(message(error));
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
+  }
+  const row = (item: NonNullable<typeof items>[number]) => {
+    const cover = tasteCover(item),
+      image =
+        cover?.kind === "image" && !cover.animated ? cover.url : cover?.poster;
+    return (
+      <div className="taste-admin-row">
+        {image && (
+          <span
+            className="taste-admin-thumb"
+            style={{ backgroundImage: `url(${JSON.stringify(image)})` }}
+          />
+        )}
+        <div className="taste-admin-row-copy">
+          <strong>{item.title}</strong>
+          <span>
+            {item.published === false
+              ? "draft"
+              : item.scope === "detail"
+                ? "detail"
+                : ""}
+          </span>
+        </div>
+        <div className="editorial-links">
+          <button type="button" onClick={() => edit(item)}>
+            edit
+          </button>
+          {item.published !== false && (
+            <a href={tasteHref(item)} target="_blank" rel="noreferrer">
+              view ↗
+            </a>
+          )}
+          <button type="button" onClick={() => void deleteEntry(item)}>
+            delete
+          </button>
+        </div>
       </div>
-
-      {editing && (
+    );
+  };
+  const draft = {
+    ...form,
+    _id: editing ?? "draft",
+    createdAt: 0,
+    media: form.media.filter((asset) =>
+      asset.kind === "text"
+        ? !!asset.text?.trim()
+        : !!asset.url && isWebUrl(asset.url),
+    ),
+    title: form.title || "untitled draft",
+  };
+  return (
+    <div className="taste-admin">
+      <header className="taste-admin-header">
+        <h1>taste</h1>
+        <div className="editorial-links">
+          <Link href="/admin/taste/guide">collection guide</Link>
+          {editing ? (
+            <button
+              type="button"
+              ref={previewTrigger}
+              onClick={() => setPreview(true)}
+              disabled={saving || uploading}
+            >
+              preview entry
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="text-action"
+              disabled={!items || saving}
+              onClick={() => {
+                setForm(emptyTasteDraft());
+                setEditing("new");
+                setRevision(0);
+                setError("");
+              }}
+            >
+              add entry
+            </button>
+          )}
+        </div>
+      </header>
+      {!isLoading && !isAuthenticated && (
+        <p>sign in again to connect to the content backend.</p>
+      )}
+      {error && (
+        <div className="taste-save-error" role="alert">
+          <p>{error}</p>
+          {editing &&
+            editing !== "new" &&
+            items?.some((item) => item._id === editing) && (
+              <button
+                type="button"
+                className="text-action"
+                onClick={() => {
+                  const latest = items.find((item) => item._id === editing);
+                  if (latest) edit(latest);
+                }}
+              >
+                reload saved version (discard this draft)
+              </button>
+            )}
+        </div>
+      )}
+      {editing ? (
         <TasteAdminForm
+          key={editing}
           form={form}
           setForm={setForm}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
+          onSubmit={submit}
+          onCancel={() => {
+            setEditing(null);
+            setError("");
+          }}
           isNew={editing === "new"}
-          allTags={allTags}
+          saving={saving}
+          onBusyChange={setUploading}
+          allTags={[
+            ...new Set(items?.flatMap((item) => item.tags ?? []) ?? []),
+          ]}
+          allQualities={[
+            ...new Set(items?.flatMap((item) => item.qualities ?? []) ?? []),
+          ]}
         />
-      )}
-
-      {!items ? (
-        <p className="text-muted-foreground">loading...</p>
-      ) : items.length === 0 ? (
-        <p className="text-muted-foreground">no taste entries yet</p>
+      ) : !items ? (
+        <output>loading collection…</output>
       ) : (
-        <SortableList
-          items={sortedItems}
-          onReorder={handleReorder}
-          renderItem={(item) => (
-            <div className="flex items-center gap-3 p-3 bg-surface border border-border rounded flex-1">
-              {/* Thumbnail */}
-              {item.screenshotUrls && item.screenshotUrls.length > 0 ? (
-                <div className="relative w-16 h-12 rounded overflow-hidden shrink-0 border border-border">
-                  <Image
-                    src={item.screenshotUrls[0]}
-                    alt={item.title}
-                    fill
-                    className="object-cover"
-                    sizes="64px"
-                  />
-                  {item.screenshotUrls.length > 1 && (
-                    <span className="absolute bottom-0 right-0 bg-background/80 text-xs px-1 text-muted-foreground">
-                      {item.screenshotUrls.length}
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <div className="w-16 h-12 rounded bg-background border border-border shrink-0 flex items-center justify-center">
-                  <span className="text-[8px] text-muted-foreground/40 font-mono">
-                    {getDomain(item.url).slice(0, 8)}
-                  </span>
-                </div>
-              )}
-
-              {/* Info */}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium truncate">{item.title}</span>
-                  {item.designNotes && (
-                    <span className="text-xs text-rose/60 font-mono">
-                      [notes]
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground truncate max-w-md">
-                  {getDomain(item.url)}
-                </p>
-                {item.tags && item.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {item.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-1.5 py-0.5 text-xs bg-background rounded border border-border text-muted-foreground"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2 shrink-0 ml-4">
-                <button
-                  type="button"
-                  onClick={() => handleEdit(item)}
-                  className="text-sm text-rose-deep hover:text-rose"
-                >
-                  edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(item._id)}
-                  className="text-sm text-muted-foreground hover:text-rose-deep"
-                >
-                  delete
-                </button>
-              </div>
-            </div>
+        <>
+          <div className="collection-search">
+            <input
+              type="search"
+              aria-label="Find an entry to edit"
+              placeholder="find an entry"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </div>
+          <fieldset disabled={saving}>
+            {search ? (
+              visible.map((item) => <div key={item._id}>{row(item)}</div>)
+            ) : (
+              <SortableList items={visible} onReorder={move} renderItem={row} />
+            )}
+          </fieldset>
+          {!visible.length && (
+            <p>
+              {search ? "no matching entries." : "your collection is empty."}
+            </p>
           )}
-        />
+        </>
       )}
+      <Dialog open={preview} onOpenChange={setPreview}>
+        <DialogContent
+          className="taste-admin-preview"
+          aria-describedby={undefined}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            previewTrigger.current?.focus();
+          }}
+        >
+          <DialogTitle className="sr-only">Entry preview</DialogTitle>
+          <TasteEntryView key={editing} entry={draft} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

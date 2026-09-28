@@ -1,609 +1,262 @@
 "use client";
 
-import { track } from "@vercel/analytics";
 import { type Preloaded, useMutation, usePreloadedQuery } from "convex/react";
-import { useMemo, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import { EmptyState } from "@/components/empty-state";
-import { FilterPills } from "@/components/filter-pills";
+import { useRef, useState } from "react";
+import { Markdown } from "@/components/markdown";
 import { PageHeader } from "@/components/page-header";
-import { SectionHeading } from "@/components/section-heading";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useListMotion } from "@/hooks/use-list-motion";
+import { entranceStyle } from "@/lib/motion";
 import { api } from "../../../convex/_generated/api";
 
-type SortOrder = "manual" | "newest" | "oldest" | "alpha";
-type PinnedFilter = "all" | "pinned" | "unpinned";
-
-const PAGE_SIZE = 50;
-
 export function LinksClient({
-	preloadedLinks,
+  preloadedLinks,
 }: {
-	preloadedLinks: Preloaded<typeof api.links.list>;
+  preloadedLinks: Preloaded<typeof api.links.list>;
 }) {
-	const links = usePreloadedQuery(preloadedLinks);
-	const suggestLink = useMutation(api.linkSuggestions.create);
-	const [search, setSearch] = useState("");
-	const [tagFilter, setTagFilter] = useState<string | null>(null);
-	const [pinnedFilter, setPinnedFilter] = useState<PinnedFilter>("all");
-	const [sortOrder, setSortOrder] = useState<SortOrder>("manual");
-	const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
-	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-	// Track search queries with debounce
-	const handleSearchChange = (value: string) => {
-		setSearch(value);
-		setDisplayCount(PAGE_SIZE); // Reset pagination on search
-		if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-		if (value.trim()) {
-			searchTimeoutRef.current = setTimeout(() => {
-				track("search_query", { page: "links", query: value.trim() });
-			}, 1000);
-		}
-	};
-
-	// Suggestion modal state
-	const [showSuggestModal, setShowSuggestModal] = useState(false);
-	const [suggestion, setSuggestion] = useState({ title: "", url: "", reason: "", submitterName: "" });
-	const [submitting, setSubmitting] = useState(false);
-	const [submitted, setSubmitted] = useState(false);
-
-	const handleSuggestSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setSubmitting(true);
-		try {
-			await suggestLink({
-				title: suggestion.title,
-				url: suggestion.url,
-				reason: suggestion.reason || undefined,
-				submitterName: suggestion.submitterName || undefined,
-			});
-			setSubmitted(true);
-			setTimeout(() => {
-				setShowSuggestModal(false);
-				setSubmitted(false);
-				setSuggestion({ title: "", url: "", reason: "", submitterName: "" });
-			}, 2000);
-		} finally {
-			setSubmitting(false);
-		}
-	};
-
-	// Extract unique tags from all links
-	const allTags = useMemo(() => {
-		const tagSet = new Set<string>();
-		links?.forEach((link) => {
-			if (link.tags) {
-				for (const tag of link.tags) {
-					tagSet.add(tag);
-				}
-			}
-		});
-		return Array.from(tagSet).sort();
-	}, [links]);
-
-	// Filter and sort links
-	const filteredLinks = useMemo(() => {
-		if (!links) return [];
-
-		const result = links.filter((link) => {
-			// Text search
-			const matchesSearch =
-				!search ||
-				link.title.toLowerCase().includes(search.toLowerCase()) ||
-				link.url.toLowerCase().includes(search.toLowerCase()) ||
-				link.content?.toLowerCase().includes(search.toLowerCase()) ||
-				link.tags?.some((t) => t.toLowerCase().includes(search.toLowerCase()));
-
-			// Tag filter
-			const matchesTag = !tagFilter || link.tags?.includes(tagFilter);
-
-			// Pinned filter
-			const matchesPinned =
-				pinnedFilter === "all" ||
-				(pinnedFilter === "pinned" && link.pinned) ||
-				(pinnedFilter === "unpinned" && !link.pinned);
-
-			return matchesSearch && matchesTag && matchesPinned;
-		});
-
-		// Sort
-		result.sort((a, b) => {
-			if (sortOrder === "manual") {
-				// If both have order, sort by order ascending (lower = first, new links have low/negative order)
-				if (a.order !== undefined && b.order !== undefined) {
-					return a.order - b.order;
-				}
-				// If neither has order, sort by createdAt desc (newest first)
-				if (a.order === undefined && b.order === undefined) {
-					return b.createdAt - a.createdAt;
-				}
-				// Ordered links come first, unordered (legacy) links come after
-				if (a.order !== undefined) return -1;
-				return 1;
-			}
-			if (sortOrder === "alpha") {
-				return a.title.localeCompare(b.title);
-			}
-			const dateA = a.createdAt;
-			const dateB = b.createdAt;
-			return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-		});
-
-		return result;
-	}, [links, search, tagFilter, pinnedFilter, sortOrder]);
-
-	const pinned = filteredLinks.filter((l) => l.pinned);
-	const unpinned = filteredLinks.filter((l) => !l.pinned);
-
-	const hasActiveFilters =
-		search || tagFilter || pinnedFilter !== "all" || sortOrder !== "manual";
-
-	const clearAllFilters = () => {
-		setSearch("");
-		setTagFilter(null);
-		setPinnedFilter("all");
-		setSortOrder("manual");
-		setDisplayCount(PAGE_SIZE);
-	};
-
-	// Reset pagination when filters change
-	const handleTagFilterChange = (tag: string | null) => {
-		setTagFilter(tag);
-		setDisplayCount(PAGE_SIZE);
-	};
-
-	const handlePinnedFilterChange = (filter: PinnedFilter) => {
-		setPinnedFilter(filter);
-		setDisplayCount(PAGE_SIZE);
-	};
-
-	const handleSortChange = (sort: SortOrder) => {
-		setSortOrder(sort);
-		setDisplayCount(PAGE_SIZE);
-	};
-
-	return (
-		<div className="max-w-4xl mx-auto px-4 py-12">
-			<div className="space-y-6 animate-fade-in">
-				<PageHeader
-					path="/links"
-					title="links"
-					subtitle="bookmarks, resources, and interesting finds"
-					count={links?.length}
-					countLabel="links"
-					action={
-						<button
-							type="button"
-							onClick={() => setShowSuggestModal(true)}
-							className="px-3 py-1.5 text-sm border border-rose/50 bg-rose/10 text-rose rounded-lg hover:bg-rose/20 hover:border-rose transition-all"
-						>
-							suggest a link
-						</button>
-					}
-				/>
-
-				{/* Search and filters */}
-				<div className="space-y-3">
-					<div className="relative">
-						<input
-							type="text"
-							placeholder="search links..."
-							value={search}
-							onChange={(e) => handleSearchChange(e.target.value)}
-							className="w-full px-4 py-3 bg-surface border border-border rounded-lg focus:outline-none focus:border-rose/50 text-foreground placeholder:text-muted-foreground transition-colors"
-						/>
-						{search && (
-							<button
-								onClick={() => setSearch("")}
-								className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-							>
-								&times;
-							</button>
-						)}
-					</div>
-
-					{/* Filter row */}
-					<div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-						{/* Tag filter */}
-						{allTags.length > 0 && (
-							<>
-								<div className="flex flex-wrap items-center gap-2">
-									<FilterPills
-										size="sm"
-										label="tag:"
-										options={[
-											{ value: null, label: "all" },
-											...allTags
-												.slice(0, 5)
-												.map((tag) => ({ value: tag, label: tag })),
-										]}
-										value={tagFilter}
-										onChange={(value) => {
-											handleTagFilterChange(value);
-											track("filter_use", {
-												page: "links",
-												filter_type: "tag",
-												value: value ?? "all",
-											});
-										}}
-									/>
-									{allTags.length > 5 && (
-										<select
-											value={tagFilter || ""}
-											onChange={(e) =>
-												handleTagFilterChange(e.target.value || null)
-											}
-											className="px-2.5 py-1 text-xs rounded-lg bg-surface border border-border text-muted-foreground focus:outline-none focus:border-rose/50"
-										>
-											<option value="">more...</option>
-											{allTags.slice(5).map((tag) => (
-												<option key={tag} value={tag}>
-													{tag}
-												</option>
-											))}
-										</select>
-									)}
-								</div>
-
-								<span className="text-border">|</span>
-							</>
-						)}
-
-						{/* Pinned filter */}
-						<FilterPills
-							size="sm"
-							label="show:"
-							options={(["all", "pinned", "unpinned"] as const).map(
-								(option) => ({ value: option, label: option }),
-							)}
-							value={pinnedFilter}
-							onChange={(value) => {
-								handlePinnedFilterChange(value);
-								track("filter_use", {
-									page: "links",
-									filter_type: "pinned",
-									value,
-								});
-							}}
-						/>
-
-						<span className="text-border">|</span>
-
-						{/* Sort order */}
-						<FilterPills
-							size="sm"
-							label="sort:"
-							options={(
-								[
-									["manual", "custom"],
-									["newest", "newest"],
-									["oldest", "oldest"],
-									["alpha", "a-z"],
-								] as const
-							).map(([value, label]) => ({ value, label }))}
-							value={sortOrder}
-							onChange={(value) => {
-								handleSortChange(value);
-								track("filter_use", {
-									page: "links",
-									filter_type: "sort",
-									value,
-								});
-							}}
-						/>
-
-						{/* Clear all filters */}
-						{hasActiveFilters && (
-							<>
-								<span className="text-border">|</span>
-								<button
-									type="button"
-									onClick={clearAllFilters}
-									className="px-2 py-1 text-xs text-muted-foreground hover:text-rose transition-colors"
-								>
-									clear all
-								</button>
-							</>
-						)}
-					</div>
-
-					{/* Results count */}
-					{links && (
-						<div className="text-xs text-muted-foreground">
-							{pinnedFilter === "all" ? (
-								<>
-									{pinned.length > 0 && `${pinned.length} pinned, `}
-									{Math.min(displayCount, unpinned.length)} of {unpinned.length} link{unpinned.length !== 1 ? "s" : ""}
-								</>
-							) : (
-								<>
-									{Math.min(displayCount, filteredLinks.length)} of {filteredLinks.length} link{filteredLinks.length !== 1 ? "s" : ""}
-								</>
-							)}
-							{hasActiveFilters && " found"}
-						</div>
-					)}
-				</div>
-
-				{filteredLinks.length === 0 ? (
-					<EmptyState
-						message={
-							hasActiveFilters
-								? "no links match your filters"
-								: "no links saved yet"
-						}
-					/>
-				) : pinnedFilter === "all" ? (
-					// Group by pinned/unpinned when showing all
-					<div className="space-y-8">
-						{pinned.length > 0 && (
-							<section>
-								<SectionHeading title="pinned" count={pinned.length} />
-								<div className="space-y-2">
-									{pinned.map((link, index) => (
-										<LinkCard
-											key={link._id}
-											link={link}
-											delay={index * 30}
-											isPinned
-										/>
-									))}
-								</div>
-							</section>
-						)}
-
-						{unpinned.length > 0 && (
-							<section>
-								{pinned.length > 0 && (
-									<SectionHeading title="all links" count={unpinned.length} />
-								)}
-								<div className="space-y-2">
-									{unpinned.slice(0, displayCount).map((link, index) => (
-										<LinkCard
-											key={link._id}
-											link={link}
-											delay={(pinned?.length || 0) * 30 + index * 30}
-										/>
-									))}
-								</div>
-								{unpinned.length > displayCount && (
-									<button
-										type="button"
-										onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
-										className="w-full mt-4 py-3 text-sm text-muted-foreground hover:text-rose border border-border hover:border-rose/50 rounded-lg transition-colors"
-									>
-										load more ({unpinned.length - displayCount} remaining)
-									</button>
-								)}
-							</section>
-						)}
-					</div>
-				) : (
-					// Flat list when filtering by pinned/unpinned
-					<div className="space-y-2">
-						{filteredLinks.slice(0, displayCount).map((link, index) => (
-							<LinkCard
-								key={link._id}
-								link={link}
-								delay={index * 30}
-								isPinned={link.pinned}
-							/>
-						))}
-						{filteredLinks.length > displayCount && (
-							<button
-								type="button"
-								onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
-								className="w-full mt-4 py-3 text-sm text-muted-foreground hover:text-rose border border-border hover:border-rose/50 rounded-lg transition-colors"
-							>
-								load more ({filteredLinks.length - displayCount} remaining)
-							</button>
-						)}
-					</div>
-				)}
-			</div>
-
-			{/* Suggest Link Modal */}
-			{showSuggestModal && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-					<div
-						className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-						onClick={() => !submitting && setShowSuggestModal(false)}
-					/>
-					<div className="relative bg-surface border border-border rounded-lg w-full max-w-md animate-fade-in">
-						<div className="p-4 border-b border-border flex items-center justify-between">
-							<h2 className="text-lg font-semibold">suggest a link</h2>
-							<button
-								type="button"
-								onClick={() => setShowSuggestModal(false)}
-								disabled={submitting}
-								className="text-muted-foreground hover:text-foreground text-xl disabled:opacity-50"
-							>
-								&times;
-							</button>
-						</div>
-
-						{submitted ? (
-							<div className="p-8 text-center">
-								<div className="text-2xl mb-2">thanks!</div>
-								<p className="text-muted-foreground text-sm">
-									your suggestion has been submitted for review
-								</p>
-							</div>
-						) : (
-							<form onSubmit={handleSuggestSubmit} className="p-4 space-y-4">
-								<div>
-									<label className="block text-sm text-muted-foreground mb-1">
-										link title *
-									</label>
-									<input
-										type="text"
-										value={suggestion.title}
-										onChange={(e) => setSuggestion({ ...suggestion, title: e.target.value })}
-										required
-										placeholder="e.g., Awesome Resource"
-										className="w-full px-3 py-2 bg-background border border-border rounded focus:outline-none focus:border-rose/50"
-									/>
-								</div>
-
-								<div>
-									<label className="block text-sm text-muted-foreground mb-1">
-										url *
-									</label>
-									<input
-										type="url"
-										value={suggestion.url}
-										onChange={(e) => setSuggestion({ ...suggestion, url: e.target.value })}
-										required
-										placeholder="https://example.com"
-										className="w-full px-3 py-2 bg-background border border-border rounded focus:outline-none focus:border-rose/50"
-									/>
-									<p className="text-xs text-muted-foreground/60 mt-1">include https://</p>
-								</div>
-
-								<div>
-									<label className="block text-sm text-muted-foreground mb-1">
-										why should i check this out?
-									</label>
-									<textarea
-										value={suggestion.reason}
-										onChange={(e) => setSuggestion({ ...suggestion, reason: e.target.value })}
-										rows={2}
-										placeholder="optional: tell me why this is cool"
-										className="w-full px-3 py-2 bg-background border border-border rounded focus:outline-none focus:border-rose/50 resize-none"
-									/>
-								</div>
-
-								<div>
-									<label className="block text-sm text-muted-foreground mb-1">
-										your name
-									</label>
-									<input
-										type="text"
-										value={suggestion.submitterName}
-										onChange={(e) => setSuggestion({ ...suggestion, submitterName: e.target.value })}
-										placeholder="optional: credit you in description"
-										className="w-full px-3 py-2 bg-background border border-border rounded focus:outline-none focus:border-rose/50"
-									/>
-								</div>
-
-								<button
-									type="submit"
-									disabled={submitting}
-									className="w-full py-2 bg-rose text-background rounded hover:bg-rose-deep transition-colors disabled:opacity-50"
-								>
-									{submitting ? "submitting..." : "submit suggestion"}
-								</button>
-							</form>
-						)}
-					</div>
-				</div>
-			)}
-		</div>
-	);
-}
-
-function LinkCard({
-	link,
-	delay = 0,
-	isPinned = false,
-}: {
-	link: {
-		_id: string;
-		title: string;
-		url: string;
-		content?: string;
-		tags?: string[];
-		pinned?: boolean;
-		order?: number;
-	};
-	delay?: number;
-	isPinned?: boolean;
-}) {
-	let domain = "";
-	try {
-		domain = new URL(link.url).hostname.replace("www.", "");
-	} catch {
-		domain = link.url;
-	}
-
-	const handleClick = () => {
-		track("link_click", {
-			title: link.title,
-			url: link.url,
-			domain,
-			pinned: isPinned,
-		});
-	};
-
-	return (
-		<a
-			href={link.url}
-			target="_blank"
-			rel="noopener noreferrer"
-			onClick={handleClick}
-			className={`block p-4 tcard tcard-hover group ${
-				isPinned ? "border-rose/30" : ""
-			}`}
-			style={{ animationDelay: `${delay}ms` }}
-		>
-			<div className="flex items-start justify-between gap-3">
-				<div className="flex-1 min-w-0">
-					<h3 className="font-medium text-rose group-hover:text-rose-deep transition-colors truncate">
-						{link.title}
-					</h3>
-					<p className="text-xs text-muted-foreground">{domain}</p>
-					{link.content && (
-						<div className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
-							<ReactMarkdown
-								components={{
-									p: ({ children }) => <span>{children}</span>,
-									a: ({ href, children }) => (
-										<span
-											role="link"
-											tabIndex={0}
-											onClick={(e) => {
-												e.preventDefault();
-												e.stopPropagation();
-												window.open(href, "_blank", "noopener,noreferrer");
-											}}
-											onKeyDown={(e) => {
-												if (e.key === "Enter") {
-													e.preventDefault();
-													e.stopPropagation();
-													window.open(href, "_blank", "noopener,noreferrer");
-												}
-											}}
-											className="text-rose-deep hover:text-rose underline underline-offset-2 transition-colors cursor-pointer"
-										>
-											{children}
-										</span>
-									),
-									strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
-									em: ({ children }) => <em className="italic">{children}</em>,
-									code: ({ children }) => <code className="px-1 py-0.5 bg-background rounded text-rose text-xs font-mono">{children}</code>,
-								}}
-							>
-								{link.content}
-							</ReactMarkdown>
-						</div>
-					)}
-					{link.tags && link.tags.length > 0 && (
-						<div className="flex flex-wrap gap-1.5 mt-2">
-							{link.tags.map((tag) => (
-								<span
-									key={tag}
-									className="px-2 py-0.5 text-xs bg-background rounded border border-border text-muted-foreground"
-								>
-									{tag}
-								</span>
-							))}
-						</div>
-					)}
-				</div>
-				<span className="text-muted-foreground group-hover:text-rose group-hover:translate-x-1 transition-all text-lg">
-					&rarr;
-				</span>
-			</div>
-		</a>
-	);
+  const links = usePreloadedQuery(preloadedLinks);
+  const motionRoot = useListMotion();
+  const suggest = useMutation(api.linkSuggestions.create);
+  const [search, setSearch] = useState("");
+  const [topic, setTopic] = useState("");
+  const [sort, setSort] = useState("curated");
+  const [limit, setLimit] = useState(30);
+  const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState<
+    "idle" | "pending" | "success" | "error"
+  >("idle");
+  const pending = useRef(false);
+  const topics = [...new Set(links.flatMap((link) => link.tags ?? []))].sort();
+  const filtered = links
+    .filter(
+      (link) =>
+        (!topic || link.tags?.includes(topic)) &&
+        `${link.title} ${link.url} ${link.content ?? ""} ${link.tags?.join(" ") ?? ""}`
+          .toLowerCase()
+          .includes(search.trim().toLowerCase()),
+    )
+    .sort((a, b) =>
+      sort === "alpha"
+        ? a.title.localeCompare(b.title)
+        : sort === "newest"
+          ? b.createdAt - a.createdAt
+          : Number(!!b.pinned) - Number(!!a.pinned) ||
+            (a.order ?? Infinity) - (b.order ?? Infinity) ||
+            b.createdAt - a.createdAt,
+    );
+  return (
+    <div ref={motionRoot} className="max-w-4xl mx-auto px-4 py-12 motion-list">
+      <Dialog
+        open={open}
+        onOpenChange={(value) => {
+          if (!pending.current) {
+            setOpen(value);
+            if (value) setStatus("idle");
+          }
+        }}
+      >
+        <PageHeader
+          path="/links"
+          title="links"
+          subtitle=""
+          action={
+            <DialogTrigger asChild>
+              <button type="button">suggest a link</button>
+            </DialogTrigger>
+          }
+        />
+        <DialogContent aria-describedby={undefined}>
+          <DialogTitle>suggest a link</DialogTitle>
+          {status === "success" ? (
+            <p>thanks! your suggestion is ready for review.</p>
+          ) : (
+            <form
+              className="suggestion-form"
+              onSubmit={async (event) => {
+                event.preventDefault();
+                if (pending.current) return;
+                const data = new FormData(event.currentTarget);
+                pending.current = true;
+                setStatus("pending");
+                try {
+                  await suggest({
+                    title: String(data.get("title")).trim(),
+                    url: String(data.get("url")).trim(),
+                    reason:
+                      String(data.get("reason") ?? "").trim() || undefined,
+                    submitterName:
+                      String(data.get("name") ?? "").trim() || undefined,
+                  });
+                  setStatus("success");
+                } catch {
+                  setStatus("error");
+                } finally {
+                  pending.current = false;
+                }
+              }}
+            >
+              <fieldset disabled={status === "pending"}>
+                <label htmlFor="suggest-title">title</label>
+                <input
+                  id="suggest-title"
+                  name="title"
+                  required
+                  maxLength={300}
+                />
+                <label htmlFor="suggest-url">url</label>
+                <input
+                  id="suggest-url"
+                  name="url"
+                  type="url"
+                  required
+                  placeholder="https://"
+                />
+                <label htmlFor="suggest-reason">
+                  why you like it <span>(optional)</span>
+                </label>
+                <textarea id="suggest-reason" name="reason" rows={3} />
+                <label htmlFor="suggest-name">
+                  your name <span>(optional)</span>
+                </label>
+                <input id="suggest-name" name="name" />
+                <button type="submit" className="text-action">
+                  {status === "pending" ? "sending…" : "send suggestion"}
+                </button>
+              </fieldset>
+              {status === "error" && (
+                <p role="alert">
+                  couldn’t send that. your draft is still here; please try
+                  again.
+                </p>
+              )}
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+      <div className="collection-tools">
+        <div className="collection-search">
+          <input
+            type="search"
+            aria-label="Search links"
+            placeholder="search links"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setLimit(30);
+            }}
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setLimit(30);
+              }}
+            >
+              clear
+            </button>
+          )}
+        </div>
+        <label className="sr-only" htmlFor="link-topic">
+          Topic
+        </label>
+        <select
+          id="link-topic"
+          value={topic}
+          onChange={(e) => {
+            setTopic(e.target.value);
+            setLimit(30);
+          }}
+        >
+          <option value="">all topics</option>
+          {topics.map((t) => (
+            <option key={t}>{t}</option>
+          ))}
+        </select>
+        <label className="sr-only" htmlFor="link-sort">
+          Order
+        </label>
+        <select
+          id="link-sort"
+          value={sort}
+          onChange={(e) => {
+            setSort(e.target.value);
+            setLimit(30);
+          }}
+        >
+          <option value="curated">curated order</option>
+          <option value="newest">newest first</option>
+          <option value="alpha">alphabetical</option>
+        </select>
+      </div>
+      {(search || topic) && (
+        <output className="search-feedback">
+          {filtered.length} {filtered.length === 1 ? "link" : "links"}{" "}
+          <button
+            type="button"
+            onClick={() => {
+              setSearch("");
+              setTopic("");
+              setLimit(30);
+            }}
+          >
+            reset search
+          </button>
+        </output>
+      )}
+      <div className="bookmark-list">
+        {filtered.slice(0, limit).map((link, index) => {
+          let domain = link.url;
+          try {
+            domain = new URL(link.url).hostname.replace(/^www\./, "");
+          } catch {}
+          return (
+            <article
+              key={link._id}
+              className="enter-item"
+              data-motion-key={link._id}
+              style={entranceStyle(search || topic ? 0 : index)}
+            >
+              <h2>
+                <a href={link.url} target="_blank" rel="noreferrer">
+                  {link.title} <span aria-hidden="true">↗</span>
+                </a>
+              </h2>
+              <p className="entry-domain">{domain}</p>
+              {link.content && <Markdown content={link.content} />}
+            </article>
+          );
+        })}
+      </div>
+      {!filtered.length && (
+        <p>
+          no links match.{" "}
+          <button
+            type="button"
+            className="text-action"
+            onClick={() => {
+              setSearch("");
+              setTopic("");
+            }}
+          >
+            clear filters
+          </button>
+        </p>
+      )}
+      {filtered.length > limit && (
+        <button
+          type="button"
+          className="text-action"
+          onClick={() => setLimit(limit + 30)}
+        >
+          show more links
+        </button>
+      )}
+    </div>
+  );
 }

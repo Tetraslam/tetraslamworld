@@ -1,0 +1,195 @@
+:root {
+  --settle: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes settle-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes soften-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes panel-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(3px) scale(0.995);
+  }
+}
+@keyframes veil-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.public-site .enter-item {
+  animation: settle-in 280ms var(--settle) var(--enter-delay, 0ms) backwards;
+}
+.public-site .blog-content > header {
+  animation: settle-in 240ms var(--settle) backwards;
+}
+.public-site .collection-tools,
+.public-site .collection-search,
+.public-site .section-title {
+  animation: soften-in 220ms var(--settle) backwards;
+}
+.public-site .collection-tools .collection-search {
+  animation: none;
+}
+.home-intro > h1, .home-bio > *, .home-contact {
+  animation: settle-in 280ms var(--settle) backwards;
+}
+.home-bio > :nth-child(1) {
+  animation-delay: 32ms;
+}
+.home-bio > :nth-child(2) {
+  animation-delay: 64ms;
+}
+.home-bio > :nth-child(3) {
+  animation-delay: 96ms;
+}
+.home-contact {
+  animation-delay: 128ms;
+}
+.home-painting {
+  animation: soften-in 360ms var(--settle) backwards;
+}
+.mosaic-editor,
+.blog-post-content {
+  animation: soften-in 240ms var(--settle) backwards;
+}
+.mosaic-actions > button,
+.search-feedback,
+.subscription-body {
+  animation: soften-in 160ms var(--settle) backwards;
+}
+.motion-list {
+  position: relative;
+}
+.image-swap {
+  position: absolute;
+  inset: 0;
+}
+.image-swap-incoming {
+  opacity: 0;
+}
+.image-swap-error {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 8px;
+  background: var(--veil);
+  color: var(--rose-deep);
+  font-size: 13px;
+  text-align: center;
+}
+.public-site .enter-item:focus-visible,
+.public-site .enter-item:has(:focus-visible) {
+  animation: none;
+}
+.public-site :where(a, button) {
+  transition:
+    color 130ms ease,
+    background-color 130ms ease,
+    border-color 130ms ease;
+}
+.public-site button:active:not(:disabled) {
+  opacity: 0.8;
+}
+.public-site .mosaic-cell {
+  transition: none;
+}
+.public-site .mosaic-cell:active:not(:disabled) {
+  opacity: 1;
+}
+
+.reveal-region {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 240ms var(--settle),
+    opacity 180ms ease;
+}
+.reveal-region[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.reveal-region-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Native details keep their keyboard/no-JS behaviour; capable browsers interpolate height. */
+@supports (interpolate-size: allow-keywords) {
+  .subscription details {
+    interpolate-size: allow-keywords;
+  }
+  .subscription details::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size 200ms var(--settle),
+      content-visibility 200ms allow-discrete;
+  }
+  .subscription details[open]::details-content {
+    block-size: auto;
+  }
+}
+
+/* Radix owns presence and focus. These override the default large zoom. */
+[data-slot="dialog-content"][data-state="open"] {
+  animation: panel-in 200ms var(--settle);
+}
+[data-slot="dialog-content"][data-state="closed"] {
+  animation: panel-out 140ms ease-in;
+}
+[data-slot="dialog-overlay"][data-state="open"] {
+  animation: soften-in 160ms ease;
+}
+[data-slot="dialog-overlay"][data-state="closed"] {
+  animation: veil-out 140ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-site *,
+  .public-site *::before,
+  .public-site *::after,
+  .admin-theme *,
+  .admin-theme *::before,
+  .admin-theme *::after,
+  .cl-modalBackdrop,
+  .cl-cardBox,
+  [data-slot="dialog-content"],
+  [data-slot="dialog-overlay"],
+  .subscription details::details-content {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

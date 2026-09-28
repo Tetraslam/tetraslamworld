@@ -6,9 +6,10 @@ interface TagInputProps {
   tags: string[];
   allTags: string[];
   onChange: (tags: string[]) => void;
+  id?: string;
 }
 
-export function TagInput({ tags, allTags, onChange }: TagInputProps) {
+export function TagInput({ tags, allTags, onChange, id }: TagInputProps) {
   const [input, setInput] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -119,6 +120,7 @@ export function TagInput({ tags, allTags, onChange }: TagInputProps) {
           </span>
         ))}
         <input
+          id={id}
           ref={inputRef}
           type="text"
           value={input}
@@ -168,7 +170,7 @@ export function TagInput({ tags, allTags, onChange }: TagInputProps) {
         </div>
       )}
 
-      <p className="text-xs text-muted-foreground/60 mt-1">
+      <p className="text-xs text-muted-foreground mt-1">
         press enter or comma to add, backspace to remove
       </p>
     </div>

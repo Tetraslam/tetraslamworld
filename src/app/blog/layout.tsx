@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-	title: "blog",
-	description: "thoughts, notes, and ramblings from shresht.",
-	alternates: {
-		canonical: "/blog",
-		types: { "text/markdown": "/blog.md" },
-	},
+  title: "writing",
+  description: "thoughts, notes, and ramblings from shresht.",
+  alternates: {
+    canonical: "/blog",
+    types: { "text/markdown": "/blog.md" },
+  },
 };
 
 export default function BlogLayout({
-	children,
+  children,
 }: {
-	children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-	return children;
+  return children;
 }

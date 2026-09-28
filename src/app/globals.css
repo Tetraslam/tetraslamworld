@@ -50,53 +50,8 @@
   --color-surface: var(--surface);
 }
 
-:root {
+.admin-theme {
   --radius: 0.5rem;
-  
-  /* tetraslam palette - dark by default */
-  --background: #221F22;
-  --foreground: #F7F4F1;
-  --surface: #2B262B;
-  --card: #2B262B;
-  --card-foreground: #F7F4F1;
-  --popover: #2B262B;
-  --popover-foreground: #F7F4F1;
-  
-  /* Rose accents */
-  --rose: #e8a6a6;
-  --rose-deep: #D46A7A;
-  --primary: #E8A6A6;
-  --primary-foreground: #221F22;
-  
-  --secondary: #2B262B;
-  --secondary-foreground: #F7F4F1;
-  --muted: #2B262B;
-  --muted-foreground: #9A8F94;
-  --accent: #D46A7A;
-  --accent-foreground: #F7F4F1;
-  --destructive: #D46A7A;
-  
-  /* Borders */
-  --border: #4A3B46;
-  --input: #4A3B46;
-  --ring: #E8A6A6;
-  
-  /* Charts - rose tones */
-  --chart-1: #E8A6A6;
-  --chart-2: #D46A7A;
-  --chart-3: #B85A6A;
-  --chart-4: #9A4A5A;
-  --chart-5: #7C3A4A;
-  
-  /* Sidebar */
-  --sidebar: #221F22;
-  --sidebar-foreground: #F7F4F1;
-  --sidebar-primary: #E8A6A6;
-  --sidebar-primary-foreground: #221F22;
-  --sidebar-accent: #2B262B;
-  --sidebar-accent-foreground: #F7F4F1;
-  --sidebar-border: #4A3B46;
-  --sidebar-ring: #E8A6A6;
 }
 
 @layer base {
@@ -105,24 +60,29 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-iosevka), ui-monospace, monospace;
+    font-family: Georgia, "Times New Roman", serif;
   }
-  
+
   /* Links default to rose accent */
   a {
     @apply text-rose-deep hover:text-rose transition-colors;
   }
-  
+
   /* Headings use dusty rose */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply text-rose;
   }
 }
 
 /* Selection color */
 ::selection {
-  background: #D46A7A;
-  color: #F7F4F1;
+  background: var(--selection);
+  color: var(--foreground);
 }
 
 /* Blog post content styling */
@@ -159,8 +119,17 @@
   @apply text-rose-deep hover:text-rose underline underline-offset-2;
 }
 
-.blog-post-content img {
-  @apply rounded-lg my-6 max-w-full h-auto;
+.blog-post-content img,
+.blog-post-content video {
+  @apply block rounded-lg my-6 w-full max-w-full h-auto;
+}
+
+.blog-post-content video,
+.blog-post-content img[src$=".gif" i],
+.blog-post-content img[src*=".gif?" i],
+.blog-post-content img[src*=".gif#" i] {
+  max-height: 70svh;
+  object-fit: contain;
 }
 
 .blog-post-content figure {
@@ -231,7 +200,8 @@
 }
 
 @keyframes pulse-subtle {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -254,7 +224,7 @@
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(232, 166, 166, 0.1);
+  box-shadow: 0 4px 12px var(--shadow);
 }
 
 /* Standard content card. One card, every page. */
@@ -265,12 +235,13 @@
 .tcard-hover:hover {
   @apply border-rose/40;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(232, 166, 166, 0.1);
+  box-shadow: 0 4px 12px var(--shadow);
 }
 
 /* Gentle bob animation */
 @keyframes bob {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -279,7 +250,8 @@
 }
 
 @keyframes bob-shadow {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.4;
   }
