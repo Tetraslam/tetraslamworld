@@ -119,8 +119,17 @@
   @apply text-rose-deep hover:text-rose underline underline-offset-2;
 }
 
-.blog-post-content img {
-  @apply rounded-lg my-6 max-w-full h-auto;
+.blog-post-content img,
+.blog-post-content video {
+  @apply block rounded-lg my-6 w-full max-w-full h-auto;
+}
+
+.blog-post-content video,
+.blog-post-content img[src$=".gif" i],
+.blog-post-content img[src*=".gif?" i],
+.blog-post-content img[src*=".gif#" i] {
+  max-height: 70svh;
+  object-fit: contain;
 }
 
 .blog-post-content figure {

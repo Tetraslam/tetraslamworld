@@ -12,7 +12,7 @@ const pages = [
   ["/friends", "friends", "F"],
   ["/media", "media", "M"],
   ["/links", "links", "L"],
-  ["/taste", "taste"],
+  ["/taste", "taste", "S"],
   ["/travel", "travel", "T"],
   ["/gallery", "gallery", "G"],
   ["/pixels", "pixels", "P"],

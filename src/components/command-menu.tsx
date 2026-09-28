@@ -210,6 +210,7 @@ export function CommandMenu() {
     {
       id: "taste",
       label: "taste",
+      shortcut: ["S"],
       action: () => navigate("/taste"),
       group: "navigation",
       icon: "<>",
