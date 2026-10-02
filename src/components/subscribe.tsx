@@ -78,7 +78,7 @@ export function Subscribe() {
           </output>
         </div>
       </details>
-      <a href="https://blog.tetraslam.world/rss">rss</a>
+      <a href="/rss.xml">rss</a>
     </div>
   );
 }

@@ -291,8 +291,7 @@ export function CommandMenu() {
     {
       id: "rss",
       label: "writing rss",
-      action: () =>
-        openExternal("https://blog.tetraslam.world/rss", "blog_rss"),
+      action: () => openExternal("/rss.xml", "blog_rss"),
       group: "meta",
       icon: "rss",
     },

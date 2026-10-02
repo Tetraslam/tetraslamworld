@@ -11,9 +11,28 @@ export interface AtomEntry {
   published: string;
   summary?: string;
   content?: string;
+  kind?: "note" | "essay";
+  tags?: string[];
+  topics?: string[];
+  series?: string;
 }
 
 export async function fetchBlogPosts(): Promise<AtomEntry[]> {
+  if (process.env.WRITING_SOURCE === "git") {
+    const { publicWritingList } = await import("./writing/public");
+    return (await publicWritingList()).map((post) => ({
+      id: post.commentKey,
+      slug: post.slug,
+      title: post.title || post.summary || "note",
+      link: `https://www.tetraslam.world/blog/${post.slug}`,
+      published: post.date,
+      summary: post.summary,
+      kind: post.kind,
+      tags: post.tags,
+      topics: post.topics,
+      series: post.series,
+    }));
+  }
   const res = await fetch("https://blog.tetraslam.world/rss", {
     next: { revalidate: 300 }, // cache for 5 minutes
   });
@@ -29,11 +48,11 @@ export async function fetchBlogPosts(): Promise<AtomEntry[]> {
 export function parseAtomFeed(xml: string): AtomEntry[] {
   const posts: AtomEntry[] = [];
 
-	// Simple regex parsing for Atom feed
-	const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
+  // Simple regex parsing for Atom feed
+  const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
 
-	for (const match of xml.matchAll(entryRegex)) {
-		const entry = match[1];
+  for (const match of xml.matchAll(entryRegex)) {
+    const entry = match[1];
 
     const id = extractTag(entry, "id") || "";
     const title = extractTag(entry, "title") || "Untitled";
