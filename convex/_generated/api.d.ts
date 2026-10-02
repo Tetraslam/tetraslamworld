@@ -9,6 +9,7 @@
  */
 
 import type * as comments from "../comments.js";
+import type * as crons from "../crons.js";
 import type * as emailList from "../emailList.js";
 import type * as files from "../files.js";
 import type * as friends from "../friends.js";
@@ -25,6 +26,7 @@ import type * as travel from "../travel.js";
 import type * as users from "../users.js";
 import type * as wetMode from "../wetMode.js";
 import type * as work from "../work.js";
+import type * as writingSchedule from "../writingSchedule.js";
 
 import type {
   ApiFromModules,
@@ -34,6 +36,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   comments: typeof comments;
+  crons: typeof crons;
   emailList: typeof emailList;
   files: typeof files;
   friends: typeof friends;
@@ -50,6 +53,7 @@ declare const fullApi: ApiFromModules<{
   users: typeof users;
   wetMode: typeof wetMode;
   work: typeof work;
+  writingSchedule: typeof writingSchedule;
 }>;
 
 /**

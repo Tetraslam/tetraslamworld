@@ -3,9 +3,12 @@ import { TASTE_LIMITS } from "../../shared/taste";
 export function inspectTasteFile(
   file: File,
   signal: AbortSignal,
+  maxBytes = TASTE_LIMITS.fileBytes,
 ): Promise<{ width?: number; height?: number; poster?: Blob }> {
-  if (file.size > TASTE_LIMITS.fileBytes)
-    throw new Error("Use files smaller than 100 MB.");
+  if (file.size > maxBytes)
+    throw new Error(
+      `Use files smaller than ${Math.floor(maxBytes / 1024 / 1024)} MB.`,
+    );
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const image = file.type.startsWith("image/") ? new window.Image() : null;

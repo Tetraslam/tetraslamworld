@@ -1,4 +1,20 @@
 export async function fetchBlogPost(slug: string) {
+  if (process.env.WRITING_SOURCE === "git") {
+    const { publicWritingPost } = await import("./writing/public");
+    const result = await publicWritingPost(slug);
+    if (!result) return null;
+    const { post } = result;
+    return {
+      id: post.commentKey,
+      slug: post.slug,
+      title: post.title,
+      link: `https://www.tetraslam.world/blog/${post.slug}`,
+      published: post.date,
+      content: "",
+      nativePost: post,
+      canonical: result.canonical,
+    };
+  }
   const res = await fetch("https://blog.tetraslam.world/rss", {
     next: { revalidate: 300 },
   });

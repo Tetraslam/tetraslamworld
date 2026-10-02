@@ -56,6 +56,7 @@ export function WorkClient({
           .map((item, index) => (
             <article
               key={item._id}
+              id={item._id}
               className="enter-item"
               style={entranceStyle(index)}
             >
@@ -79,6 +80,7 @@ export function WorkClient({
           {selected.map((item, index) => (
             <article
               key={item._id}
+              id={item._id}
               className={`work-feature enter-item ${item.imageUrl ? "" : "work-feature-text"}`}
               style={entranceStyle(index)}
             >
@@ -120,6 +122,7 @@ export function WorkClient({
             {group.items.map((item, index) => (
               <article
                 key={item._id}
+                id={item._id}
                 className="enter-item"
                 style={entranceStyle(index)}
               >

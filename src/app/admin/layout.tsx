@@ -9,6 +9,7 @@ import { isAdminUser } from "@/lib/admin";
 const pages = [
   ["/admin", "overview"],
   ["/admin/homepage", "homepage"],
+  ["/admin/writing", "writing"],
   ["/admin/work", "work"],
   ["/admin/friends", "friends"],
   ["/admin/media", "media"],

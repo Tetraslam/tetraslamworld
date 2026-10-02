@@ -6,8 +6,10 @@ import { useMutation, useQuery } from "convex/react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Subscribe } from "@/components/subscribe";
+import { WritingArticle } from "@/components/writing/prose";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import type { WritingPost } from "../../../../shared/writing";
 
 interface BlogPost {
   id: string;
@@ -16,6 +18,7 @@ interface BlogPost {
   link: string;
   published: string;
   content?: string;
+  nativePost?: WritingPost;
 }
 
 interface Comment {
@@ -270,49 +273,53 @@ export function BlogPostClient({ post }: { post: BlogPost }) {
 
       <div className="pt-6">
         <div className="space-y-8">
-          <article className="blog-content">
-            <header className="mb-8">
-              <h1 className="text-4xl leading-tight font-normal">
-                {post.title}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-2">
-                <time>
-                  {new Date(post.published).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </time>
-                {readingTime && (
-                  <span className="text-muted-foreground">
-                    {" "}
-                    · {readingTime} min read
-                  </span>
-                )}
-              </p>
-              <a
-                href={post.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-rose-deep hover:text-rose mt-1 inline-block"
-              >
-                view original &rarr;
-              </a>
-            </header>
+          {post.nativePost ? (
+            <WritingArticle post={post.nativePost} />
+          ) : (
+            <article className="blog-content">
+              <header className="mb-8">
+                <h1 className="text-4xl leading-tight font-normal">
+                  {post.title}
+                </h1>
+                <p className="text-sm text-muted-foreground mt-2">
+                  <time>
+                    {new Date(post.published).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </time>
+                  {readingTime && (
+                    <span className="text-muted-foreground">
+                      {" "}
+                      · {readingTime} min read
+                    </span>
+                  )}
+                </p>
+                <a
+                  href={post.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-rose-deep hover:text-rose mt-1 inline-block"
+                >
+                  view original &rarr;
+                </a>
+              </header>
 
-            {post.content && (
-              <div
-                className="blog-post-content"
-                // biome-ignore lint/security/noDangerouslySetInnerHtml: Render the existing HTML feed from the author's own blog.
-                dangerouslySetInnerHTML={{
-                  __html: post.content.replace(
-                    /<a\s+(?![^>]*target=)/gi,
-                    '<a target="_blank" rel="noopener noreferrer" ',
-                  ),
-                }}
-              />
-            )}
-          </article>
+              {post.content && (
+                <div
+                  className="blog-post-content"
+                  // biome-ignore lint/security/noDangerouslySetInnerHtml: Render the existing HTML feed from the author's own blog.
+                  dangerouslySetInnerHTML={{
+                    __html: post.content.replace(
+                      /<a\s+(?![^>]*target=)/gi,
+                      '<a target="_blank" rel="noopener noreferrer" ',
+                    ),
+                  }}
+                />
+              )}
+            </article>
+          )}
 
           <Subscribe />
 
