@@ -45,7 +45,7 @@ Approved by Shresht. This checklist is the release scope, not a menu of optional
 - [x] Separate draft checkpoints and publication history
 - [x] Visualization code and datasets under source control
 - [x] Original media storage, versioning, and independent backups
-- [ ] Complete export and tested restoration
+- [x] Complete export and tested restoration
 - [x] Direct editing by this session in the repos
 - [x] Shared CLI and “copy draft context”
 - [x] Content-only publishing without an application rebuild
@@ -93,7 +93,10 @@ The scoped GitHub App can access only the private writing repository. Non-forced
 - Two live tabs retained different local copies. The stale save was rejected, survived reload, and was recovered into a separate draft without overwriting the winning save. A private phrase appeared in authenticated desk search and returned no public search results.
 - Anonymous draft requests returned 403; private/withdrawn media returned 404. Unpublished pages returned the framework’s streamed not-found response without the withdrawn prose. Existing comment keys are unchanged.
 - Desktop and 390 px mobile reader/editor checks passed without horizontal overflow. Screenshots are retained in the private runtime directory.
-- An earlier full export and offline restore passed for all documents/assets, including application source and comments. Final-code export/restore and production cutover remain release gates.
+- Final-code export, checksum verification, and offline restoration passed for all 27 documents and 67 assets, including application source and comments. Production cutover remains the final release gate.
+- The deployed preview accepted a 989 KB document, rendered 43,000 paragraphs in the editor, and saved a further edit. An oversized replacement returned 400 and retained the previous version. A 512 MiB upload completed through Vercel in the preview storage fork; original verification and independent backup returned 200 in 139 seconds. Its local Blob was released only after the matching backup receipt.
+- The deployed scheduling endpoint published the frozen revision, retained the later private edit, cleared the schedule, and backed up the private repository. Unpublishing then succeeded. All of these mutations used the isolated verification branch.
+- Preview has branch-scoped development Clerk credentials and a private copy-on-write Tigris fork with an exact-origin CORS rule. Production retains its existing Clerk instance and original media bucket. The final read-only pico comparison found the same 79 unique files, with no additions, removals, or changes.
 
 Tiptap 3.31.4 needed explicit compatibility handling for inline/standalone images and links around inline code. These are checked against real editor instances, not only parser JSON. Currency amounts remain prose instead of being swallowed by equation parsing; explicit inline equations serialize with double-dollar delimiters and existing symbolic single-dollar formulas remain supported. Unsupported table content and block HTML remain intact as source. A repository write larger than the reader’s 20 MB bound is rejected before mutation.
 
