@@ -13,6 +13,7 @@ test.each([
   "- ![alt](writing-asset:original)\n- Another item",
   "[`linked code`](https://example.com) and **`bold code`**",
   "Before.\n\n<br>\n\nAfter.",
+  "GDP is $29 trillion; growth adds $2T to $4.4T. The state $h$ and number $$2$$.",
 ])("imported Markdown fits the actual editor schema: %s", (source) => {
   const manager = writingMarkdown();
   const parsed = manager.parse(source);

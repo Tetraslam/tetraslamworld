@@ -10,6 +10,8 @@ Paste or drop files into the document, or use **insert → image / video / audio
 
 Use a block’s edit button for captions, alt text, credits, transcripts, and visualization settings. Drag its handle to reorder it. Table controls appear when the cursor is in a table. Rich blocks inserted from a table go after it so Markdown can preserve the structure.
 
+The equation dialogs handle LaTeX. In Markdown source, use `$$2x$$` for an inline formula and separate `$$` lines for a display equation. Currency such as `$12,000` stays ordinary prose.
+
 ## Publishing and recovery
 
 - **Details** holds the address, summary, date, labels, series, and social image.

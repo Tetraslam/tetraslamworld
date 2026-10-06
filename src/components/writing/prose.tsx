@@ -16,6 +16,7 @@ import {
   writingTitle,
 } from "../../../shared/writing";
 import { alignWritingAnchors } from "../../../shared/writing-hast";
+import { currencySafeMarkdown } from "../../../shared/writing-math";
 import { visualizationCatalog } from "./visualizations";
 
 const schema = {
@@ -59,7 +60,7 @@ export function WritingProse({ body }: { body: string }) {
           ),
         }}
       >
-        {body}
+        {currencySafeMarkdown(body)}
       </ReactMarkdown>
     </div>
   );

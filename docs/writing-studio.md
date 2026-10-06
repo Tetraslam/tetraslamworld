@@ -95,6 +95,6 @@ The scoped GitHub App can access only the private writing repository. Non-forced
 - Desktop and 390 px mobile reader/editor checks passed without horizontal overflow. Screenshots are retained in the private runtime directory.
 - An earlier full export and offline restore passed for all documents/assets, including application source and comments. Final-code export/restore and production cutover remain release gates.
 
-Tiptap 3.31.4 needed explicit compatibility handling for inline/standalone images and links around inline code. These are checked against real editor instances, not only parser JSON. Unsupported table content and block HTML remain intact as source. A repository write larger than the reader’s 20 MB bound is rejected before mutation.
+Tiptap 3.31.4 needed explicit compatibility handling for inline/standalone images and links around inline code. These are checked against real editor instances, not only parser JSON. Currency amounts remain prose instead of being swallowed by equation parsing; explicit inline equations serialize with double-dollar delimiters and existing symbolic single-dollar formulas remain supported. Unsupported table content and block HTML remain intact as source. A repository write larger than the reader’s 20 MB bound is rejected before mutation.
 
 Repository-wide Biome still reports pre-existing formatting/accessibility failures outside this feature. The writing changes are checked separately against the PR base. See [Writing guide](writing-guide.md) for authoring and recovery commands.

@@ -1,13 +1,14 @@
 import {
   type AnyExtension,
   type Editor,
+  InputRule,
   type JSONContent,
   mergeAttributes,
   Node,
 } from "@tiptap/core";
 import Code from "@tiptap/extension-code";
 import Image from "@tiptap/extension-image";
-import Mathematics from "@tiptap/extension-mathematics";
+import { BlockMath, InlineMath } from "@tiptap/extension-mathematics";
 import Paragraph from "@tiptap/extension-paragraph";
 import {
   Table,
@@ -231,16 +232,59 @@ export function writingExtensions(
     TableHeader.extend({ content: "paragraph" }),
     TaskList,
     TaskItem.configure({ nested: true }),
-    Mathematics.configure({
+    BlockMath.extend({
+      markdownTokenizer: {
+        name: "blockMath",
+        level: "block",
+        start: (src) => src.search(/^\$\$\r?\n/m),
+        tokenize(src) {
+          const match = /^\$\$\r?\n([\s\S]*?)\r?\n\$\$(?:\r?\n|$)/.exec(src);
+          return match
+            ? { type: "blockMath", raw: match[0], latex: match[1].trim() }
+            : undefined;
+        },
+      },
+    }).configure({
       katexOptions: { throwOnError: false, trust: false },
-      inlineOptions: {
-        onClick: (node, position) =>
-          editMath?.(node.attrs.latex, position, true),
+      onClick: (node, position) =>
+        editMath?.(node.attrs.latex, position, false),
+    }),
+    InlineMath.extend({
+      markdownTokenizer: {
+        name: "inlineMath",
+        level: "inline",
+        start: (src) => src.indexOf("$"),
+        tokenize(src) {
+          const match =
+            /^\$\$([^$\n]+)\$\$/.exec(src) ||
+            /^\$(?![\d$\s])([^$\n]+)\$(?![\d$])/.exec(src);
+          return match
+            ? { type: "inlineMath", raw: match[0], latex: match[1].trim() }
+            : undefined;
+        },
       },
-      blockOptions: {
-        onClick: (node, position) =>
-          editMath?.(node.attrs.latex, position, false),
+      renderMarkdown: (node) => `$$${node.attrs?.latex || ""}$$`,
+      addInputRules() {
+        return [
+          /(?<!\$)\$\$([^$\n]+)\$\$$/,
+          /(?<!\$)\$(?![\d$\s])([^$\n]+)\$$/,
+        ].map(
+          (find) =>
+            new InputRule({
+              find,
+              handler: ({ state, range, match }) => {
+                state.tr.replaceWith(
+                  range.from,
+                  range.to,
+                  this.type.create({ latex: match[1] }),
+                );
+              },
+            }),
+        );
       },
+    }).configure({
+      katexOptions: { throwOnError: false, trust: false },
+      onClick: (node, position) => editMath?.(node.attrs.latex, position, true),
     }),
     block,
     RawBlock,
