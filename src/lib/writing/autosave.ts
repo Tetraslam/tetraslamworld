@@ -25,6 +25,7 @@ export class DraftAutosave {
   private running: Promise<void> | undefined;
   private writes = Promise.resolve();
   private held = false;
+  private uncertain = false;
   constructor(
     post: WritingPost,
     revision: string | null,
@@ -50,7 +51,12 @@ export class DraftAutosave {
     return this.held;
   }
   get dirty() {
-    return !!this.pending || JSON.stringify(this.post) !== this.committed;
+    return (
+      this.uncertain ||
+      this.revision === null ||
+      !!this.pending ||
+      JSON.stringify(this.post) !== this.committed
+    );
   }
   change(post: WritingPost) {
     this.post = post;
@@ -63,13 +69,19 @@ export class DraftAutosave {
       baseRevision: this.revision,
       pending: this.pending ? structuredClone(this.pending) : undefined,
       savedAt: Date.now(),
+      dirty: this.dirty,
     };
     this.writes = this.writes
       .catch(() => {})
       .then(async () => {
         try {
           await this.io.persist(state);
-          if(!this.held&&this.dirty&&JSON.stringify(state.post)===JSON.stringify(this.post))this.io.status("local");
+          if (
+            !this.held &&
+            this.dirty &&
+            JSON.stringify(state.post) === JSON.stringify(this.post)
+          )
+            this.io.status("local");
         } catch {
           this.io.status(
             "local-error",
@@ -83,11 +95,22 @@ export class DraftAutosave {
     this.held = true;
     this.io.status("conflict");
   }
+  persistLocal() {
+    return this.checkpoint();
+  }
+  recoverOffline() {
+    this.uncertain = true;
+    this.io.status(
+      "offline",
+      "Opened your local recovery copy. It will sync when the writing service is available.",
+    );
+  }
   adoptRevision(revision: string, keepMine: boolean, remote: WritingPost) {
     this.revision = revision;
     this.committed = JSON.stringify(remote);
     this.pending = undefined;
     this.held = false;
+    this.uncertain = false;
     if (!keepMine) this.post = remote;
     void this.checkpoint();
     this.io.status(this.dirty ? "local" : "saved");
@@ -133,6 +156,7 @@ export class DraftAutosave {
         );
       }
       this.revision = result.revision;
+      this.uncertain = false;
       this.committed = JSON.stringify(request.post);
       this.pending = undefined;
       await this.checkpoint();

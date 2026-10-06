@@ -4,6 +4,7 @@ import {
   decodeBlock,
   emptyWritingIndex,
   indexSchema,
+  type PublicationEvent,
   parsePost,
   postSchema,
   postSummary,
@@ -13,7 +14,6 @@ import {
   type WritingEntry,
   type WritingIndex,
   type WritingPost,
-  type PublicationEvent,
   writingBlocks,
   writingId,
 } from "../../../shared/writing";
@@ -98,14 +98,71 @@ export class WritingService {
     }
     return matches.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
-  private async publicationLog(snapshot:GitSnapshot,id:string,event:PublicationEvent){
-    const path=`writing/publications/${writingId.parse(id)}.json`,raw=await this.git.read(path,snapshot.head);
-    const events:PublicationEvent[]=raw?JSON.parse(raw):[];
-    if(!events.some(item=>item.id===event.id))events.push(event);
-    return {[path]:json(events)};
+  private async publicationLog(
+    snapshot: GitSnapshot,
+    id: string,
+    event: PublicationEvent,
+  ) {
+    const path = `writing/publications/${writingId.parse(id)}.json`,
+      raw = await this.git.read(path, snapshot.head);
+    const events: PublicationEvent[] = raw ? JSON.parse(raw) : [];
+    if (!raw) {
+      const old = await this.git.read(indexPath, snapshot.head);
+      const previous = old
+        ? (JSON.parse(old) as WritingIndex).entries[id]?.published
+        : null;
+      if (previous)
+        events.push({
+          id: `import:${id}`,
+          action: "publish",
+          at: previous.releasedAt,
+          revision: previous.revision,
+        });
+    }
+    if (!events.some((item) => item.id === event.id)) events.push(event);
+    return { [path]: json(events) };
   }
-  async publications(id:string){const {snapshot}=await this.load();const raw=await this.git.read(`writing/publications/${writingId.parse(id)}.json`,snapshot.head);return (raw?JSON.parse(raw) as PublicationEvent[]:[]).reverse();}
-  async publishedRevision(id:string,revision:string){if(!/^[a-f0-9]{64}$/.test(revision))throw new WritingError("INVALID_REVISION","Invalid publication revision.");const {snapshot}=await this.load();const source=await this.git.read(releasePath(writingId.parse(id),revision),snapshot.head);if(!source||digest(source)!==revision)throw new WritingError("NOT_FOUND","Publication snapshot not found.",404);return {post:parsePost(source),revision};}
+  async publications(id: string) {
+    const { snapshot, index } = await this.load();
+    const raw = await this.git.read(
+      `writing/publications/${writingId.parse(id)}.json`,
+      snapshot.head,
+    );
+    const published = index.entries[id]?.published;
+    return (
+      raw
+        ? (JSON.parse(raw) as PublicationEvent[])
+        : published
+          ? [
+              {
+                id: `import:${id}`,
+                action: "publish" as const,
+                at: published.releasedAt,
+                revision: published.revision,
+              },
+            ]
+          : []
+    ).reverse();
+  }
+  async publishedRevision(id: string, revision: string) {
+    if (!/^[a-f0-9]{64}$/.test(revision))
+      throw new WritingError(
+        "INVALID_REVISION",
+        "Invalid publication revision.",
+      );
+    const { snapshot } = await this.load();
+    const source = await this.git.read(
+      releasePath(writingId.parse(id), revision),
+      snapshot.head,
+    );
+    if (!source || digest(source) !== revision)
+      throw new WritingError(
+        "NOT_FOUND",
+        "Publication snapshot not found.",
+        404,
+      );
+    return { post: parsePost(source), revision };
+  }
   async save(input: Operation & { post: WritingPost }) {
     operationSchema.parse(input);
     const post = postSchema.parse(input.post);
@@ -296,7 +353,12 @@ export class WritingService {
       json({ action: "publish", ...input, operationId: undefined }),
     );
     return this.write(input, hash, async ({ snapshot, index }) => {
-      if(!index.migration.verified)throw new WritingError("MIGRATION_INCOMPLETE","Publishing is paused until the archive verification is complete.",409);
+      if (!index.migration.verified)
+        throw new WritingError(
+          "MIGRATION_INCOMPLETE",
+          "Publishing is paused until the archive verification is complete.",
+          409,
+        );
       const entry = index.entries[input.id];
       if (!entry) throw new WritingError("NOT_FOUND", "Draft not found.", 404);
       const source = await this.git.read(draftPath(input.id), snapshot.head);
@@ -350,7 +412,16 @@ export class WritingService {
         entry.schedule = null;
       }
       return {
-        files: { [path]: release,...await this.publicationLog(snapshot,input.id,{id:input.operationId,action:input.at?"schedule":"publish",at:this.clock().toISOString(),revision:releaseRevision,...(input.at?{scheduledFor:input.at}:{})}) },
+        files: {
+          [path]: release,
+          ...(await this.publicationLog(snapshot, input.id, {
+            id: input.operationId,
+            action: input.at ? "schedule" : "publish",
+            at: this.clock().toISOString(),
+            revision: releaseRevision,
+            ...(input.at ? { scheduledFor: input.at } : {}),
+          })),
+        },
         revision: releaseRevision,
         message: `${input.at ? "Schedule" : "Publish"}: ${input.id}`,
       };
@@ -360,35 +431,54 @@ export class WritingService {
     const hash = digest(
       json({ action: "unpublish", ...input, operationId: undefined }),
     );
-    return this.write(operationSchema.parse(input), hash, async ({ snapshot,index }) => {
-      if(!index.migration.verified)throw new WritingError("MIGRATION_INCOMPLETE","Publication changes are paused until the archive verification is complete.",409);
-      const entry = index.entries[input.id];
-      if (!entry) throw new WritingError("NOT_FOUND", "Post not found.", 404);
-      if ((entry.published?.revision ?? null) !== input.expectedPublication)
-        throw new WritingError(
-          "CONFLICT",
-          "The published post changed. Reload before unpublishing.",
-          409,
-        );
-      if (entry.published)
-        entry.aliases = [
-          ...new Set([...entry.aliases, entry.published.meta.slug]),
-        ];
-      entry.published = null;
-      entry.schedule = null;
-      return {
-        files: await this.publicationLog(snapshot,input.id,{id:input.operationId,action:"unpublish",at:this.clock().toISOString(),revision:input.expectedPublication}),
-        revision: entry.draftRevision,
-        message: `Unpublish: ${input.id}`,
-      };
-    });
+    return this.write(
+      operationSchema.parse(input),
+      hash,
+      async ({ snapshot, index }) => {
+        if (!index.migration.verified)
+          throw new WritingError(
+            "MIGRATION_INCOMPLETE",
+            "Publication changes are paused until the archive verification is complete.",
+            409,
+          );
+        const entry = index.entries[input.id];
+        if (!entry) throw new WritingError("NOT_FOUND", "Post not found.", 404);
+        if ((entry.published?.revision ?? null) !== input.expectedPublication)
+          throw new WritingError(
+            "CONFLICT",
+            "The published post changed. Reload before unpublishing.",
+            409,
+          );
+        if (entry.published)
+          entry.aliases = [
+            ...new Set([...entry.aliases, entry.published.meta.slug]),
+          ];
+        entry.published = null;
+        entry.schedule = null;
+        return {
+          files: await this.publicationLog(snapshot, input.id, {
+            id: input.operationId,
+            action: "unpublish",
+            at: this.clock().toISOString(),
+            revision: input.expectedPublication,
+          }),
+          revision: entry.draftRevision,
+          message: `Unpublish: ${input.id}`,
+        };
+      },
+    );
   }
   async cancelSchedule(input: Operation & { scheduleId: string }) {
     return this.write(
       operationSchema.parse(input),
       digest(json({ action: "cancel", ...input, operationId: undefined })),
-      async ({ snapshot,index }) => {
-        if(!index.migration.verified)throw new WritingError("MIGRATION_INCOMPLETE","Publication changes are paused until the archive verification is complete.",409);
+      async ({ snapshot, index }) => {
+        if (!index.migration.verified)
+          throw new WritingError(
+            "MIGRATION_INCOMPLETE",
+            "Publication changes are paused until the archive verification is complete.",
+            409,
+          );
         const entry = index.entries[input.id];
         if (!entry) throw new WritingError("NOT_FOUND", "Post not found.", 404);
         if (entry.schedule?.id !== input.scheduleId)
@@ -397,9 +487,15 @@ export class WritingService {
             "The scheduled publication changed.",
             409,
           );
-        const revision=entry.schedule.revision;entry.schedule = null;
+        const revision = entry.schedule.revision;
+        entry.schedule = null;
         return {
-          files: await this.publicationLog(snapshot,input.id,{id:input.operationId,action:"cancel",at:this.clock().toISOString(),revision}),
+          files: await this.publicationLog(snapshot, input.id, {
+            id: input.operationId,
+            action: "cancel",
+            at: this.clock().toISOString(),
+            revision,
+          }),
           revision: entry.draftRevision,
           message: `Cancel schedule: ${input.id}`,
         };
@@ -444,7 +540,15 @@ export class WritingService {
         try {
           await this.git.commit(
             loaded.snapshot,
-            { [indexPath]: json(loaded.index),...await this.publicationLog(loaded.snapshot,entry.id,{id:`${planned.id}:published`,action:"scheduled",at:this.clock().toISOString(),revision:planned.revision}) },
+            {
+              [indexPath]: json(loaded.index),
+              ...(await this.publicationLog(loaded.snapshot, entry.id, {
+                id: `${planned.id}:published`,
+                action: "scheduled",
+                at: this.clock().toISOString(),
+                revision: planned.revision,
+              })),
+            },
             `Scheduled publication: ${entry.id}`,
           );
           published++;
@@ -462,9 +566,9 @@ export class WritingService {
     }
     return { published };
   }
-  async history(id: string,page=1) {
+  async history(id: string, page = 1) {
     writingId.parse(id);
-    return this.git.history(draftPath(id),30,page);
+    return this.git.history(draftPath(id), 30, page);
   }
   async revision(id: string, commit: string) {
     writingId.parse(id);
@@ -488,7 +592,10 @@ export class WritingService {
       try {
         await this.git.commit(
           loaded.snapshot,
-          { [indexPath]: json(loaded.index),[`writing/assets/${asset.id}.json`]:json(asset) },
+          {
+            [indexPath]: json(loaded.index),
+            [`writing/assets/${asset.id}.json`]: json(asset),
+          },
           `Backed-up original: ${asset.id}`,
         );
         return asset;

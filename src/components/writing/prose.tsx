@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
@@ -16,7 +16,7 @@ import {
   writingTitle,
 } from "../../../shared/writing";
 import { alignWritingAnchors } from "../../../shared/writing-hast";
-import { StationSpacing } from "./visualizations";
+import { visualizationCatalog } from "./visualizations";
 
 const schema = {
   ...defaultSchema,
@@ -31,11 +31,6 @@ function text(value: unknown) {
 }
 function href(value: unknown) {
   return defaultUrlTransform(mediaUrl(text(value)));
-}
-function number(value: unknown) {
-  return typeof value === "number" && Number.isFinite(value)
-    ? value
-    : undefined;
 }
 export function WritingProse({ body }: { body: string }) {
   return (
@@ -122,8 +117,23 @@ export function WritingBlockView({ raw }: { raw: string }) {
         {block.animated ? (
           <Animated block={block} />
         ) : (
-          <a href={href(block.src)} target="_blank" rel="noreferrer">
-            <img src={href(block.src)} alt={text(block.alt)} loading="lazy" />
+          <a
+            href={href(block.src)}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={
+              text(block.alt) || text(block.caption) || "Open full-size image"
+            }
+          >
+            <img
+              src={href(block.src)}
+              alt={text(block.alt)}
+              loading="lazy"
+              width={typeof block.width === "number" ? block.width : undefined}
+              height={
+                typeof block.height === "number" ? block.height : undefined
+              }
+            />
           </a>
         )}
         <Caption block={block} />
@@ -146,44 +156,7 @@ export function WritingBlockView({ raw }: { raw: string }) {
       </figure>
     );
   if (block.type === "video" || block.type === "audio")
-    return (
-      <figure>
-        {block.type === "video" ? (
-          // biome-ignore lint/a11y/useMediaCaption: Authors can attach a captions track or transcript; silent clips need neither.
-          <video
-            src={href(block.src)}
-            poster={href(block.poster) || undefined}
-            controls
-            playsInline
-            preload="metadata"
-            aria-label={text(block.alt) || "video"}
-          >
-            {Boolean(block.captions) && (
-              <track
-                kind="captions"
-                src={href(block.captions)}
-                srcLang={text(block.language) || "en"}
-              />
-            )}
-          </video>
-        ) : (
-          // biome-ignore lint/a11y/useMediaCaption: The authored transcript is rendered immediately below the native audio player.
-          <audio
-            src={href(block.src)}
-            controls
-            preload="none"
-            aria-label={text(block.alt) || "audio"}
-          />
-        )}
-        <Caption block={block} />
-        {Boolean(block.transcript) && (
-          <details>
-            <summary>transcript</summary>
-            <WritingProse body={text(block.transcript)} />
-          </details>
-        )}
-      </figure>
-    );
+    return <Recording key={`${block.type}:${text(block.src)}`} block={block} />;
   if (block.type === "reference")
     return (
       <aside className="writing-reference">
@@ -194,14 +167,11 @@ export function WritingBlockView({ raw }: { raw: string }) {
   if (block.type === "interactive")
     return (
       <figure>
-        {block.name === "station-spacing" && block.version === 1 ? (
-          <StationSpacing
-            initialSpacing={number(block.spacing)}
-            distance={number(block.distance)}
-            speed={number(block.speed)}
-            dwell={number(block.dwell)}
-          />
-        ) : (
+        {visualizationCatalog
+          .find(
+            (item) => item.id === block.name && item.version === block.version,
+          )
+          ?.render(block) ?? (
           <p>
             {text(block.fallback) ||
               "An interactive example is unavailable in this version."}
@@ -223,6 +193,78 @@ export function WritingBlockView({ raw }: { raw: string }) {
           `This ${block.type} block is preserved but is not supported by this version.`}
       </p>
     </aside>
+  );
+}
+function Recording({ block }: { block: WritingBlock }) {
+  const element = useRef<HTMLMediaElement | null>(null),
+    [failed, setFailed] = useState(false);
+  useEffect(() => {
+    const node = element.current;
+    return () => node?.pause();
+  }, []);
+  const controls = {
+    onError: () => setFailed(true),
+    onPlay: () => {
+      for (const other of document.querySelectorAll<HTMLMediaElement>(
+        ".writing-media-player",
+      ))
+        if (other !== element.current) other.pause();
+    },
+    className: "writing-media-player",
+  };
+  return (
+    <figure>
+      {block.type === "video" ? (
+        // biome-ignore lint/a11y/useMediaCaption: Authors can attach a captions track or transcript; silent clips need neither.
+        <video
+          {...controls}
+          ref={(node) => {
+            element.current = node;
+          }}
+          src={href(block.src)}
+          poster={href(block.poster) || undefined}
+          controls
+          playsInline
+          preload="metadata"
+          aria-label={text(block.alt) || "video"}
+        >
+          {Boolean(block.captions) && (
+            <track
+              kind="captions"
+              src={href(block.captions)}
+              srcLang={text(block.language) || "en"}
+            />
+          )}
+        </video>
+      ) : (
+        // biome-ignore lint/a11y/useMediaCaption: The authored transcript is rendered immediately below the native audio player.
+        <audio
+          {...controls}
+          ref={(node) => {
+            element.current = node;
+          }}
+          src={href(block.src)}
+          controls
+          preload="none"
+          aria-label={text(block.alt) || "audio"}
+        />
+      )}
+      <Caption block={block} />
+      {failed && (
+        <p className="writing-caption">
+          this browser couldn’t play the recording.{" "}
+          <a href={href(block.src)} target="_blank" rel="noreferrer">
+            open the original ↗
+          </a>
+        </p>
+      )}
+      {Boolean(block.transcript) && (
+        <details>
+          <summary>transcript</summary>
+          <WritingProse body={text(block.transcript)} />
+        </details>
+      )}
+    </figure>
   );
 }
 export function WritingArticle({

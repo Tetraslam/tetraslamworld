@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const entries = await writingService.list(q);
     return {
       entries,
+      workspace: process.env.WRITING_BRANCH || "main",
       ready: (await writingService.load()).index.migration.verified,
     };
   });

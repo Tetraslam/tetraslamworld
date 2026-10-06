@@ -1,7 +1,20 @@
-import { type AnyExtension, mergeAttributes, Node } from "@tiptap/core";
+import {
+  type AnyExtension,
+  type Editor,
+  type JSONContent,
+  mergeAttributes,
+  Node,
+} from "@tiptap/core";
+import Code from "@tiptap/extension-code";
 import Image from "@tiptap/extension-image";
 import Mathematics from "@tiptap/extension-mathematics";
-import { TableKit } from "@tiptap/extension-table";
+import Paragraph from "@tiptap/extension-paragraph";
+import {
+  Table,
+  TableCell,
+  TableHeader,
+  TableKit,
+} from "@tiptap/extension-table";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import { Markdown, MarkdownManager } from "@tiptap/markdown";
@@ -51,7 +64,7 @@ export const RawBlock = Node.create({
   group: "block",
   atom: true,
   draggable: true,
-  priority: 1100,
+  priority: 50,
   addAttributes() {
     return { raw: { default: "" } };
   },
@@ -62,10 +75,13 @@ export const RawBlock = Node.create({
     return ["pre", { "data-raw-markdown": "" }, node.attrs.raw];
   },
   markdownTokenName: "html",
-  parseMarkdown: (token) => ({
-    type: token.block ? "rawBlock" : "rawInline",
-    attrs: { raw: token.raw },
-  }),
+  parseMarkdown: (token) =>
+    !token.block && /^<br\s*\/?>(?:\s*)$/i.test(token.raw || "")
+      ? { type: "hardBreak" }
+      : {
+          type: token.block ? "rawBlock" : "rawInline",
+          attrs: { raw: token.raw },
+        },
   renderMarkdown: (node) => node.attrs?.raw ?? "",
 });
 export const RawInline = Node.create({
@@ -73,7 +89,7 @@ export const RawInline = Node.create({
   group: "inline",
   inline: true,
   atom: true,
-  priority: 1100,
+  priority: 50,
   addAttributes() {
     return { raw: { default: "" } };
   },
@@ -169,7 +185,25 @@ export function writingExtensions(
   editMath?: (latex: string, position: number, inline: boolean) => void,
 ) {
   return [
-    StarterKit.configure({ link: { openOnClick: false } }),
+    StarterKit.configure({
+      link: { openOnClick: false },
+      paragraph: false,
+      code: false,
+    }),
+    Code.extend({ excludes: "" }),
+    Paragraph.extend({
+      parseMarkdown(token, helpers) {
+        const tokens = token.tokens || [];
+        if (tokens.length === 1 && tokens[0].type === "image")
+          return { type: "paragraph", content: helpers.parseInline(tokens) };
+        return (
+          this.parent?.(token, helpers) || {
+            type: "paragraph",
+            content: helpers.parseInline(tokens),
+          }
+        );
+      },
+    }),
     Image.extend({
       renderHTML({ HTMLAttributes }) {
         return [
@@ -177,8 +211,24 @@ export function writingExtensions(
           { ...HTMLAttributes, src: mediaUrl(HTMLAttributes.src || "") },
         ];
       },
-    }),
-    TableKit.configure({ table: { resizable: false } }),
+    }).configure({ inline: true }),
+    TableKit.configure({ table: false, tableCell: false, tableHeader: false }),
+    Table.extend({
+      parseMarkdown(token, helpers) {
+        const result = this.parent?.(token, helpers) as JSONContent;
+        const unsupported = (node: JSONContent): boolean =>
+          ["image", "writingBlock", "blockMath"].includes(node.type || "") ||
+          ((node.type === "tableCell" || node.type === "tableHeader") &&
+            (node.content?.length !== 1 ||
+              node.content[0].type !== "paragraph")) ||
+          !!node.content?.some(unsupported);
+        return result && !unsupported(result)
+          ? result
+          : { type: "rawBlock", attrs: { raw: token.raw || "" } };
+      },
+    }).configure({ resizable: false, renderWrapper: true }),
+    TableCell.extend({ content: "paragraph" }),
+    TableHeader.extend({ content: "paragraph" }),
     TaskList,
     TaskItem.configure({ nested: true }),
     Mathematics.configure({
@@ -202,4 +252,14 @@ export function writingExtensions(
 }
 export function writingMarkdown() {
   return new MarkdownManager({ extensions: writingExtensions() });
+}
+export function blockInsertionPosition(
+  editor: Editor,
+  position = editor.state.selection.to,
+) {
+  const resolved = editor.state.doc.resolve(position);
+  for (let depth = resolved.depth; depth > 0; depth--)
+    if (resolved.node(depth).type.name === "table")
+      return resolved.after(depth);
+  return position;
 }

@@ -17,6 +17,7 @@ export default async function DraftPage({
   if (!writingId.safeParse(id).success) notFound();
   return (
     <WritingStudio
+      key={id}
       id={id}
       newKind={
         query.new === "note"

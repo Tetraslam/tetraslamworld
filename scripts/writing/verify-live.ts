@@ -58,7 +58,13 @@ async function main() {
     operationId: randomUUID(),
     expectedRevision: revision,
   });
-  const fixture=await service.load();fixture.index.migration.verified=true;await git.commit(fixture.snapshot,{"writing/index.json":JSON.stringify(fixture.index,null,2)},"Enable isolated publication verification");
+  const fixture = await service.load();
+  fixture.index.migration.verified = true;
+  await git.commit(
+    fixture.snapshot,
+    { "writing/index.json": JSON.stringify(fixture.index, null, 2) },
+    "Enable isolated publication verification",
+  );
   let saved = await service.save({ ...op(null), post });
   const results = await Promise.allSettled(
     ["one", "two"].map((body) =>

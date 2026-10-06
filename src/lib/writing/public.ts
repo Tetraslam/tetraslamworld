@@ -8,10 +8,10 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import {
+  assetSchema,
   type Publication,
   parsePost,
   type WritingAsset,
-  assetSchema,
   type WritingPost,
   writingTitle,
 } from "../../../shared/writing";
@@ -44,7 +44,7 @@ const publicSnapshot = cache(
           : [],
       );
       const ids = new Set(entries.flatMap((entry) => entry.published.assets));
-  return { snapshot: loaded.snapshot, entries, assetIds:[...ids] };
+      return { snapshot: loaded.snapshot, entries, assetIds: [...ids] };
     },
     [
       "writing-public",
@@ -57,8 +57,26 @@ const publicSnapshot = cache(
 export async function publicWritingAsset(
   id: string,
 ): Promise<WritingAsset | undefined> {
-  const published=await publicSnapshot();if(!published.assetIds.includes(id))return undefined;
-  return unstable_cache(async()=>{const raw=await service.git.read(`writing/assets/${id}.json`,published.snapshot.head);if(raw)return assetSchema.parse(JSON.parse(raw));const index=await service.git.read("writing/index.json",published.snapshot.head);return index?assetSchema.parse(JSON.parse(index).assets[id]):undefined;},["writing-asset",process.env.WRITING_REPOSITORY||"",id],{revalidate:3600})();
+  const published = await publicSnapshot();
+  if (!published.assetIds.includes(id)) return undefined;
+  return unstable_cache(
+    async () => {
+      const raw = await service.git.read(
+        `writing/assets/${id}.json`,
+        published.snapshot.head,
+      );
+      if (raw) return assetSchema.parse(JSON.parse(raw));
+      const index = await service.git.read(
+        "writing/index.json",
+        published.snapshot.head,
+      );
+      return index
+        ? assetSchema.parse(JSON.parse(index).assets[id])
+        : undefined;
+    },
+    ["writing-asset", process.env.WRITING_REPOSITORY || "", id],
+    { revalidate: 3600 },
+  )();
 }
 export async function publicWritingList() {
   const { entries } = await publicSnapshot();

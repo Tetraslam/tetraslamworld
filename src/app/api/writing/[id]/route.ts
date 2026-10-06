@@ -19,7 +19,21 @@ export async function GET(request: Request, { params }: Context) {
     const { id } = await params;
     const url = new URL(request.url);
     if (url.searchParams.has("history"))
-      return { revisions: await writingService.history(id) };
+      return {
+        revisions: await writingService.history(
+          id,
+          z.coerce
+            .number()
+            .int()
+            .min(1)
+            .max(10000)
+            .parse(url.searchParams.get("page") || 1),
+        ),
+      };
+    if (url.searchParams.has("publications"))
+      return { events: await writingService.publications(id) };
+    const publication = url.searchParams.get("publication");
+    if (publication) return writingService.publishedRevision(id, publication);
     const revision = url.searchParams.get("revision");
     return revision
       ? writingService.revision(id, revision)
@@ -42,6 +56,13 @@ export async function POST(request: Request, { params }: Context) {
         const old = await writingService.revision(
           id,
           z.string().parse(body.commit),
+        );
+        return writingService.save({ ...base, post: old.post });
+      }
+      case "restorePublication": {
+        const old = await writingService.publishedRevision(
+          id,
+          z.string().parse(body.revision),
         );
         return writingService.save({ ...base, post: old.post });
       }

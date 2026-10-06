@@ -267,10 +267,32 @@ export async function inspectOriginal(asset: WritingAsset) {
     new HeadObjectCommand({ Bucket: bucket(), Key: asset.key }),
   );
 }
-export async function fetchBackupOriginal(asset:WritingAsset){
-  const response=await fetch(`https://api.github.com/repos/${process.env.WRITING_REPOSITORY}/releases/assets/${asset.backup.assetId}`,{headers:{Authorization:`Bearer ${await writingToken()}`,Accept:"application/octet-stream"},signal:AbortSignal.timeout(240_000)});
-  if(!response.ok||!response.body)throw new WritingError("BACKUP_UNAVAILABLE","The independent original backup could not be read.",503);
-  const size=response.headers.get("content-length");if(size&&Number(size)!==asset.size){await response.body.cancel();throw new WritingError("BACKUP_MISMATCH","The backup size does not match the manifest.",503);}
+export async function fetchBackupOriginal(asset: WritingAsset) {
+  const response = await fetch(
+    `https://api.github.com/repos/${process.env.WRITING_REPOSITORY}/releases/assets/${asset.backup.assetId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${await writingToken()}`,
+        Accept: "application/octet-stream",
+      },
+      signal: AbortSignal.timeout(240_000),
+    },
+  );
+  if (!response.ok || !response.body)
+    throw new WritingError(
+      "BACKUP_UNAVAILABLE",
+      "The independent original backup could not be read.",
+      503,
+    );
+  const size = response.headers.get("content-length");
+  if (size && Number(size) !== asset.size) {
+    await response.body.cancel();
+    throw new WritingError(
+      "BACKUP_MISMATCH",
+      "The backup size does not match the manifest.",
+      503,
+    );
+  }
   return response;
 }
 
@@ -282,10 +304,10 @@ export async function backupWritingSnapshot(service: WritingService) {
   const { snapshot } = await service.load(),
     client = storage(),
     key = `${prefix}/${snapshot.head}.zip`;
-  let exists=false;
+  let exists = false;
   try {
     await client.send(new HeadObjectCommand({ Bucket: bucket(), Key: key }));
-    exists=true;
+    exists = true;
   } catch (error) {
     if (
       (error as { $metadata?: { httpStatusCode: number } }).$metadata
@@ -293,53 +315,77 @@ export async function backupWritingSnapshot(service: WritingService) {
     )
       throw error;
   }
-  if(!exists){
-  const response = await fetch(
-    `https://api.github.com/repos/${process.env.WRITING_REPOSITORY}/zipball/${snapshot.head}`,
-    {
-      headers: {
-        Authorization: `Bearer ${await writingToken()}`,
-        Accept: "application/vnd.github+json",
+  if (!exists) {
+    const response = await fetch(
+      `https://api.github.com/repos/${process.env.WRITING_REPOSITORY}/zipball/${snapshot.head}`,
+      {
+        headers: {
+          Authorization: `Bearer ${await writingToken()}`,
+          Accept: "application/vnd.github+json",
+        },
+        signal: AbortSignal.timeout(120_000),
       },
-      signal: AbortSignal.timeout(120_000),
-    },
-  );
-  if (!response.ok || !response.body)
-    throw new WritingError(
-      "BACKUP_FAILED",
-      "The independent writing snapshot could not be fetched.",
-      503,
     );
-  await new Upload({
-    client,
-    queueSize: 2,
-    partSize: 5 * 1024 * 1024,
-    params: {
-      Bucket: bucket(),
-      Key: key,
-      Body: Readable.fromWeb(
-        response.body as import("node:stream/web").ReadableStream,
-      ),
-      ContentType: "application/zip",
-      Metadata: { "git-head": snapshot.head },
-    },
-  }).done();
+    if (!response.ok || !response.body)
+      throw new WritingError(
+        "BACKUP_FAILED",
+        "The independent writing snapshot could not be fetched.",
+        503,
+      );
+    await new Upload({
+      client,
+      queueSize: 2,
+      partSize: 5 * 1024 * 1024,
+      params: {
+        Bucket: bucket(),
+        Key: key,
+        Body: Readable.fromWeb(
+          response.body as import("node:stream/web").ReadableStream,
+        ),
+        ContentType: "application/zip",
+        Metadata: { "git-head": snapshot.head },
+      },
+    }).done();
   }
-  let etag:string|undefined;
-  try{etag=(await client.send(new HeadObjectCommand({Bucket:bucket(),Key:`${prefix}/latest.json`}))).ETag;}catch(error){if((error as {$metadata?:{httpStatusCode:number}}).$metadata?.httpStatusCode!==404)throw error;}
-  if((await service.git.snapshot()).head!==snapshot.head)return {head:snapshot.head,backedUp:true,superseded:true};
-  try{await client.send(
-    new PutObjectCommand({
-      Bucket: bucket(),
-      Key: `${prefix}/latest.json`,
-      Body: JSON.stringify({
-        head: snapshot.head,
-        key,
-        createdAt: new Date().toISOString(),
+  let etag: string | undefined;
+  try {
+    etag = (
+      await client.send(
+        new HeadObjectCommand({
+          Bucket: bucket(),
+          Key: `${prefix}/latest.json`,
+        }),
+      )
+    ).ETag;
+  } catch (error) {
+    if (
+      (error as { $metadata?: { httpStatusCode: number } }).$metadata
+        ?.httpStatusCode !== 404
+    )
+      throw error;
+  }
+  if ((await service.git.snapshot()).head !== snapshot.head)
+    return { head: snapshot.head, backedUp: true, superseded: true };
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucket(),
+        Key: `${prefix}/latest.json`,
+        Body: JSON.stringify({
+          head: snapshot.head,
+          key,
+          createdAt: new Date().toISOString(),
+        }),
+        ContentType: "application/json",
+        ...(etag ? { IfMatch: etag } : { IfNoneMatch: "*" }),
       }),
-      ContentType: "application/json",
-      ...(etag?{IfMatch:etag}:{IfNoneMatch:"*"}),
-    }),
-  );}catch(error){if((error as {$metadata?:{httpStatusCode:number}}).$metadata?.httpStatusCode!==412)throw error;}
+    );
+  } catch (error) {
+    if (
+      (error as { $metadata?: { httpStatusCode: number } }).$metadata
+        ?.httpStatusCode !== 412
+    )
+      throw error;
+  }
   return { head: snapshot.head, backedUp: true };
 }

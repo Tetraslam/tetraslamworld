@@ -13,7 +13,10 @@ async function api(body: unknown) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  const data = await response.json();
+  const data = await response.json().catch(() => ({
+    message:
+      "The upload could not finish. Your local original is retained for retry.",
+  }));
   if (!response.ok) throw new Error(data.message || "Upload could not finish.");
   return data;
 }
@@ -81,6 +84,26 @@ export function processUpload(
 ): Promise<WritingBlock> {
   const existing = jobs.get(record.id);
   if (existing) return existing;
+  record.attached = true;
+  const completedBlock = (): WritingBlock => {
+    if (!record.asset) throw new Error("The upload has no verified original.");
+    const mime = record.asset.contentType;
+    return {
+      type: mime.startsWith("video/")
+        ? "video"
+        : mime.startsWith("audio/")
+          ? "audio"
+          : "image",
+      src: `writing-asset:${record.asset.id}`,
+      alt: "",
+      caption: "",
+      ...(record.poster ? { poster: `writing-asset:${record.poster.id}` } : {}),
+      ...(mime === "image/gif" ? { animated: true } : {}),
+      ...(record.width ? { width: record.width, height: record.height } : {}),
+    };
+  };
+  if (record.phase === "done" && record.asset)
+    return Promise.resolve(completedBlock());
   const work = (async () => {
     if (record.file.size > WRITING_LIMITS.uploadBytes)
       throw new Error("Use files up to 512 MB.");
@@ -107,14 +130,19 @@ export function processUpload(
       type: record.file.type,
     });
     if (
-      !record.poster &&
-      (file.type.startsWith("video/") || file.type === "image/gif")
+      (!record.width && file.type.startsWith("image/")) ||
+      (!record.poster &&
+        (file.type.startsWith("video/") || file.type === "image/gif"))
     ) {
       const info = await inspectTasteFile(
         file,
         new AbortController().signal,
         WRITING_LIMITS.uploadBytes,
-      );
+      ).catch(() => ({
+        width: undefined,
+        height: undefined,
+        poster: undefined,
+      }));
       record.width = info.width;
       record.height = info.height;
       if (info.poster)
@@ -125,21 +153,11 @@ export function processUpload(
         );
     }
     record.phase = "done";
+    // Both remote copies are verified. Keep the receipt for undo/recovery, but
+    // release the large local Blob so completed uploads cannot exhaust storage.
+    record.file = new Blob([], { type: record.asset!.contentType });
     await saveUpload(record);
-    const type = file.type.startsWith("video/")
-      ? "video"
-      : file.type.startsWith("audio/")
-        ? "audio"
-        : "image";
-    return {
-      type,
-      src: `writing-asset:${record.asset!.id}`,
-      alt: "",
-      caption: "",
-      ...(record.poster ? { poster: `writing-asset:${record.poster.id}` } : {}),
-      ...(file.type === "image/gif" ? { animated: true } : {}),
-      ...(record.width ? { width: record.width, height: record.height } : {}),
-    };
+    return completedBlock();
   })().finally(() => jobs.delete(record.id));
   jobs.set(record.id, work);
   return work;

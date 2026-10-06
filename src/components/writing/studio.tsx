@@ -9,30 +9,54 @@ import {
   SaveFailure,
   type SaveStatus,
 } from "@/lib/writing/autosave";
-import { getRecovery, putRecovery } from "@/lib/writing/local";
+import {
+  beginRecoverySession,
+  clearRecoveredCopy,
+  getRecovery,
+  getRecoveryCopies,
+  putRecovery,
+  type Recovery,
+} from "@/lib/writing/local";
 import { slugify } from "../../../shared/taste";
 import {
   defaultPost,
   hasPendingUploads,
+  type PublicationEvent,
   serializePost,
   type WritingEntry,
   type WritingPost,
 } from "../../../shared/writing";
 import { TagInput } from "../tag-input";
+import { AssetPicker } from "./asset-picker";
 import { WritingEditor } from "./editor";
 import { WritingArticle } from "./prose";
 
 async function request(url: string, body?: unknown) {
-  const response = await fetch(
-    url,
-    body
-      ? {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      : { cache: "no-store" },
-  );
+  const options: RequestInit = body
+    ? {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }
+    : { cache: "no-store" };
+  let response: Response | undefined;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      response = await fetch(url, options);
+    } catch (error) {
+      if (!body || attempt) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      continue;
+    }
+    if (body && response.status >= 500 && !attempt) {
+      await response.body?.cancel();
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      continue;
+    }
+    break;
+  }
+  if (!response)
+    throw new SaveFailure("UNAVAILABLE", "Couldn’t reach the writing service.");
   const data = await response
     .json()
     .catch(() => ({ message: "Couldn’t reach the writing service." }));
@@ -44,16 +68,20 @@ async function request(url: string, body?: unknown) {
   return data;
 }
 async function sourceHash(post: WritingPost) {
-  return Array.from(
-    new Uint8Array(
-      await crypto.subtle.digest(
-        "SHA-256",
-        new TextEncoder().encode(serializePost(post)),
+  try {
+    return Array.from(
+      new Uint8Array(
+        await crypto.subtle.digest(
+          "SHA-256",
+          new TextEncoder().encode(serializePost(post)),
+        ),
       ),
-    ),
-  )
-    .map((v) => v.toString(16).padStart(2, "0"))
-    .join("");
+    )
+      .map((v) => v.toString(16).padStart(2, "0"))
+      .join("");
+  } catch {
+    return "";
+  }
 }
 function download(post: WritingPost) {
   let contents: string;
@@ -86,6 +114,8 @@ export function WritingStudio({
     [message, setMessage] = useState(""),
     [mediaStatus, setMediaStatus] = useState("");
   const [preview, setPreview] = useState(false),
+    [contextCopied, setContextCopied] = useState(false),
+    [sourceMode, setSourceMode] = useState(false),
     [details, setDetails] = useState(false),
     [focus, setFocus] = useState(false),
     [busy, setBusy] = useState(false),
@@ -99,6 +129,8 @@ export function WritingStudio({
     [historic, setHistoric] = useState<{
       post: WritingPost;
       sha: string;
+      publication?: boolean;
+      local?: Recovery;
     } | null>(null),
     [remote, setRemote] = useState<{
       post: WritingPost;
@@ -108,13 +140,33 @@ export function WritingStudio({
     alive = useRef(true),
     timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const customSlug = useRef(!newKind);
+  const [publicationHistory, setPublicationHistory] = useState<
+      PublicationEvent[]
+    >([]),
+    [historyMode, setHistoryMode] = useState<
+      "drafts" | "publications" | "device"
+    >("drafts"),
+    [historyPage, setHistoryPage] = useState(1),
+    [moreHistory, setMoreHistory] = useState(false),
+    [localCopies, setLocalCopies] = useState<Recovery[]>([]);
   const lastGitAttempt = useRef(0);
+  const needsMetadata = useRef(false);
+  const recoverySession = useRef<string | undefined>(undefined);
   const endpoint = `/api/writing/${id}`;
   useEffect(() => {
     alive.current = true;
     if (!owner) return;
     let disposed = false;
+    let lease: Awaited<ReturnType<typeof beginRecoverySession>> | undefined;
     void (async () => {
+      lease = await beginRecoverySession(owner, id);
+      recoverySession.current = lease.id;
+      if (disposed) {
+        lease.release();
+        return;
+      }
+      let recovery = await getRecovery(owner, id).catch(() => undefined),
+        offline = false;
       let loaded: {
         post: WritingPost;
         revision: string | null;
@@ -129,17 +181,31 @@ export function WritingStudio({
           error.code === "NOT_FOUND"
         )
           loaded = { post: defaultPost(id, newKind), revision: null };
-        else throw error;
+        else if (recovery) {
+          loaded = { post: recovery.post, revision: recovery.baseRevision };
+          offline = true;
+        } else throw error;
       }
-      const recovery = await getRecovery(owner, id).catch(() => undefined);
+      if (
+        !offline &&
+        recovery &&
+        !recovery.pending &&
+        (recovery.dirty === false ||
+          (await sourceHash(recovery.post)) === recovery.baseRevision)
+      )
+        recovery = undefined;
       const model = new DraftAutosave(
         loaded.post,
         loaded.revision,
         {
           send: (input) => request(endpoint, input),
-          persist: (state) => putRecovery(owner, state),
+          persist: async (state) => {
+            await putRecovery(owner, state, lease?.id);
+            if (!state.dirty && recovery)
+              await clearRecoveredCopy(owner, recovery);
+          },
           status: (state, detail) => {
-            if (alive.current) {
+            if (alive.current && !disposed) {
               setStatus(state);
               if (detail) setMessage(detail);
             }
@@ -147,7 +213,7 @@ export function WritingStudio({
         },
         recovery,
       );
-      if (recovery && recovery.baseRevision !== loaded.revision) {
+      if (!offline && recovery && recovery.baseRevision !== loaded.revision) {
         if ((await sourceHash(recovery.post)) === loaded.revision)
           model.adoptRevision(loaded.revision!, false, loaded.post);
         else if (
@@ -162,15 +228,25 @@ export function WritingStudio({
       }
       if (disposed) return;
       autosave.current = model;
+      if (loaded.revision === null) model.change(model.value);
+      needsMetadata.current = !loaded.entry;
+      if (offline) model.recoverOffline();
       setPost(model.value);
       setEntry(loaded.entry);
-      if (model.dirty && !model.conflicted) setStatus("local");
+      if (
+        !offline &&
+        loaded.revision !== null &&
+        model.dirty &&
+        !model.conflicted
+      )
+        setStatus("local");
     })().catch((error) => {
       if (!disposed) setMessage(error.message);
     });
     return () => {
       disposed = true;
       alive.current = false;
+      lease?.release();
       if (timer.current) clearTimeout(timer.current);
     };
   }, [endpoint, id, newKind, owner]);
@@ -183,6 +259,15 @@ export function WritingStudio({
       setMessage("");
       if (newKind)
         window.history.replaceState(null, "", `/admin/writing/${id}`);
+      if (needsMetadata.current) {
+        try {
+          const latest = await request(`/api/writing/${id}`);
+          if (alive.current) {
+            setEntry(latest.entry);
+            needsMetadata.current = false;
+          }
+        } catch {}
+      }
     }
   }, [id, newKind]);
   useEffect(() => {
@@ -220,6 +305,44 @@ export function WritingStudio({
     document.documentElement.classList.toggle("writing-focus", focus);
     return () => document.documentElement.classList.remove("writing-focus");
   }, [focus]);
+  const scheduledId = entry?.schedule?.id,
+    scheduledAt = entry?.schedule?.at;
+  useEffect(() => {
+    if (!scheduledId || !scheduledAt) return;
+    let stopped = false;
+    let check: ReturnType<typeof setTimeout>;
+    const refresh = async () => {
+      try {
+        const latest = await request(endpoint);
+        if (stopped) return;
+        setEntry(latest.entry);
+        if (latest.entry?.schedule?.id === scheduledId)
+          check = setTimeout(
+            refresh,
+            Math.min(
+              86_400_000,
+              Math.max(
+                15_000,
+                Date.parse(latest.entry.schedule.at) - Date.now() + 2000,
+              ),
+            ),
+          );
+      } catch {
+        if (!stopped) check = setTimeout(refresh, 30_000);
+      }
+    };
+    check = setTimeout(
+      refresh,
+      Math.min(
+        86_400_000,
+        Math.max(1000, Date.parse(scheduledAt) - Date.now() + 2000),
+      ),
+    );
+    return () => {
+      stopped = true;
+      clearTimeout(check);
+    };
+  }, [endpoint, scheduledId, scheduledAt]);
   function change(next: WritingPost) {
     if (busy) return;
     if (
@@ -268,6 +391,9 @@ export function WritingStudio({
           ? error.message
           : "Publication could not finish.",
       );
+      // A response can disappear after Git committed. Refresh the visible state
+      // without issuing another publication under a new operation ID.
+      await refresh().catch(() => {});
     } finally {
       setBusy(false);
     }
@@ -280,10 +406,22 @@ export function WritingStudio({
     }
   }
   async function showHistory() {
+    setHistoric(null);
+    setLocalCopies(await getRecoveryCopies(owner!, id).catch(() => []));
+    setHistory([]);
     try {
-      if (autosave.current?.dirty) await save();
-      setHistory((await request(`${endpoint}?history=1`)).revisions);
+      const [drafts, publications] = await Promise.all([
+        request(`${endpoint}?history=1`),
+        request(`${endpoint}?publications=1`),
+      ]);
+      setHistory(drafts.revisions);
+      setMoreHistory(drafts.revisions.length === 30);
+      setHistoryPage(1);
+      setPublicationHistory(publications.events);
+      setHistoryMode("drafts");
+      setHistoric(null);
     } catch (error) {
+      setHistoryMode("device");
       setMessage((error as Error).message);
     }
   }
@@ -293,17 +431,24 @@ export function WritingStudio({
     try {
       await save();
       await request(endpoint, {
-        action: "restore",
+        action: historic.local
+          ? "save"
+          : historic.publication
+            ? "restorePublication"
+            : "restore",
         id,
         operationId: crypto.randomUUID(),
         expectedRevision: autosave.current!.baseRevision,
         commit: historic.sha,
+        revision: historic.sha,
+        ...(historic.local ? { post: historic.post } : {}),
       });
       const latest = await refresh();
       autosave.current!.adoptRevision(latest.revision, false, latest.post);
       setPost(latest.post);
       setHistory(null);
       setHistoric(null);
+      if (historic.local) await clearRecoveredCopy(owner!, historic.local);
     } catch (error) {
       setMessage((error as Error).message);
     } finally {
@@ -312,6 +457,12 @@ export function WritingStudio({
   }
   async function keepSeparate() {
     if (!post) return;
+    if (hasPendingUploads(post.body)) {
+      setMessage(
+        "Let the remaining media uploads finish before making a separate copy.",
+      );
+      return;
+    }
     const fork = {
       ...post,
       id: crypto.randomUUID(),
@@ -322,6 +473,10 @@ export function WritingStudio({
     fork.commentKey = `writing:${fork.id}`;
     setBusy(true);
     try {
+      await autosave.current?.persistLocal();
+      const oldCopy = (
+        await getRecoveryCopies(owner!, id).catch(() => [])
+      ).find((copy) => copy.session === recoverySession.current);
       await request(`/api/writing/${fork.id}`, {
         action: "save",
         id: fork.id,
@@ -329,6 +484,7 @@ export function WritingStudio({
         expectedRevision: null,
         post: fork,
       });
+      if (oldCopy) await clearRecoveredCopy(owner!, oldCopy);
       router.push(`/admin/writing/${fork.id}`);
     } catch (error) {
       setMessage((error as Error).message);
@@ -453,33 +609,44 @@ export function WritingStudio({
       )}
       <div className="writing-workspace">
         <div className="writing-paper">
-          {preview ? (
-            <WritingArticle post={post} preview />
-          ) : (
-            <>
-              <input
-                className="writing-title"
-                aria-label="Post title"
-                placeholder={
-                  post.kind === "note" ? "title, if you want one" : "title"
-                }
-                value={post.title}
-                maxLength={300}
+          {preview && <WritingArticle post={post} preview />}
+          <div hidden={preview}>
+            <input
+              className="writing-title"
+              aria-label="Post title"
+              placeholder={
+                post.kind === "note" ? "title, if you want one" : "title"
+              }
+              value={post.title}
+              maxLength={300}
+              disabled={busy}
+              onChange={(e) => change({ ...post, title: e.target.value })}
+            />
+            {sourceMode && (
+              <textarea
+                className="writing-source"
+                aria-label="Markdown source"
+                value={post.body}
                 disabled={busy}
-                onChange={(e) => change({ ...post, title: e.target.value })}
+                onChange={(event) =>
+                  change({ ...post, body: event.target.value })
+                }
               />
+            )}
+            <div hidden={sourceMode}>
               <WritingEditor
                 body={post.body}
                 owner={owner}
                 postId={id}
-                locked={busy}
+                locked={busy || preview || sourceMode}
                 onChange={(body) =>
                   change({ ...autosave.current!.value, body })
                 }
                 onUploadStatus={setMediaStatus}
+                autoFocus={!!newKind}
               />
-            </>
-          )}
+            </div>
+          </div>
         </div>
         {details && (
           <aside className="writing-settings">
@@ -578,27 +745,44 @@ export function WritingStudio({
                 onChange={(e) => change({ ...post, series: e.target.value })}
               />
             </label>
-            <label>
-              social preview image
-              <input
-                value={post.cover}
-                placeholder="media URL or writing-asset:…"
-                disabled={busy}
-                onChange={(e) => change({ ...post, cover: e.target.value })}
-              />
-            </label>
+            <p>social preview image</p>
+            <AssetPicker
+              value={post.cover}
+              disabled={busy}
+              onChange={(cover) => change({ ...post, cover })}
+            />
             <button
               type="button"
-              onClick={() =>
-                void navigator.clipboard.writeText(
-                  `Writing draft ${id}\nRepository: Tetraslam/tetraslam-writing\nFile: writing/drafts/${id}.md\nRevision: ${autosave.current?.baseRevision || "not yet saved"}\nEditor: ${location.href}`,
-                )
-              }
+              onClick={async () => {
+                try {
+                  await save();
+                  await navigator.clipboard.writeText(
+                    `Writing draft ${id}\nRepository: Tetraslam/tetraslam-writing\nFile: writing/drafts/${id}.md\nRevision: ${autosave.current?.baseRevision || "not yet saved"}\nEditor: ${location.href}`,
+                  );
+                  setContextCopied(true);
+                  setTimeout(() => setContextCopied(false), 2000);
+                } catch (error) {
+                  setMessage(
+                    error instanceof Error
+                      ? error.message
+                      : "Couldn’t copy draft context.",
+                  );
+                }
+              }}
             >
-              copy draft context
+              {contextCopied ? "context copied" : "copy draft context"}
             </button>
             <button type="button" onClick={() => download(post)}>
               export markdown
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSourceMode(!sourceMode);
+                setPreview(false);
+              }}
+            >
+              {sourceMode ? "use visual editor" : "edit markdown source"}
             </button>
             {entry?.published && (
               <>
@@ -670,26 +854,118 @@ export function WritingStudio({
           className="writing-history-dialog"
           aria-describedby={undefined}
         >
-          <DialogTitle>draft history</DialogTitle>
+          <DialogTitle>version history</DialogTitle>
+          <div className="writing-actions">
+            <button
+              type="button"
+              aria-pressed={historyMode === "drafts"}
+              onClick={() => {
+                setHistoryMode("drafts");
+                setHistoric(null);
+              }}
+            >
+              draft checkpoints
+            </button>
+            <button
+              type="button"
+              aria-pressed={historyMode === "publications"}
+              onClick={() => {
+                setHistoryMode("publications");
+                setHistoric(null);
+              }}
+            >
+              publications
+            </button>
+            <button
+              type="button"
+              aria-pressed={historyMode === "device"}
+              onClick={() => {
+                setHistoryMode("device");
+                setHistoric(null);
+              }}
+            >
+              on this device
+            </button>
+          </div>
           {message && <p role="alert">{message}</p>}
           <div className="writing-history-list">
-            {history?.map((revision) => (
-              <button
-                key={revision.sha}
-                type="button"
-                onClick={() =>
-                  void request(`${endpoint}?revision=${revision.sha}`)
-                    .then((value) =>
-                      setHistoric({ post: value.post, sha: revision.sha }),
-                    )
-                    .catch((error) => setMessage(error.message))
-                }
-              >
-                {new Date(revision.date).toLocaleString()} ·{" "}
-                {revision.sha.slice(0, 7)}
-              </button>
-            ))}
+            {historyMode === "drafts" &&
+              history?.map((revision) => (
+                <button
+                  key={revision.sha}
+                  type="button"
+                  onClick={() =>
+                    void request(`${endpoint}?revision=${revision.sha}`)
+                      .then((value) =>
+                        setHistoric({ post: value.post, sha: revision.sha }),
+                      )
+                      .catch((error) => setMessage(error.message))
+                  }
+                >
+                  {new Date(revision.date).toLocaleString()} ·{" "}
+                  {revision.sha.slice(0, 7)}
+                </button>
+              ))}
+            {historyMode === "publications" &&
+              publicationHistory.map((event) => (
+                <button
+                  key={event.id}
+                  type="button"
+                  disabled={!event.revision}
+                  onClick={() =>
+                    void request(`${endpoint}?publication=${event.revision}`)
+                      .then((value) =>
+                        setHistoric({
+                          post: value.post,
+                          sha: event.revision!,
+                          publication: true,
+                        }),
+                      )
+                      .catch((error) => setMessage(error.message))
+                  }
+                >
+                  {event.action} · {new Date(event.at).toLocaleString()}
+                  {event.scheduledFor
+                    ? ` → ${new Date(event.scheduledFor).toLocaleString()}`
+                    : ""}
+                </button>
+              ))}
+            {historyMode === "device" &&
+              localCopies.map((copy) => (
+                <button
+                  key={copy.session || "legacy"}
+                  type="button"
+                  onClick={() =>
+                    setHistoric({ post: copy.post, sha: "", local: copy })
+                  }
+                >
+                  {new Date(copy.savedAt).toLocaleString()} ·{" "}
+                  {copy.dirty ? "local changes" : "saved checkpoint"}
+                </button>
+              ))}
           </div>
+          {historyMode === "drafts" && moreHistory && (
+            <button
+              type="button"
+              onClick={() =>
+                void request(`${endpoint}?history=1&page=${historyPage + 1}`)
+                  .then((value) => {
+                    setHistory((previous) => [
+                      ...(previous || []),
+                      ...value.revisions,
+                    ]);
+                    setHistoryPage(historyPage + 1);
+                    setMoreHistory(value.revisions.length === 30);
+                  })
+                  .catch((error) => setMessage(error.message))
+              }
+            >
+              older checkpoints
+            </button>
+          )}
+          {historyMode === "publications" && !publicationHistory.length && (
+            <p>this draft has not been published.</p>
+          )}
           {historic && (
             <>
               <WritingArticle post={historic.post} preview />

@@ -9,6 +9,7 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
+import { getSchema } from "@tiptap/core";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
@@ -21,7 +22,10 @@ import {
   type WritingEntry,
   type WritingPost,
 } from "../../shared/writing";
-import { writingMarkdown } from "../../shared/writing-extensions";
+import {
+  writingExtensions,
+  writingMarkdown,
+} from "../../shared/writing-extensions";
 import { parseAtomFeed } from "../../src/lib/blog";
 import { digest, GithubWritingGit } from "../../src/lib/writing/git";
 import { WritingService } from "../../src/lib/writing/service";
@@ -95,12 +99,30 @@ async function main() {
     errors: string[];
     media: number;
     complete: boolean;
+    coverage: Array<{ source: string; id: string; sha256: string }>;
+    supportingSources: Array<{
+      source: string;
+      sha256: string;
+      purpose: string;
+    }>;
   } = {
     capturedAt: new Date().toISOString(),
     posts: [],
     errors: [],
     media: 0,
     complete: false,
+    coverage: [],
+    supportingSources: inventory.files
+      .filter(
+        (file) =>
+          file.origin === "local" && file.source.startsWith("scratchpad/"),
+      )
+      .map((file) => ({
+        source: `local/${file.source}`,
+        sha256: file.sha256,
+        purpose:
+          "Research transcript or figure-generation source, preserved verbatim in the private archive; not an authored post.",
+      })),
   };
   for (const file of inventory.files) {
     const contentType = types[extname(file.source).toLowerCase()];
@@ -331,6 +353,8 @@ async function main() {
       roundtrip = manager.parse(manager.serialize(parsed));
     if (JSON.stringify(parsed) !== JSON.stringify(roundtrip))
       throw new Error("Editor round-trip changed this source document.");
+    if (parsed.content?.length)
+      getSchema(writingExtensions()).nodeFromJSON(parsed).check();
     serializePost(post);
     return post;
   }
@@ -350,6 +374,7 @@ async function main() {
       listed = feed.find((post) => post.slug === slug);
     try {
       const remotePost = await convert(remote, id, slug, listed?.title || "");
+      let remoteId = id;
       let draft = remotePost,
         note = "imported from pico";
       const local = inventory.files.find(
@@ -369,6 +394,7 @@ async function main() {
           remotePost.title !== localPost.title
         ) {
           const variantId = identity(`${remote}:pico-variant`);
+          remoteId = variantId;
           candidates.push({
             draft: {
               ...remotePost,
@@ -392,6 +418,17 @@ async function main() {
         publication: published ? remotePost : undefined,
         note,
       });
+      report.coverage.push({
+        source: `pico/${name}`,
+        id: remoteId,
+        sha256: digest(await readFile(remote)),
+      });
+      if (local)
+        report.coverage.push({
+          source: `local/${local.source}`,
+          id,
+          sha256: local.sha256,
+        });
       report.posts.push({
         id,
         slug,
@@ -422,6 +459,65 @@ async function main() {
       draft.commentKey = `writing:${id}`;
       draft.sourceUrl = "";
       candidates.push({ draft, note: "imported local-only draft" });
+      report.coverage.push({
+        source: `local/${file.source}`,
+        id,
+        sha256: file.sha256,
+      });
+      report.posts.push({
+        id,
+        slug,
+        published: false,
+        draftSource: file.source,
+        sourceHash: file.sha256,
+      });
+    } catch (error) {
+      report.errors.push(`${file.source}: ${(error as Error).message}`);
+    }
+  }
+  // Older generated copies and archived writing remain accessible in the desk.
+  // Exact converted matches share a document; differing versions stay private.
+  function contentKey(post: WritingPost) {
+    return JSON.stringify([
+      post.title,
+      post.body,
+      post.summary,
+      post.date,
+      post.tags,
+      post.cover,
+    ]);
+  }
+  for (const file of inventory.files.filter(
+    (file) =>
+      file.origin === "local" &&
+      /^(blog|archive)\/.+\.md$/.test(file.source) &&
+      !basename(file.source).startsWith("_"),
+  )) {
+    const id = identity(`local:${file.source}`),
+      slug = `draft-${id.slice(0, 8)}`;
+    try {
+      const originalSlug = basename(file.source, ".md");
+      const matching = candidates.find(
+        (candidate) => candidate.draft.slug === originalSlug,
+      );
+      const draft = await convert(
+        join(root, "local", file.source),
+        id,
+        slug,
+        matching?.draft.title || "",
+      );
+      const equivalent = candidates.find(
+        (candidate) => contentKey(candidate.draft) === contentKey(draft),
+      );
+      report.coverage.push({
+        source: `local/${file.source}`,
+        id: equivalent?.draft.id || id,
+        sha256: file.sha256,
+      });
+      if (equivalent) continue;
+      draft.commentKey = `writing:${id}`;
+      draft.sourceUrl = "";
+      candidates.push({ draft, note: "preserved local archive variant" });
       report.posts.push({
         id,
         slug,
@@ -435,7 +531,12 @@ async function main() {
   }
   if (report.errors.length) {
     await writeFile(
-      join(root, "migration-report.json"),
+      join(
+        root,
+        process.argv.includes("--check")
+          ? "coverage-plan.json"
+          : "migration-report.json",
+      ),
       JSON.stringify(report, null, 2) + "\n",
     );
     console.log(
@@ -447,6 +548,22 @@ async function main() {
     );
     process.exitCode = 1;
   } else {
+    if (process.argv.includes("--check")) {
+      await writeFile(
+        join(root, "coverage-plan.json"),
+        `${JSON.stringify(report, null, 2)}\n`,
+      );
+      console.log(
+        JSON.stringify({
+          complete: true,
+          candidates: candidates.length,
+          coveredSources: report.coverage.length,
+          published: feed.length,
+          applied: false,
+        }),
+      );
+      return;
+    }
     const loaded = await service.load(),
       files: Record<string, string> = {};
     for (const candidate of candidates) {
@@ -491,6 +608,7 @@ async function main() {
         throw new Error(
           "Publication changed after import; review it before retrying.",
         );
+      if (loaded.index.entries[id]) continue;
       loaded.index.entries[id] = entry;
     }
     if (report.posts.filter((post) => post.published).length !== feed.length)

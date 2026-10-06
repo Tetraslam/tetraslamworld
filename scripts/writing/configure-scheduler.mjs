@@ -16,7 +16,7 @@ function run(bin, args, input) {
   return r.stdout;
 }
 const item = JSON.parse(
-  run("op", [
+  run("opa", [
     "item",
     "get",
     "TETRASLAM_WRITING_GITHUB",

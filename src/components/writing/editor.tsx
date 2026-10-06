@@ -1,6 +1,7 @@
 "use client";
 import DragHandle from "@tiptap/extension-drag-handle-react";
 import Placeholder from "@tiptap/extension-placeholder";
+import { createTable } from "@tiptap/extension-table";
 import {
   EditorContent,
   type NodeViewProps,
@@ -22,10 +23,12 @@ import { getUploads, saveUpload, type UploadRecord } from "@/lib/writing/local";
 import { processUpload } from "@/lib/writing/upload-client";
 import { decodeBlock, type WritingBlock } from "../../../shared/writing";
 import {
+  blockInsertionPosition,
   WritingBlockNode,
   writingExtensions,
 } from "../../../shared/writing-extensions";
 import { WritingBlockView } from "./prose";
+import { visualizationCatalog } from "./visualizations";
 
 type EditBlock = { position: number | null; raw: string; nodeType?: string };
 const BlockContext = createContext<(value: EditBlock) => void>(() => {});
@@ -41,14 +44,16 @@ function BlockNode({ node, getPos, selected }: NodeViewProps) {
         <span role="img" data-drag-handle draggable aria-label="Drag block">
           ⠿
         </span>
-        <button
-          type="button"
-          onClick={() =>
-            edit({ position: getPos() ?? null, raw: node.attrs.raw })
-          }
-        >
-          edit {block?.type || "block"}
-        </button>
+        {block?.type !== "upload" && (
+          <button
+            type="button"
+            onClick={() =>
+              edit({ position: getPos() ?? null, raw: node.attrs.raw })
+            }
+          >
+            edit {block?.type || "block"}
+          </button>
+        )}
       </div>
       {block?.type === "upload" ? (
         <p className="writing-upload-placeholder">
@@ -68,6 +73,7 @@ export function WritingEditor({
   postId,
   locked = false,
   onUploadStatus,
+  autoFocus = false,
 }: {
   body: string;
   onChange: (body: string) => void;
@@ -75,12 +81,17 @@ export function WritingEditor({
   postId: string;
   locked?: boolean;
   onUploadStatus: (message: string) => void;
+  autoFocus?: boolean;
 }) {
   const [editing, setEditing] = useState<EditBlock | null>(null),
     [error, setError] = useState("");
   const input = useRef<HTMLInputElement>(null),
     callbacks = useRef({ onChange, onUploadStatus });
+  const filesHandler = useRef<
+    (files: File[], position?: number) => Promise<void>
+  >(async () => {});
   callbacks.current = { onChange, onUploadStatus };
+  filesHandler.current = addFiles;
   const editor = useEditor(
     {
       extensions: [
@@ -107,6 +118,7 @@ export function WritingEditor({
       immediatelyRender: false,
       shouldRerenderOnTransaction: true,
       editable: !locked,
+      autofocus: autoFocus ? "end" : false,
       onUpdate: ({ editor }) =>
         callbacks.current.onChange(editor.getMarkdown()),
       editorProps: {
@@ -119,14 +131,17 @@ export function WritingEditor({
         handlePaste: (_view, event) => {
           const files = Array.from(event.clipboardData?.files || []);
           if (!files.length) return false;
-          void addFiles(files);
+          void filesHandler.current(files);
           return true;
         },
-        handleDrop: (_view, event, _slice, moved) => {
+        handleDrop: (view, event, _slice, moved) => {
           const files = Array.from(event.dataTransfer?.files || []);
           if (moved || !files.length) return false;
           event.preventDefault();
-          void addFiles(files);
+          void filesHandler.current(
+            files,
+            view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos,
+          );
           return true;
         },
       },
@@ -135,6 +150,12 @@ export function WritingEditor({
   );
   useEffect(() => {
     editor?.setEditable(!locked, false);
+    if (locked)
+      editor?.view.dom
+        .querySelectorAll<HTMLMediaElement>("video,audio")
+        .forEach((media) => {
+          media.pause();
+        });
   }, [editor, locked]);
   useEffect(() => {
     if (editor && body !== editor.getMarkdown())
@@ -161,7 +182,8 @@ export function WritingEditor({
               raw: JSON.stringify(block, null, 2),
             });
         });
-        if (tr.docChanged) editor.view.dispatch(tr);
+        if (tr.docChanged)
+          editor.view.dispatch(tr.setMeta("addToHistory", false));
         callbacks.current.onUploadStatus("");
       } catch (error) {
         callbacks.current.onUploadStatus(
@@ -175,8 +197,41 @@ export function WritingEditor({
   );
   useEffect(() => {
     if (!editor) return;
-    const resume = async () => {
+    const resume = async (inspectOrphans = true) => {
+      if (editor.isDestroyed) return;
+      const pending = new Set<string>();
+      editor.state.doc.descendants((node) => {
+        if (node.type.name === "writingBlock") {
+          const block = decodeBlock(node.attrs.raw);
+          if (block?.type === "upload" && typeof block.uploadId === "string")
+            pending.add(block.uploadId);
+        }
+      });
+      if (!pending.size && !inspectOrphans) return;
       const records = await getUploads(owner, postId);
+      if (editor.isDestroyed) return;
+      const unattached = records.filter(
+        (record) => record.attached === false && !pending.has(record.id),
+      );
+      if (unattached.length) {
+        editor.commands.insertContentAt(editor.state.doc.content.size, [
+          ...unattached.map((record) => ({
+            type: "writingBlock",
+            attrs: {
+              raw: JSON.stringify({
+                type: "upload",
+                uploadId: record.id,
+                filename: record.name,
+              }),
+            },
+          })),
+          { type: "paragraph" },
+        ]);
+        for (const record of unattached) {
+          record.attached = true;
+          await saveUpload(record);
+        }
+      }
       for (const record of records) {
         let referenced = false;
         editor.state.doc.descendants((node) => {
@@ -190,49 +245,98 @@ export function WritingEditor({
       }
     };
     void resume().catch(() => {});
-    window.addEventListener("online", resume);
-    return () => window.removeEventListener("online", resume);
+    const online = () => void resume(true),
+      update = () => void resume(false);
+    window.addEventListener("online", online);
+    editor.on("update", update);
+    return () => {
+      window.removeEventListener("online", online);
+      editor.off("update", update);
+    };
   }, [editor, owner, postId, finishUpload]);
-  async function addFiles(files: File[]) {
-    if (!editor || locked) return;
-    for (const file of files) {
-      if (!/^(image|video|audio)\//.test(file.type)) {
-        setError("Choose an image, video, or audio file.");
-        continue;
+  async function addFiles(files: File[], at?: number) {
+    if (!editor || locked || !files.length) return;
+    callbacks.current.onUploadStatus("preparing local recovery copies…");
+    const records: UploadRecord[] = [];
+    let position = blockInsertionPosition(editor, at);
+    const track = ({
+      transaction,
+    }: {
+      transaction: import("@tiptap/pm/state").Transaction;
+    }) => {
+      position = transaction.mapping.map(position);
+    };
+    editor.on("transaction", track);
+    try {
+      for (const file of files) {
+        if (!/^(image|video|audio)\//.test(file.type)) {
+          setError("Choose an image, video, or audio file.");
+          continue;
+        }
+        const record: UploadRecord = {
+          id: crypto.randomUUID(),
+          owner,
+          postId,
+          name: file.name,
+          file,
+          createdAt: Date.now(),
+          phase: "pending",
+          attached: false,
+        };
+        try {
+          await saveUpload(record);
+          records.push(record);
+        } catch (error) {
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Couldn’t retain this upload locally.",
+          );
+        }
       }
-      const record: UploadRecord = {
-        id: crypto.randomUUID(),
-        owner,
-        postId,
-        name: file.name,
-        file,
-        createdAt: Date.now(),
-        phase: "pending",
-      };
-      try {
-        await saveUpload(record);
-        editor
-          .chain()
-          .focus()
-          .insertContent({
-            type: "writingBlock",
-            attrs: {
-              raw: JSON.stringify({
-                type: "upload",
-                uploadId: record.id,
-                filename: file.name,
-              }),
-            },
-          })
-          .run();
-        await finishUpload(record);
-      } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Couldn’t retain this upload locally.",
+    } finally {
+      editor.off("transaction", track);
+    }
+    if (editor.isDestroyed) return;
+    if (!records.length) {
+      callbacks.current.onUploadStatus("");
+      return;
+    }
+    editor
+      .chain()
+      .focus()
+      .insertContentAt(blockInsertionPosition(editor, position), [
+        ...records.map((record) => ({
+          type: "writingBlock",
+          attrs: {
+            raw: JSON.stringify({
+              type: "upload",
+              uploadId: record.id,
+              filename: record.name,
+            }),
+          },
+        })),
+        { type: "paragraph" },
+      ])
+      .run();
+    for (const record of records) {
+      record.attached = true;
+      await saveUpload(record);
+      await finishUpload(record);
+    }
+    if (!editor.isDestroyed) {
+      let pending = false;
+      editor.state.doc.descendants((node) => {
+        if (
+          node.type.name === "writingBlock" &&
+          decodeBlock(node.attrs.raw)?.type === "upload"
+        )
+          pending = true;
+      });
+      if (pending)
+        callbacks.current.onUploadStatus(
+          "Some uploads are paused. Your originals are retained locally; retry when connected.",
         );
-      }
     }
   }
   if (!editor) return <p className="writing-muted">opening your document…</p>;
@@ -249,7 +353,8 @@ export function WritingEditor({
               distance: 10,
               speed: 60,
               dwell: 30,
-              fallback: "",
+              fallback:
+                "This model compares walking, stopping, and cruising time as station spacing changes.",
             }
           : { type },
         null,
@@ -275,7 +380,14 @@ export function WritingEditor({
           editor.commands.updateBlockMath({ pos: editing.position, latex });
         else editor.commands.updateInlineMath({ pos: editing.position, latex });
       } else if (data.type === "math")
-        editor.chain().focus().insertBlockMath({ latex }).run();
+        editor
+          .chain()
+          .focus()
+          .insertContentAt(blockInsertionPosition(editor), [
+            { type: "blockMath", attrs: { latex } },
+            { type: "paragraph" },
+          ])
+          .run();
       else editor.chain().focus().insertInlineMath({ latex }).run();
     } else if (data.type === "link") {
       const url = String(data.href || "");
@@ -326,7 +438,10 @@ export function WritingEditor({
       editor
         .chain()
         .focus()
-        .insertContent({ type: "writingBlock", attrs: { raw } })
+        .insertContentAt(blockInsertionPosition(editor), [
+          { type: "writingBlock", attrs: { raw } },
+          { type: "paragraph" },
+        ])
         .run();
     else if (editing.nodeType === "image") {
       const node = editor.state.doc.nodeAt(editing.position);
@@ -394,6 +509,7 @@ export function WritingEditor({
         </button>
         <select
           aria-label="Paragraph style"
+          disabled={editor.isActive("table")}
           value={
             editor.isActive("heading", { level: 2 })
               ? "h2"
@@ -485,7 +601,10 @@ export function WritingEditor({
               editor
                 .chain()
                 .focus()
-                .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                .insertContentAt(blockInsertionPosition(editor), [
+                  createTable(editor.schema, 3, 3, true).toJSON(),
+                  { type: "paragraph" },
+                ])
                 .run();
             else if (value === "math" || value === "inline-math") insert(value);
             else if (value === "task")
@@ -651,6 +770,9 @@ function BlockForm({
     "math",
     "inline-math",
   ].includes(block.type);
+  const visualization = visualizationCatalog.find(
+    (item) => item.id === block.name && item.version === block.version,
+  );
   return (
     <form
       className="writing-block-form"
@@ -783,20 +905,77 @@ function BlockForm({
       )}
       {block.type === "interactive" && (
         <>
-          <p>station spacing · version 1</p>
-          {["spacing", "distance", "speed", "dwell"].map((name) => (
-            <label key={name}>
-              {name}
+          <label>
+            visualization
+            <select
+              value={`${block.name}@${block.version}`}
+              onChange={(event) => {
+                const selected = visualizationCatalog.find(
+                  (item) => `${item.id}@${item.version}` === event.target.value,
+                );
+                if (selected)
+                  setBlock({
+                    ...block,
+                    name: selected.id,
+                    version: selected.version,
+                    ...selected.defaults,
+                  });
+              }}
+            >
+              {!visualization && (
+                <option value={`${block.name}@${block.version}`}>
+                  {String(block.name)} · version {String(block.version)}{" "}
+                  (unavailable)
+                </option>
+              )}
+              {visualizationCatalog.map((item) => (
+                <option
+                  key={`${item.id}@${item.version}`}
+                  value={`${item.id}@${item.version}`}
+                >
+                  {item.label} · version {item.version}
+                </option>
+              ))}
+            </select>
+          </label>
+          {visualization?.fields.map((setting) => (
+            <label key={setting.key}>
+              {setting.label}
               <input
-                type="number"
-                step="any"
-                value={Number(block[name] ?? 1)}
+                type={setting.type === "boolean" ? "checkbox" : setting.type}
+                min={setting.min}
+                max={setting.max}
+                step={setting.step || "any"}
+                checked={
+                  setting.type === "boolean" ? !!block[setting.key] : undefined
+                }
+                value={
+                  setting.type === "boolean"
+                    ? undefined
+                    : String(block[setting.key] ?? "")
+                }
                 onChange={(e) =>
-                  setBlock({ ...block, [name]: Number(e.target.value) })
+                  setBlock({
+                    ...block,
+                    [setting.key]:
+                      setting.type === "boolean"
+                        ? e.target.checked
+                        : setting.type === "number"
+                          ? e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value)
+                          : e.target.value,
+                  })
                 }
               />
             </label>
           ))}
+          {!visualization && (
+            <p>
+              The original settings are preserved. This version is not currently
+              registered in the site.
+            </p>
+          )}
           {field("fallback", "text alternative for feeds and exports", true)}
         </>
       )}

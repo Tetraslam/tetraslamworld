@@ -136,7 +136,13 @@ export const indexSchema = z.object({
   migration: z.object({ verified: z.boolean(), report: z.string().optional() }),
 });
 
-export type PublicationEvent={id:string;action:"publish"|"schedule"|"unpublish"|"cancel"|"scheduled";at:string;revision:string|null;scheduledFor?:string};
+export type PublicationEvent = {
+  id: string;
+  action: "publish" | "schedule" | "unpublish" | "cancel" | "scheduled";
+  at: string;
+  revision: string | null;
+  scheduledFor?: string;
+};
 
 export function emptyWritingIndex(): WritingIndex {
   return { schema: 1, entries: {}, assets: {}, migration: { verified: false } };

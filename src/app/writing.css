@@ -189,6 +189,21 @@
   min-height: 55vh;
   outline: none;
 }
+.writing-source {
+  width: 100%;
+  min-height: 60vh;
+  resize: vertical;
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 20px;
+  font:
+    15px / 1.8 var(--font-iosevka),
+    monospace;
+}
+.writing-document .tableWrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
 .writing-document p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
@@ -273,6 +288,13 @@
 .writing-prose audio {
   width: 100%;
   margin: 24px 0;
+}
+.writing-media-player {
+  width: 100%;
+}
+video.writing-media-player {
+  max-height: 70svh;
+  object-fit: contain;
 }
 .writing-document code,
 .writing-prose code {
@@ -426,6 +448,24 @@
   font-size: 16px;
   margin-bottom: 22px;
 }
+.writing-cover-picker img {
+  width: 100%;
+  height: auto;
+  max-height: 180px;
+  object-fit: contain;
+  margin: 12px 0;
+}
+.writing-cover-picker summary {
+  margin-top: 12px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.writing-code-language {
+  max-width: 110px;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  padding: 7px;
+}
 .writing-settings label,
 .writing-block-form label,
 .writing-dialog-field {
@@ -545,6 +585,10 @@
   padding-top: 0;
 }
 @media (max-width: 900px) {
+  .writing-studio-bar :is(button, a),
+  .writing-toolbar :is(button, select) {
+    min-height: 36px;
+  }
   .writing-studio.with-details .writing-workspace {
     grid-template-columns: minmax(0, 1fr);
   }

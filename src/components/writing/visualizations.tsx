@@ -1,16 +1,85 @@
 "use client";
-import { useId, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
+import type { WritingBlock } from "../../../shared/writing";
+
+const finite = (value: unknown) =>
+  typeof value === "number" && Number.isFinite(value) ? value : undefined;
 
 // Versioned, code-owned components. Posts store data/settings, never executable JS.
-export const visualizationCatalog = [
+type VisualizationField = {
+  key: string;
+  label: string;
+  type: "number" | "text" | "boolean";
+  min?: number;
+  max?: number;
+  step?: number;
+};
+type VisualizationDefinition = {
+  id: string;
+  version: number;
+  label: string;
+  description: string;
+  defaults: Record<string, unknown>;
+  fields: VisualizationField[];
+  render: (block: WritingBlock) => ReactNode;
+};
+export const visualizationCatalog: VisualizationDefinition[] = [
   {
     id: "station-spacing",
     version: 1,
     label: "Station spacing",
     description:
       "Explore how walking, stops, and cruising affect journey time.",
+    defaults: {
+      spacing: 1,
+      distance: 10,
+      speed: 60,
+      dwell: 30,
+      fallback:
+        "This model compares walking, stopping, and cruising time as station spacing changes.",
+    },
+    fields: [
+      {
+        key: "spacing",
+        label: "initial station spacing (km)",
+        type: "number",
+        min: 0.2,
+        max: 5,
+        step: 0.1,
+      },
+      {
+        key: "distance",
+        label: "journey length (km)",
+        type: "number",
+        min: 1,
+        max: 100,
+      },
+      {
+        key: "speed",
+        label: "cruising speed (km/h)",
+        type: "number",
+        min: 5,
+        max: 300,
+      },
+      {
+        key: "dwell",
+        label: "stop duration (seconds)",
+        type: "number",
+        min: 0,
+        max: 180,
+      },
+    ],
+    render: (block: WritingBlock) => (
+      <StationSpacing
+        key={finite(block.spacing) ?? 1}
+        initialSpacing={finite(block.spacing)}
+        distance={finite(block.distance)}
+        speed={finite(block.speed)}
+        dwell={finite(block.dwell)}
+      />
+    ),
   },
-] as const;
+];
 export function StationSpacing({
   initialSpacing = 1,
   distance = 10,

@@ -194,6 +194,12 @@ export class GithubWritingGit implements WritingGit {
     files: Record<string, string | null>,
     message: string,
   ) {
+    for (const content of Object.values(files))
+      if (content !== null && Buffer.byteLength(content, "utf8") > 20_000_000)
+        throw new WritingError(
+          "LIMIT",
+          "A writing index or history file has reached its 20 MB limit. The existing revision is unchanged.",
+        );
     const tree = await github<{ sha: string }>(`${this.base}/git/trees`, {
       method: "POST",
       body: JSON.stringify({
@@ -219,7 +225,7 @@ export class GithubWritingGit implements WritingGit {
     );
     return commit.sha;
   }
-  async history(path: string, limit = 30, page=1) {
+  async history(path: string, limit = 30, page = 1) {
     const rows = await github<
       Array<{
         sha: string;
