@@ -54,7 +54,7 @@ Approved by Shresht. This checklist is the release scope, not a menu of optional
 - [x] Import every existing pico post, including drafts, and all referenced media
 - [x] Preserve dates, slugs, links, and comment identities
 - [x] Verify imported posts against their originals
-- [ ] Remove pico as a runtime dependency only after verified cutover
+- [x] Remove pico as a runtime dependency only after verified cutover
 
 ### Later, outside this release
 - Email delivery
@@ -84,7 +84,7 @@ Mark a checkbox complete only after implementation and applicable verification. 
 
 ## Verification record, October 2026
 
-The scoped GitHub App can access only the private writing repository. Non-forced Git ref updates are the atomic boundary. The published snapshot, schedule, index, and retry receipt commit together; Tigris holds immutable server-owned originals, with checksum-matched GitHub Release backups. Convex owns the minute publication/backup tick. The production endpoint remains inactive until cutover.
+The scoped GitHub App can access only the private writing repository. Non-forced Git ref updates are the atomic boundary. The published snapshot, schedule, index, and retry receipt commit together; Tigris holds immutable server-owned originals, with checksum-matched GitHub Release backups. Convex owns the minute publication/backup tick, activated after production verification.
 
 - The private import contains 27 documents: 10 published snapshots and 17 private drafts. All 67 authored source copies (remote, canonical local, generated copies, and archived writing) map to accessible drafts. Research transcripts and figure-generation scripts remain verbatim supporting material in the private archive.
 - `scripts/writing/verify-import.ts` checks source hashes, every document against the real editor schema, Markdown round trips, backed-up media references, original draft/publication prose, dates, and comment identity. All 67 originals have independent backups. Private inventories, titles, and evidence remain outside this public repository.
@@ -93,7 +93,7 @@ The scoped GitHub App can access only the private writing repository. Non-forced
 - Two live tabs retained different local copies. The stale save was rejected, survived reload, and was recovered into a separate draft without overwriting the winning save. A private phrase appeared in authenticated desk search and returned no public search results.
 - Anonymous draft requests returned 403; private/withdrawn media returned 404. Unpublished pages returned the framework’s streamed not-found response without the withdrawn prose. Existing comment keys are unchanged.
 - Desktop and 390 px mobile reader/editor checks passed without horizontal overflow. Screenshots are retained in the private runtime directory.
-- Final-code export, checksum verification, and offline restoration passed for all 27 documents and 67 assets, including application source and comments. Production cutover remains the final release gate.
+- Final-code export, checksum verification, and offline restoration passed for all 27 documents and 67 assets, including application source and comments.
 - The deployed preview accepted a 989 KB document, rendered 43,000 paragraphs in the editor, and saved a further edit. An oversized replacement returned 400 and retained the previous version. A 512 MiB upload completed through Vercel in the preview storage fork; original verification and independent backup returned 200 in 139 seconds. Its local Blob was released only after the matching backup receipt.
 - The deployed scheduling endpoint published the frozen revision, retained the later private edit, cleared the schedule, and backed up the private repository. Unpublishing then succeeded. All of these mutations used the isolated verification branch.
 - Preview has branch-scoped development Clerk credentials and a private copy-on-write Tigris fork with an exact-origin CORS rule. Production retains its existing Clerk instance and original media bucket. The final read-only pico comparison found the same 79 unique files, with no additions, removals, or changes.
@@ -101,3 +101,11 @@ The scoped GitHub App can access only the private writing repository. Non-forced
 Tiptap 3.31.4 needed explicit compatibility handling for inline/standalone images and links around inline code. These are checked against real editor instances, not only parser JSON. Currency amounts remain prose instead of being swallowed by equation parsing; explicit inline equations serialize with double-dollar delimiters and existing symbolic single-dollar formulas remain supported. Unsupported table content and block HTML remain intact as source. A repository write larger than the reader’s 20 MB bound is rejected before mutation.
 
 Repository-wide Biome still reports pre-existing formatting/accessibility failures outside this feature. The writing changes are checked separately against the PR base. See [Writing guide](writing-guide.md) for authoring and recovery commands.
+
+## Production cutover
+
+PR #6 merged into `rewrite` as `0372de2` on October 6, 2026 (UTC). Vercel deployed native writing to `www.tetraslam.world`; all 82 tests, TypeScript, changed-file lint, and deployment checks passed. No automatic reviews or unresolved review threads were present.
+
+The authenticated production desk returned 27 documents, including all 17 private drafts and no verification fixtures. Anonymous checks verified all 10 native articles, their original dates/comment IDs, RSS, sitemap, Markdown exports, and all 32 publicly referenced media objects. Draft APIs returned 403, private media returned 404, and the worker rejected unsigned requests. Chrome confirmed live reader images and literal currency amounts.
+
+The worker is active on the existing `valuable-mandrill-918` backend. Its production invocation returned successfully, and subsequent autonomous minute ticks completed without errors. Pico was neither modified nor removed; `WRITING_SOURCE=git` selects native writing. For rollback, remove that setting and redeploy the previous application revision; disable `WRITING_PUBLICATION_ENDPOINT` before reverting the writing routes.
