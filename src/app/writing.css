@@ -1,0 +1,632 @@
+.writing-desk {
+  max-width: 960px;
+  margin: 20px auto;
+}
+.writing-desk > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+.writing-desk h1 {
+  font:
+    normal clamp(28px, 4vw, 40px) / 1.2 Georgia,
+    serif;
+}
+.writing-eyebrow {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  margin: 0 0 12px;
+}
+.writing-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+.writing-primary {
+  display: inline-block;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 9px 16px;
+  border-radius: 3px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.writing-primary:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.writing-desk-filters {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.writing-desk-filters input {
+  flex: 1;
+  min-width: 0;
+}
+.writing-desk-filters :is(input, select) {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+}
+.writing-draft-list > a {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+}
+.writing-draft-list h2 {
+  font:
+    normal 24px / 1.4 Georgia,
+    serif;
+  color: var(--foreground);
+}
+.writing-draft-list a:hover h2 {
+  color: var(--rose-deep);
+}
+.writing-draft-list p {
+  margin: 10px 0 0;
+  color: var(--muted-foreground);
+  max-width: 600px;
+}
+.writing-draft-list time {
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  font-size: 12px;
+}
+.writing-empty {
+  font:
+    22px / 1.8 Georgia,
+    serif;
+  color: var(--muted-foreground);
+  padding: 60px 0;
+}
+.writing-muted {
+  color: var(--muted-foreground);
+}
+.writing-studio {
+  margin: 0 auto;
+  max-width: 1160px;
+}
+.writing-studio-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  padding: 16px 0;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--veil);
+  backdrop-filter: blur(8px);
+  font-size: 12px;
+}
+.writing-studio-bar > div {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+.writing-studio-bar output {
+  color: var(--muted-foreground);
+}
+.writing-studio button {
+  cursor: pointer;
+}
+.writing-studio button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.writing-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+}
+.writing-studio.with-details .writing-workspace {
+  grid-template-columns: minmax(0, 1fr) 250px;
+}
+.writing-paper {
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  min-width: 0;
+  padding: 20px 16px 140px;
+}
+.writing-title {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font:
+    normal clamp(28px, 4vw, 40px) / 1.3 Georgia,
+    serif;
+  color: var(--foreground);
+  margin: 0 0 28px;
+}
+.writing-title::placeholder {
+  color: var(--muted-foreground);
+}
+.writing-toolbar {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+  margin-bottom: 28px;
+  font:
+    12px / 1.4 var(--font-iosevka),
+    monospace;
+}
+.writing-toolbar :is(button, select) {
+  padding: 7px 9px;
+  background: transparent;
+  border-radius: 3px;
+}
+.writing-toolbar button[aria-pressed="true"],
+.writing-toolbar button:hover {
+  background: var(--surface);
+  color: var(--rose-deep);
+}
+.writing-document,
+.writing-prose {
+  font:
+    19px / 1.85 Georgia,
+    "Times New Roman",
+    serif;
+  overflow-wrap: anywhere;
+}
+.writing-document {
+  min-height: 55vh;
+  outline: none;
+}
+.writing-source {
+  width: 100%;
+  min-height: 60vh;
+  resize: vertical;
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 20px;
+  font:
+    15px / 1.8 var(--font-iosevka),
+    monospace;
+}
+.writing-document .tableWrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.writing-document p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--muted-foreground);
+}
+.writing-document p,
+.writing-prose p {
+  margin: 0 0 1.2em;
+}
+.writing-document :is(h1, h2, h3, h4),
+.writing-prose :is(h1, h2, h3, h4) {
+  font-weight: normal;
+  line-height: 1.35;
+  margin: 1.8em 0 0.7em;
+}
+.writing-document h1,
+.writing-prose h1 {
+  font-size: 1.8em;
+}
+.writing-document h2,
+.writing-prose h2 {
+  font-size: 1.5em;
+}
+.writing-document h3,
+.writing-prose h3 {
+  font-size: 1.2em;
+}
+.writing-document :is(ul, ol),
+.writing-prose :is(ul, ol) {
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+.writing-document ul,
+.writing-prose ul {
+  list-style: disc;
+}
+.writing-document ol,
+.writing-prose ol {
+  list-style: decimal;
+}
+.writing-document li p {
+  margin-bottom: 0.35em;
+}
+.writing-document ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+.writing-document li[data-type="taskItem"] {
+  display: flex;
+  gap: 12px;
+}
+.writing-document li[data-type="taskItem"] > div {
+  flex: 1;
+}
+.writing-document blockquote,
+.writing-prose blockquote {
+  border-left: 2px solid var(--link-border);
+  margin: 24px 0;
+  padding-left: 24px;
+  color: var(--muted-foreground);
+}
+.writing-document a,
+.writing-prose a {
+  text-decoration: underline;
+  text-decoration-color: var(--link-border);
+  text-underline-offset: 3px;
+}
+.writing-document :is(img, video),
+.writing-prose :is(img, video) {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 24px 0;
+}
+.writing-prose :is(video, img[src*=".gif"]),
+.writing-animation img {
+  max-height: 70svh;
+  object-fit: contain;
+}
+.writing-prose audio {
+  width: 100%;
+  margin: 24px 0;
+}
+.writing-media-player {
+  width: 100%;
+}
+video.writing-media-player {
+  max-height: 70svh;
+  object-fit: contain;
+}
+.writing-document code,
+.writing-prose code {
+  font:
+    0.8em / 1.7 var(--font-iosevka),
+    monospace;
+  background: var(--surface);
+}
+.writing-document pre,
+.writing-code-container > code {
+  display: block;
+  white-space: pre;
+  overflow: auto;
+  max-height: 70svh;
+  padding: 22px;
+  margin: 24px 0;
+  background: var(--surface);
+}
+.writing-document pre code {
+  background: transparent;
+}
+.writing-document table,
+.writing-prose table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 24px 0;
+  table-layout: fixed;
+}
+.writing-document :is(td, th),
+.writing-prose :is(td, th) {
+  border: 1px solid var(--border);
+  padding: 10px;
+  min-width: 80px;
+  position: relative;
+}
+.writing-document .selectedCell {
+  background: var(--surface);
+}
+.writing-document figure,
+.writing-prose figure {
+  margin: 30px 0;
+}
+.writing-prose figcaption,
+.writing-caption {
+  color: var(--muted-foreground);
+  font:
+    14px / 1.6 Georgia,
+    serif;
+  margin-top: 12px;
+}
+.writing-prose .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 12px 0;
+}
+.writing-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+.writing-gallery figure {
+  margin: 0;
+}
+.writing-gallery img {
+  margin-top: 0;
+}
+.writing-reference {
+  border: 1px solid var(--border);
+  padding: 20px;
+  margin: 24px 0;
+}
+.writing-reference p {
+  margin: 8px 0 0;
+  font-size: 16px;
+}
+.writing-unknown {
+  padding: 20px;
+  margin: 24px 0;
+  background: var(--surface);
+  white-space: pre-wrap;
+  font-size: 14px;
+}
+.writing-byline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font:
+    13px / 1.6 var(--font-iosevka),
+    monospace;
+  color: var(--muted-foreground);
+  margin: 18px 0 36px;
+}
+.writing-article > header h1 {
+  font:
+    normal clamp(30px, 4vw, 44px) / 1.25 Georgia,
+    serif;
+}
+.writing-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 40px 0;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+.writing-node {
+  position: relative;
+  margin: 24px 0;
+}
+.writing-node.selected {
+  outline: 1px solid var(--link-border);
+  outline-offset: 8px;
+}
+.writing-node-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: var(--muted-foreground);
+  font:
+    12px / 1.4 var(--font-iosevka),
+    monospace;
+}
+.writing-node-actions > span,
+.writing-drag-handle {
+  cursor: grab;
+  padding: 4px;
+}
+.writing-drag-handle {
+  font-size: 22px;
+  color: var(--muted-foreground);
+}
+.writing-upload-placeholder {
+  background: var(--surface);
+  padding: 40px;
+  text-align: center;
+}
+.writing-footnote-definition {
+  font-size: 15px;
+  color: var(--muted-foreground);
+}
+.writing-footnote-definition::before {
+  content: "[" attr(data-footnote-definition) "] ";
+}
+.writing-settings {
+  border-left: 1px solid var(--border);
+  padding-left: 24px;
+  font-size: 13px;
+}
+.writing-settings h2 {
+  font-size: 16px;
+  margin-bottom: 22px;
+}
+.writing-cover-picker img {
+  width: 100%;
+  height: auto;
+  max-height: 180px;
+  object-fit: contain;
+  margin: 12px 0;
+}
+.writing-cover-picker summary {
+  margin-top: 12px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.writing-code-language {
+  max-width: 110px;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  padding: 7px;
+}
+.writing-settings label,
+.writing-block-form label,
+.writing-dialog-field {
+  display: block;
+  margin: 16px 0;
+  font-size: 13px;
+}
+.writing-settings small,
+.writing-dialog-field small {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.writing-settings :is(input, textarea, select),
+.writing-block-form :is(input:not([type="checkbox"]), textarea, select),
+.writing-dialog-field input {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  color: var(--foreground);
+  background: var(--background);
+  border: 1px solid var(--input);
+  border-radius: 3px;
+}
+.writing-settings > :is(button, a) {
+  display: block;
+  margin: 18px 0;
+  color: var(--rose-deep);
+  text-decoration: underline;
+}
+.writing-notice {
+  display: block;
+  padding: 14px 18px;
+  margin: 16px 0;
+  background: var(--surface);
+  border-left: 2px solid var(--rose-deep);
+  font-size: 14px;
+}
+.writing-notice button {
+  margin-left: 14px;
+  text-decoration: underline;
+  color: var(--rose-deep);
+}
+.writing-block-dialog {
+  max-width: 640px;
+  max-height: 90svh;
+  overflow: auto;
+}
+.writing-history-dialog {
+  width: min(95vw, 1000px);
+  max-width: 1000px;
+  max-height: 90svh;
+  overflow: auto;
+}
+.writing-history-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+  font-size: 12px;
+}
+.writing-history-list button {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+}
+.writing-asset-choices {
+  max-height: 220px;
+  overflow: auto;
+}
+.writing-asset-choices input {
+  margin-right: 10px;
+}
+.writing-gallery-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.writing-visualization {
+  padding: 24px;
+  background: var(--surface);
+}
+.writing-visualization svg {
+  width: 100%;
+  margin-bottom: 20px;
+}
+.writing-visualization label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+}
+.writing-visualization input {
+  width: 100%;
+  accent-color: var(--rose-deep);
+}
+.writing-visualization dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 24px 0;
+}
+.writing-visualization dt {
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+.writing-visualization dd {
+  font-size: 22px;
+}
+.writing-focus :is(.site-header, .admin-navigation, .site-footer) {
+  display: none;
+}
+.writing-focus .admin-layout {
+  display: block;
+  max-width: 1200px;
+  margin: auto;
+}
+.writing-focus .admin-content {
+  padding-top: 0;
+}
+@media (max-width: 900px) {
+  .writing-studio-bar :is(button, a),
+  .writing-toolbar :is(button, select) {
+    min-height: 36px;
+  }
+  .writing-studio.with-details .writing-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .writing-settings {
+    grid-row: 1;
+    border-left: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 0 0 24px;
+  }
+  .writing-desk > header {
+    align-items: start;
+    flex-direction: column;
+  }
+  .writing-paper {
+    padding: 12px 0 100px;
+  }
+  .writing-studio-bar > div {
+    margin-left: 0;
+  }
+  .writing-toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  .writing-toolbar :is(button, select) {
+    flex-shrink: 0;
+  }
+  .writing-settings :is(input, textarea, select),
+  .writing-block-form :is(input, textarea, select),
+  .writing-dialog-field input {
+    font-size: 16px;
+  }
+}
+@media (max-width: 500px) {
+  .writing-gallery {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .writing-desk-filters {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

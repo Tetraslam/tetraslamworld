@@ -282,6 +282,21 @@ async function generatePageMd(config: PageConfig): Promise<string> {
 
 // Blog: fetched from external RSS feed
 async function blogMd(slug?: string): Promise<string> {
+  if (process.env.WRITING_SOURCE === "git") {
+    const { publicWritingList, publicWritingPost } = await import(
+      "@/lib/writing/public"
+    );
+    const { portableMarkdown } = await import(
+      "../../../../../shared/writing-export"
+    );
+    if (slug) {
+      const found = await publicWritingPost(slug);
+      return found
+        ? `${found.post.title ? `# ${found.post.title}\n\n` : ""}${portableMarkdown(found.post.body)}\n`
+        : "# Post not found\n";
+    }
+    return `# writing\n\n${(await publicWritingList()).map((post) => `## [${post.title || post.summary || "note"}](${SITE_URL}/blog/${post.slug})\n\n${post.date}\n\n${post.summary}`).join("\n\n")}`;
+  }
   const res = await fetch("https://blog.tetraslam.world/rss", {
     next: { revalidate: 300 },
   });
