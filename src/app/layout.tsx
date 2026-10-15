@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Instrument_Serif, Newsreader } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./paper.css";
@@ -7,6 +8,7 @@ import "./themes.css";
 import "./taste.css";
 import "./writing.css";
 import "./motion.css";
+import "./almanac.css";
 
 const iosevka = localFont({
   src: [
@@ -36,6 +38,21 @@ const iosevka = localFont({
   preload: false,
 });
 
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  variable: "--font-newsreader",
+  display: "swap",
+});
+const instrument = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-instrument",
+  display: "swap",
+});
+
 import { Analytics } from "@vercel/analytics/next";
 import { AgentHint } from "@/components/agent-hint";
 import { AppProviders } from "@/components/providers/app-providers";
@@ -43,8 +60,8 @@ import { SiteFrame } from "@/components/site-frame";
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#171e20" },
+    { media: "(prefers-color-scheme: light)", color: "#f4efe4" },
+    { media: "(prefers-color-scheme: dark)", color: "#161e22" },
   ],
 };
 
@@ -110,7 +127,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={iosevka.variable} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${iosevka.variable} ${newsreader.variable} ${instrument.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <link
           rel="alternate"

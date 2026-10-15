@@ -28,7 +28,7 @@ export function SiteHeader() {
         skip to content
       </a>
       <Link className="site-wordmark" href="/">
-        tetraslam’s world
+        tetraslam’s <em>world</em>
       </Link>
       <nav aria-label="Main navigation">
         {pages.map(([href, label, shortcut]) => (

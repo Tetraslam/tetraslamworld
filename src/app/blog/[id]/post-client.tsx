@@ -263,11 +263,8 @@ export function BlogPostClient({ post }: { post: BlogPost }) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12 animate-fade-in">
-      <Link
-        href="/blog"
-        className="text-sm text-rose-deep hover:text-rose mb-4 inline-block"
-      >
+    <div className="article-page mx-auto px-4 py-12 animate-fade-in">
+      <Link href="/blog" className="article-back">
         &larr; writing
       </Link>
 
@@ -325,7 +322,7 @@ export function BlogPostClient({ post }: { post: BlogPost }) {
 
           {/* Comments section */}
           <section ref={commentsRef} className="border-t border-border pt-8">
-            <h2 className="text-xl font-semibold text-rose mb-4">
+            <h2 className="comments-title">
               comments{totalCount !== undefined ? ` (${totalCount})` : ""}
             </h2>
 

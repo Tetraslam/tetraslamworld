@@ -1,5 +1,5 @@
 :root {
-  --selection: #e9ddcc;
+  --selection: #edcdb8;
   --home-art: url("/terrace-day.webp");
 }
 input::placeholder,
@@ -8,42 +8,42 @@ textarea::placeholder {
   opacity: 1;
 }
 .site-header {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-text);
 }
 :root.dark {
   color-scheme: dark;
-  --background: #171e20;
-  --foreground: #e5e4d8;
-  --surface: #20292b;
-  --card: #20292b;
-  --card-foreground: #e5e4d8;
-  --popover: #20292b;
-  --popover-foreground: #e5e4d8;
-  --rose: #b3c5a1;
-  --rose-deep: #d5a186;
-  --primary: #b3c5a1;
-  --primary-foreground: #171e20;
-  --secondary: #293436;
-  --secondary-foreground: #e5e4d8;
-  --muted: #293436;
-  --muted-foreground: #acb4aa;
-  --accent: #303c3d;
-  --accent-foreground: #e5e4d8;
-  --destructive: #eea49a;
-  --border: #394648;
-  --input: #647674;
-  --ring: #d5a186;
-  --skeleton: #263134;
-  --link-border: #92705e;
-  --veil: #20292bf2;
-  --shadow: #00000070;
-  --hairline: #c0d0c529;
-  --grid-line: #d0d8d21a;
-  --pixel-empty: #20292b;
-  --selection: #455451;
-  --chart-1: #b3c5a1;
-  --chart-2: #d5a186;
-  --chart-3: #84b8c2;
+  --background: #161e22;
+  --foreground: #ece4d3;
+  --surface: #1e282d;
+  --card: #1b2429;
+  --card-foreground: #ece4d3;
+  --popover: #1d272c;
+  --popover-foreground: #ece4d3;
+  --rose: #b8c6a4;
+  --rose-deep: #e8ab64;
+  --primary: #e8ab64;
+  --primary-foreground: #161e22;
+  --secondary: #222d32;
+  --secondary-foreground: #ece4d3;
+  --muted: #222d32;
+  --muted-foreground: #9ea6a2;
+  --accent: #27333a;
+  --accent-foreground: #ece4d3;
+  --destructive: #f0a093;
+  --border: #2c393f;
+  --input: #4a5a60;
+  --ring: #e8ab64;
+  --skeleton: #212b30;
+  --link-border: #7f6340;
+  --veil: #1b2429f2;
+  --shadow: #0000008a;
+  --hairline: #ece4d31f;
+  --grid-line: #ece4d314;
+  --pixel-empty: #1e282d;
+  --selection: #56442b;
+  --chart-1: #b8c6a4;
+  --chart-2: #e8ab64;
+  --chart-3: #7fb3bd;
   --chart-4: #dcc184;
   --chart-5: #a5b5b0;
   --home-art: url("/terrace-night.webp");
@@ -112,7 +112,7 @@ textarea::placeholder {
   display: block;
 }
 .appearance-menu {
-  font-family: Georgia, serif;
+  font-family: var(--font-text);
   min-width: 140px;
 }
 
@@ -293,7 +293,7 @@ textarea::placeholder {
   min-height: 330px;
 }
 .bio-preview {
-  font-family: Georgia, serif;
+  font-family: var(--font-text);
   background: var(--surface);
   border: 1px solid var(--border);
   padding: 24px;

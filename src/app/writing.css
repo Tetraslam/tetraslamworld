@@ -11,7 +11,7 @@
 }
 .writing-desk h1 {
   font:
-    normal clamp(28px, 4vw, 40px) / 1.2 Georgia,
+    normal clamp(28px, 4vw, 40px) / 1.2 var(--font-text),
     serif;
 }
 .writing-eyebrow {
@@ -61,7 +61,7 @@
 }
 .writing-draft-list h2 {
   font:
-    normal 24px / 1.4 Georgia,
+    normal 24px / 1.4 var(--font-text),
     serif;
   color: var(--foreground);
 }
@@ -80,7 +80,7 @@
 }
 .writing-empty {
   font:
-    22px / 1.8 Georgia,
+    22px / 1.8 var(--font-text),
     serif;
   color: var(--muted-foreground);
   padding: 60px 0;
@@ -145,7 +145,7 @@
   background: transparent;
   outline: none;
   font:
-    normal clamp(28px, 4vw, 40px) / 1.3 Georgia,
+    normal clamp(28px, 4vw, 40px) / 1.3 var(--font-text),
     serif;
   color: var(--foreground);
   margin: 0 0 28px;
@@ -180,7 +180,7 @@
 .writing-document,
 .writing-prose {
   font:
-    19px / 1.85 Georgia,
+    19px / 1.85 var(--font-text),
     "Times New Roman",
     serif;
   overflow-wrap: anywhere;
@@ -341,7 +341,7 @@ video.writing-media-player {
 .writing-caption {
   color: var(--muted-foreground);
   font:
-    14px / 1.6 Georgia,
+    14px / 1.6 var(--font-text),
     serif;
   margin-top: 12px;
 }
@@ -390,7 +390,7 @@ video.writing-media-player {
 }
 .writing-article > header h1 {
   font:
-    normal clamp(30px, 4vw, 44px) / 1.25 Georgia,
+    normal clamp(30px, 4vw, 44px) / 1.25 var(--font-text),
     serif;
 }
 .writing-tags {

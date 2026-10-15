@@ -518,7 +518,7 @@ audio.taste-player {
 }
 .taste-guide {
   max-width: 900px;
-  font-family: Georgia, serif;
+  font-family: var(--font-text);
   font-size: 17px;
   line-height: 1.7;
 }
