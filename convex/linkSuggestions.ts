@@ -1,9 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireAdmin } from "./lib/admin";
 
 export const list = query({
   args: { status: v.optional(v.union(v.literal("pending"), v.literal("accepted"), v.literal("rejected"))) },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
 
     if (args.status !== undefined) {
 
@@ -43,6 +45,7 @@ export const updateStatus = mutation({
     status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("rejected")),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     await ctx.db.patch(args.id, { status: args.status });
   },
 });
@@ -50,6 +53,7 @@ export const updateStatus = mutation({
 export const remove = mutation({
   args: { id: v.id("linkSuggestions") },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     await ctx.db.delete(args.id);
   },
 });

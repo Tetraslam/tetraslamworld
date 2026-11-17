@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireAdmin } from "./lib/admin";
 
 export const list = query({
   args: { pinnedOnly: v.optional(v.boolean()) },
@@ -31,6 +32,7 @@ export const create = mutation({
     fromSuggestionId: v.optional(v.id("linkSuggestions")),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     // Get min order to prepend at the beginning (new links appear first)
     const allLinks = await ctx.db.query("links").collect();
     const minOrder = allLinks.reduce(
@@ -61,6 +63,7 @@ export const update = mutation({
     pinned: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     const { id, ...updates } = args;
     await ctx.db.patch(id, updates);
   },
@@ -69,6 +72,7 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("links") },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     // Get the link first to check if it came from a suggestion
     const link = await ctx.db.get(args.id);
     if (link?.fromSuggestionId) {
@@ -87,6 +91,7 @@ export const reorder = mutation({
     ids: v.array(v.id("links")),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     await Promise.all(
       args.ids.map((id, index) => ctx.db.patch(id, { order: index }))
     );

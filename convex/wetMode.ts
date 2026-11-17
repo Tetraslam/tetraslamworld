@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireAdmin } from "./lib/admin";
 
 export const get = query({
   args: {},
@@ -13,6 +14,7 @@ export const set = mutation({
     content: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     const existing = await ctx.db.query("wetMode").first();
     if (existing) {
       await ctx.db.patch(existing._id, {

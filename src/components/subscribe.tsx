@@ -9,19 +9,17 @@ export function Subscribe() {
   const [expanded, setExpanded] = useState(false);
   const { user, isSignedIn } = useUser();
   const { openSignIn } = useClerk();
-  const emails = useQuery(
-    api.emailList.list,
-    isSignedIn && expanded ? {} : "skip",
+  const email = user?.primaryEmailAddress?.emailAddress;
+  const alreadySubscribed = useQuery(
+    api.emailList.isSubscribed,
+    isSignedIn && expanded && email ? { email } : "skip",
   );
   const add = useMutation(api.emailList.add);
-  const email = user?.primaryEmailAddress?.emailAddress;
   const [status, setStatus] = useState<
     "idle" | "pending" | "success" | "error"
   >("idle");
   const pending = useRef(false);
-  const subscribed =
-    status === "success" ||
-    emails?.some((entry) => entry.email === email?.toLowerCase());
+  const subscribed = status === "success" || alreadySubscribed === true;
   async function subscribe() {
     if (!isSignedIn) {
       openSignIn();

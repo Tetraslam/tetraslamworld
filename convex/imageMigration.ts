@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action, internalMutation, query } from "./_generated/server";
+import { requireAdmin } from "./lib/admin";
 
 // Helper to check if URL is already on Convex storage
 function isConvexUrl(url: string): boolean {
@@ -10,6 +11,7 @@ function isConvexUrl(url: string): boolean {
 // Get all external image URLs that need migration
 export const getExternalImages = query({
 	handler: async (ctx) => {
+		await requireAdmin(ctx);
 		const externalImages: {
 			table: string;
 			id: string;
@@ -158,6 +160,7 @@ export const migrateImage = action({
 		proxyBaseUrl: v.optional(v.string()), // No longer used, kept for backwards compat
 	},
 	handler: async (ctx, args) => {
+		await requireAdmin(ctx);
 		const { table, id, field, externalUrl } = args;
 
 		try {

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireAdmin } from "./lib/admin";
 
 const workType = v.union(
   v.literal("project"),
@@ -50,6 +51,7 @@ export const create = mutation({
     order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     return await ctx.db.insert("work", args);
   },
 });
@@ -69,6 +71,7 @@ export const update = mutation({
     order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     const { id, imageUrl, ...rest } = args;
     // Handle imageUrl separately - empty string means clear it
     const updates: Record<string, unknown> = { ...rest };
@@ -82,6 +85,7 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("work") },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     await ctx.db.delete(args.id);
   },
 });
@@ -91,6 +95,7 @@ export const reorder = mutation({
     orderedIds: v.array(v.id("work")),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     await Promise.all(
       args.orderedIds.map((id, index) =>
         ctx.db.patch(id, { order: index })

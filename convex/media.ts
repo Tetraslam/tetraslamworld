@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireAdmin } from "./lib/admin";
 
 const mediaType = v.union(
   v.literal("anime"),
@@ -8,6 +9,7 @@ const mediaType = v.union(
   v.literal("game"),
   v.literal("music"),
   v.literal("movie"),
+  v.literal("concert"),
   v.literal("show"),
   v.literal("other")
 );
@@ -47,6 +49,7 @@ export const create = mutation({
     altOrder: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     return await ctx.db.insert("media", args);
   },
 });
@@ -67,6 +70,7 @@ export const update = mutation({
     altOrder: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     const { id, ...updates } = args;
     await ctx.db.patch(id, updates);
   },
@@ -75,6 +79,7 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("media") },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     await ctx.db.delete(args.id);
   },
 });
@@ -84,6 +89,7 @@ export const reorder = mutation({
     orderedIds: v.array(v.id("media")),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
     await Promise.all(
       args.orderedIds.map((id, index) =>
         ctx.db.patch(id, { order: index })
