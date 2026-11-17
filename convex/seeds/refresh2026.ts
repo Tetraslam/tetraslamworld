@@ -109,7 +109,7 @@ const NEW_WORK: WorkRow[] = [
     content:
       "an improvements box for your app: type a change, and a coding agent you already have makes it.",
     links: [
-      { label: "docs", url: "https://computah.tetraslam.world" },
+      { label: "computah.sh", url: "https://computah.sh" },
       gh("computah"),
     ],
     tags: ["react", "agents"],
@@ -746,7 +746,7 @@ export const apply = internalMutation({
 });
 
 const NOW_NOTE =
-  "back in sf after a fall in boston, and the o-1a came through in october. days at aire; nights on [kiseki](https://kiseki.sh), [computah](https://computah.tetraslam.world), and game boy games for the modretro chromatic.";
+  "back in sf after a fall in boston, and the o-1a came through in october. days at aire; nights on [kiseki](https://kiseki.sh), [computah](https://computah.sh), and game boy games for the modretro chromatic.";
 
 export const home = internalMutation({
   args: {},

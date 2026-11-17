@@ -1,10 +1,19 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
-    "types": ["node", "react", "react-dom", "three"],
+    "types": [
+      "node",
+      "react",
+      "react-dom",
+      "three"
+    ],
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -20,7 +29,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
   "include": [
@@ -31,7 +42,11 @@
     ".next/dev/types/**/*.ts",
     ".next-review/types/**/*.ts",
     ".next-review/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    ".next-build/types/**/*.ts",
+    ".next-build/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }
