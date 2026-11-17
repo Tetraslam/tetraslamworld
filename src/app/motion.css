@@ -62,7 +62,7 @@
 .public-site .collection-tools .collection-search {
   animation: none;
 }
-.home-intro > h1, .home-bio > *, .home-contact {
+.home-intro > h1, .home-bio > *, .home-now, .home-contact {
   animation: settle-in 280ms var(--settle) backwards;
 }
 .home-bio > :nth-child(1) {
@@ -73,6 +73,9 @@
 }
 .home-bio > :nth-child(3) {
   animation-delay: 96ms;
+}
+.home-now {
+  animation-delay: 120ms;
 }
 .home-contact {
   animation-delay: 128ms;

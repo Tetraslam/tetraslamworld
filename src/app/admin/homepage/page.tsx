@@ -13,6 +13,7 @@ export default function HomepageEditor() {
   const [base, setBase] = useState<HomeContent | null>(null);
   const [heading, setHeading] = useState(DEFAULT_HOME.heading);
   const [body, setBody] = useState(DEFAULT_HOME.body);
+  const [now, setNow] = useState(DEFAULT_HOME.now);
   const [status, setStatus] = useState("loading saved copy…");
   const [saving, setSaving] = useState(false);
   const [conflict, setConflict] = useState(false);
@@ -29,6 +30,7 @@ export default function HomepageEditor() {
           setBase(result.content);
           setHeading(result.content.heading);
           setBody(result.content.body);
+          setNow(result.content.now ?? "");
           setStatus("");
         } else setStatus(result.message);
       })
@@ -41,7 +43,11 @@ export default function HomepageEditor() {
       mounted.current = false;
     };
   }, []);
-  const dirty = !!base && (heading !== base.heading || body !== base.body);
+  const dirty =
+    !!base &&
+    (heading !== base.heading ||
+      body !== base.body ||
+      now !== (base.now ?? ""));
   async function save() {
     if (!base || pending.current) return;
     pending.current = true;
@@ -51,6 +57,7 @@ export default function HomepageEditor() {
       const result = await saveHomepage({
         heading,
         body,
+        now,
         expectedRevision: base.revision,
       });
       if (!mounted.current) return;
@@ -58,6 +65,7 @@ export default function HomepageEditor() {
         setBase(result.content);
         setHeading(result.content.heading);
         setBody(result.content.body);
+        setNow(result.content.now ?? "");
         setStatus("saved.");
         setConflict(false);
         setLatest(null);
@@ -109,10 +117,28 @@ export default function HomepageEditor() {
             maxLength={HOME_LIMITS.body}
             rows={14}
           />
+          <label htmlFor="home-now">now · markdown, optional</label>
+          <textarea
+            id="home-now"
+            value={now}
+            onChange={(event) => {
+              setNow(event.target.value);
+              setStatus("");
+            }}
+            maxLength={HOME_LIMITS.now}
+            rows={4}
+            placeholder="what you're up to lately. the date updates when this changes."
+          />
         </fieldset>
         <section className="bio-preview" aria-label="Homepage preview">
           <h2>{heading}</h2>
           <HomeCopy body={body} preview />
+          {now.trim() && (
+            <aside className="home-now">
+              <p className="home-now-label">now · updated today</p>
+              <HomeCopy body={now} preview />
+            </aside>
+          )}
         </section>
       </div>
       <output className="bio-status">
@@ -152,6 +178,7 @@ export default function HomepageEditor() {
                     setBase(latest);
                     setHeading(latest.heading);
                     setBody(latest.body);
+                    setNow(latest.now ?? "");
                     setConflict(false);
                     setLatest(null);
                     setStatus("");

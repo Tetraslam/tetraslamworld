@@ -16,7 +16,12 @@ vi.mock("@/lib/admin", () => ({
   isAdminUser: (id: string | null) => id === "admin-test",
 }));
 beforeEach(() => vi.resetAllMocks());
-const draft = { heading: "hello", body: "my bio", expectedRevision: 0 };
+const draft = {
+  heading: "hello",
+  body: "my bio",
+  now: "",
+  expectedRevision: 0,
+};
 
 function session(userId: string | null, token: string | null = "convex-jwt") {
   const getToken = vi.fn().mockResolvedValue(token);

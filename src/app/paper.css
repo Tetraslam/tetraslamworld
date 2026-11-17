@@ -1008,3 +1008,60 @@ button:disabled {
     height: 260px;
   }
 }
+.home-now {
+  margin-top: 30px;
+  padding-left: 18px;
+  border-left: 1px solid var(--border);
+  font-size: 16px;
+  line-height: 1.75;
+}
+.home-now .home-now-label {
+  margin: 0 0 4px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+.home-now .home-bio p {
+  margin: 0 0 8px;
+}
+.home-now .home-bio p:last-child {
+  margin-bottom: 0;
+}
+/* Covers without an image: set the title like a printed card. */
+.cover-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 16px 16px 44px;
+  text-align: left;
+}
+.cover-text-title {
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  overflow-wrap: anywhere;
+}
+.cover-text-note {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.4;
+}
+/* Concerts read as ticket stubs: a perforation above the details. */
+.cover-ticket {
+  justify-content: space-between;
+  padding-top: 18px;
+}
+.cover-ticket::before {
+  content: "admit one";
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-style: italic;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--hairline);
+}
+.cover-ticket .cover-text-title {
+  margin-top: auto;
+}

@@ -4,7 +4,7 @@ const SITE_URL = "https://tetraslam.world";
 
 const content = `# tetraslam.world
 
-> Personal site of Shresht Bhowmick (tetraslam) — member of technical staff @ stealth neolab, prev natural.co, MIT Media Lab.
+> Personal site of Shresht Bhowmick (tetraslam) — member of technical staff @ Aire (aire.ai), prev Natural, Mosaic, MIT Media Lab.
 
 ## Accessing content
 

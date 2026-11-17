@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react";
 import { useRef } from "react";
 import { api } from "../../convex/_generated/api";
-import type { HomeContent } from "../../shared/home-content";
+import { formatNowDate, type HomeContent } from "../../shared/home-content";
 import { BookCallLink } from "./book-call-link";
 import { HomeCopy } from "./home-copy";
 
@@ -24,6 +24,22 @@ export function HomeIntroduction({
     <section className="home-intro">
       <h1>{content.heading}</h1>
       <HomeCopy body={content.body} />
+      {content.now && (
+        <aside className="home-now" aria-labelledby="home-now-label">
+          <p id="home-now-label" className="home-now-label">
+            now
+            {content.nowUpdatedAt > 0 && (
+              <>
+                {" · updated "}
+                <time dateTime={new Date(content.nowUpdatedAt).toISOString()}>
+                  {formatNowDate(content.nowUpdatedAt)}
+                </time>
+              </>
+            )}
+          </p>
+          <HomeCopy body={content.now} />
+        </aside>
+      )}
       <nav aria-label="Contact" className="home-contact">
         <a href="https://x.com/tetraslam">twitter</a>
         <a href="https://github.com/tetraslam">github</a>

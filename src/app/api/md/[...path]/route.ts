@@ -183,6 +183,7 @@ const pages: Record<string, PageConfig> = {
         music: "Music",
         movie: "Movies",
         show: "Shows",
+        concert: "Concerts",
         other: "Other",
       },
       order: [
@@ -193,6 +194,7 @@ const pages: Record<string, PageConfig> = {
         "music",
         "movie",
         "show",
+        "concert",
         "other",
       ],
     },
@@ -431,7 +433,10 @@ export async function GET(
   }
   if (page === "home" && path.length === 1) {
     const home = await getHomeContent();
-    return new NextResponse(`# ${home.heading}\n\n${home.body}\n`, {
+    const now = home.now
+      ? `\n## now${home.nowUpdatedAt ? ` (updated ${new Date(home.nowUpdatedAt).toISOString().slice(0, 10)})` : ""}\n\n${home.now}\n`
+      : "";
+    return new NextResponse(`# ${home.heading}\n\n${home.body}\n${now}`, {
       headers: {
         "Content-Type": "text/markdown; charset=utf-8",
         "Cache-Control": "no-store",

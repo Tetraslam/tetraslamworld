@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import {
   DEFAULT_HOME,
+  HOME_LIMITS,
   parseAdminIds,
   validateHomeCopy,
 } from "../shared/home-content";
@@ -17,6 +18,8 @@ export const get = query({
       ? {
           heading: doc.heading,
           body: doc.body,
+          now: doc.now ?? "",
+          nowUpdatedAt: doc.nowUpdatedAt ?? 0,
           revision: doc.revision,
           updatedAt: doc.updatedAt,
         }
@@ -25,7 +28,12 @@ export const get = query({
 });
 
 export const save = mutation({
-  args: { heading: v.string(), body: v.string(), expectedRevision: v.number() },
+  args: {
+    heading: v.string(),
+    body: v.string(),
+    now: v.optional(v.string()),
+    expectedRevision: v.number(),
+  },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (
@@ -39,13 +47,14 @@ export const save = mutation({
     }
     if (
       !validateHomeCopy(args.heading, args.body) ||
+      (args.now ?? "").length > HOME_LIMITS.now ||
       !Number.isInteger(args.expectedRevision) ||
       args.expectedRevision < 0
     ) {
       throw new ConvexError({
         code: "INVALID_CONTENT",
         message:
-          "Use a heading of 1–120 characters and a bio of 1–6000 characters.",
+          "Use a heading of 1–120 characters, a bio of 1–6000 characters, and a now note under 600.",
       });
     }
     const existing = await ctx.db
@@ -59,9 +68,18 @@ export const save = mutation({
           "The bio was changed in another session. Review the latest version before saving.",
       });
     }
+    // Older clients don't send `now`; keep what's saved rather than clearing it.
+    const now =
+      args.now === undefined ? (existing?.now ?? "") : args.now.trim();
+    const nowUpdatedAt =
+      now === (existing?.now ?? "")
+        ? (existing?.nowUpdatedAt ?? 0)
+        : Date.now();
     const content = {
       heading: args.heading.trim(),
       body: args.body.trim(),
+      now,
+      nowUpdatedAt,
       revision: args.expectedRevision + 1,
       updatedAt: Date.now(),
     };

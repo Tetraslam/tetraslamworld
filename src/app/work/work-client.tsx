@@ -30,11 +30,18 @@ export function WorkClient({
   const work = [...usePreloadedQuery(preloadedWork)].sort(
     (a, b) => (a.order ?? 0) - (b.order ?? 0),
   );
-  const selected = selectedTitles.flatMap((title) =>
-    work.filter(
-      (item) => item.type === "project" && item.title.toLowerCase() === title,
-    ),
+  // Featured projects lead; the original picks remain the fallback.
+  const featured = work.filter(
+    (item) => item.type === "project" && item.featured,
   );
+  const selected = featured.length
+    ? featured
+    : selectedTitles.flatMap((title) =>
+        work.filter(
+          (item) =>
+            item.type === "project" && item.title.toLowerCase() === title,
+        ),
+      );
   const rest = work.filter(
     (item) => item.type === "project" && !selected.includes(item),
   );

@@ -22,9 +22,17 @@ const categories: Record<string, string> = {
   music: "music",
   movie: "movies",
   show: "shows",
+  concert: "concerts",
   other: "other",
 };
 type Item = Doc<"media"> & { alternate?: boolean };
+// A plain first line for text-only covers: no markdown syntax, no links.
+function firstLine(markdown: string) {
+  return (markdown.split("\n").find((line) => line.trim()) ?? "")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/[*_`#>]/g, "")
+    .trim();
+}
 function imagesFor(item: Item) {
   const images = item.imageUrls?.length
     ? item.imageUrls
@@ -134,7 +142,16 @@ export function MediaClient({
                           unoptimized={isGif(imagesFor(item)[0])}
                         />
                       ) : (
-                        <span>{item.title}</span>
+                        <span
+                          className={`cover-text ${item.type === "concert" ? "cover-ticket" : ""}`}
+                        >
+                          <span className="cover-text-title">{item.title}</span>
+                          {item.content && (
+                            <span className="cover-text-note">
+                              {firstLine(item.content)}
+                            </span>
+                          )}
+                        </span>
                       )}
                       <span className="cover-open" aria-hidden="true">
                         <svg

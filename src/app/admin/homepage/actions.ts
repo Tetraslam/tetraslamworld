@@ -31,6 +31,7 @@ export async function loadHomepage(): Promise<Result> {
 export async function saveHomepage(args: {
   heading: string;
   body: string;
+  now: string;
   expectedRevision: number;
 }): Promise<Result> {
   const session = await auth();

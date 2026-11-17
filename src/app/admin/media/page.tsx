@@ -14,6 +14,7 @@ type MediaType =
 	| "game"
 	| "music"
 	| "movie"
+	| "concert"
 	| "show"
 	| "other";
 
@@ -25,10 +26,11 @@ const typeLabels: Record<MediaType, string> = {
 	music: "music",
 	movie: "movies",
 	show: "shows",
+	concert: "concerts",
 	other: "other",
 };
 
-const typeOrder: MediaType[] = ["anime", "manga", "book", "game", "music", "movie", "show", "other"];
+const typeOrder: MediaType[] = ["anime", "manga", "book", "game", "music", "movie", "show", "concert", "other"];
 
 interface MediaForm {
 	type: MediaType;
@@ -231,6 +233,7 @@ export default function AdminMediaPage() {
 								<option value="game">game</option>
 								<option value="music">music</option>
 								<option value="movie">movie</option>
+								<option value="concert">concert</option>
 								<option value="show">show</option>
 								<option value="other">other</option>
 							</select>

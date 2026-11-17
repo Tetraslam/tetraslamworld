@@ -16,6 +16,8 @@ vi.mock("@/components/home-copy", () => ({
 const content = {
   heading: "hello",
   body: "saved bio",
+  now: "",
+  nowUpdatedAt: 0,
   revision: 2,
   updatedAt: 100,
 };
@@ -50,6 +52,7 @@ test("failed saves preserve the draft and permit retry", async () => {
   expect(saveHomepage).toHaveBeenCalledWith({
     heading: "hello",
     body: "my unsaved bio",
+    now: "",
     expectedRevision: 2,
   });
   expect(
@@ -92,6 +95,7 @@ test("conflicting edits require review without discarding the draft", async () =
   expect(saveHomepage).toHaveBeenLastCalledWith({
     heading: "my heading",
     body: "saved bio",
+    now: "",
     expectedRevision: 3,
   });
 });
