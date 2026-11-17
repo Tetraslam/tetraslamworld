@@ -13,6 +13,12 @@ const nextConfig: NextConfig = {
         hostname: "**.convex.site",
       },
     ],
+    localPatterns: [
+      // Static files under public/.
+      { pathname: "/**", search: "" },
+      // Taste previews for tetrastack sources (see src/app/api/taste/preview).
+      { pathname: "/api/taste/preview" },
+    ],
   },
 };
 
