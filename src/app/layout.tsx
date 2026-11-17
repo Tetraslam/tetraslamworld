@@ -5,6 +5,7 @@ import "./paper.css";
 import "./refinements.css";
 import "./themes.css";
 import "./taste.css";
+import "./taste-book.css";
 import "./writing.css";
 import "./motion.css";
 

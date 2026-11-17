@@ -1,9 +1,16 @@
 import { fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
 import { getHomeContent } from "@/lib/home-content";
+import { getDirectionPage, getTasteEntries } from "@/lib/tetrastack/book";
+import { getTetrastackFiles } from "@/lib/tetrastack/load";
 import { api } from "../../../../../convex/_generated/api";
-import { filterTaste } from "../../../../../shared/taste";
+import { unreferenced } from "../../../../../shared/taste-book";
+import {
+  directionMarkdown,
+  tasteBookMarkdown,
+} from "../../../../../shared/taste-book-markdown";
 import { tasteMarkdown } from "../../../../../shared/taste-markdown";
+import { parseTetrastack } from "../../../../../shared/tetrastack";
 
 const SITE_URL = "https://tetraslam.world";
 
@@ -410,6 +417,23 @@ export async function GET(
   const { path } = await params;
   const page = path[0];
   if (page === "taste") {
+    if (path[1] === "directions" && path.length === 3) {
+      const found = await getDirectionPage(path[2]);
+      const files = await getTetrastackFiles();
+      return found
+        ? mdResponse(
+            directionMarkdown(
+              found.stack,
+              found.direction,
+              files.files[`directions/${found.direction.slug}.md`] ?? "",
+              found,
+            ),
+          )
+        : new NextResponse("# Direction not found\n", {
+            status: 404,
+            headers: { "Content-Type": "text/markdown; charset=utf-8" },
+          });
+    }
     if (path.length > 1) {
       const item = await fetchQuery(api.taste.getByKey, {
         key: path.slice(1).join("/"),
@@ -421,14 +445,13 @@ export async function GET(
             headers: { "Content-Type": "text/markdown; charset=utf-8" },
           });
     }
-    const params = new URL(_request.url).searchParams;
-    const items = filterTaste(await fetchQuery(api.taste.list, {}), {
-      q: params.get("q") ?? "",
-      category: params.get("category") ?? "",
-      quality: params.get("quality") ?? "",
-    });
+    const [files, entries] = await Promise.all([
+      getTetrastackFiles(),
+      getTasteEntries(),
+    ]);
+    const stack = parseTetrastack(files);
     return mdResponse(
-      `# Taste\n\n${items.map(tasteMarkdown).join("\n---\n\n")}`,
+      tasteBookMarkdown(stack, files.files, unreferenced(entries, stack)),
     );
   }
   if (page === "home" && path.length === 1) {

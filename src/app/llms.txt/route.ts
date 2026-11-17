@@ -10,8 +10,9 @@ const content = `# tetraslam.world
 
 Every page on this site has a machine-readable markdown version. Append \`.md\` to any page URL:
 
-- ${SITE_URL}/taste.md — Things i find beautiful: objects, places, interfaces, motion, sound, and ideas
-- ${SITE_URL}/taste/{entry}.md — An individual entry with media URLs, captions, notes, and credits
+- ${SITE_URL}/taste.md — Taste, from tetrastack (github.com/Tetraslam/tetrastack): constants, design directions, the bar, references, the stack, and rejections
+- ${SITE_URL}/taste/directions/{direction}.md — One design direction: primary sources, lessons learned, sites on the web, what to avoid, and images of the sources
+- ${SITE_URL}/taste/{entry}.md — An individual collected entry with media URLs, captions, notes, and credits
 - ${SITE_URL}/home.md — Current homepage introduction and bio
 - ${SITE_URL}/work.md — Projects, papers, talks, and experience
 - ${SITE_URL}/media.md — Anime, manga, books, games, music, movies, shows
