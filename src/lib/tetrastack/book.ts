@@ -1,5 +1,6 @@
 import "server-only";
 import { fetchQuery } from "convex/nextjs";
+import { unstable_rethrow } from "next/navigation";
 import { api } from "../../../convex/_generated/api";
 import type { TasteRecord } from "../../../shared/taste";
 import {
@@ -15,6 +16,8 @@ export async function getTasteEntries(): Promise<TasteRecord[]> {
   try {
     return (await fetchQuery(api.taste.list, {})) as TasteRecord[];
   } catch (error) {
+    // Next signals dynamic rendering by throwing; that isn't an outage.
+    unstable_rethrow(error);
     console.error("taste: collection unavailable", error);
     return [];
   }
