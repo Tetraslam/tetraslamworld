@@ -420,14 +420,6 @@ const NEW_FRIENDS: FriendRow[] = [
     image: "friend:michael",
   },
   {
-    name: "alex rochette",
-    content:
-      "computer engineering @ northeastern\n- rev cohort 6\n- working on rl",
-    links: [
-      { label: "linkedin", url: "https://www.linkedin.com/in/alex-rochette" },
-    ],
-  },
-  {
     name: "rohan verma",
     content:
       "computer engineering & cs @ northeastern\n- rev cohort 6, and one of the kaeli kids (nucar)\n- building a container platform for homelabs, and a robodog for rev",
@@ -445,16 +437,6 @@ const NEW_FRIENDS: FriendRow[] = [
     links: [
       { label: "website", url: "https://jaken.dev/" },
       { label: "linkedin", url: "https://www.linkedin.com/in/jakeph" },
-    ],
-  },
-  {
-    name: "maya ahmed",
-    content: "northeastern\n- rev cohort 6",
-    links: [
-      {
-        label: "linkedin",
-        url: "https://www.linkedin.com/in/mayanoelleahmed",
-      },
     ],
   },
   {
@@ -773,5 +755,21 @@ export const home = internalMutation({
       updatedAt: Date.now(),
     });
     return Object.keys(patch).join(", ");
+  },
+});
+
+// Friends added by the first run and later taken back off the page.
+const REMOVED_FRIENDS = ["alex rochette", "maya ahmed"];
+
+export const removeFriends = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const removed: string[] = [];
+    for (const friend of await ctx.db.query("friends").collect()) {
+      if (!REMOVED_FRIENDS.includes(friend.name)) continue;
+      await ctx.db.delete(friend._id);
+      removed.push(friend.name);
+    }
+    return removed;
   },
 });
