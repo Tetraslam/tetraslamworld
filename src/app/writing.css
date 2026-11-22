@@ -630,3 +630,14 @@ video.writing-media-player {
     gap: 8px;
   }
 }
+
+/* /fast: one long sourced list, after patrickcollison.com/fast. */
+.fast-page ul {
+  padding-left: 1.2em;
+}
+.fast-page li {
+  margin: 0 0 0.9em;
+}
+.fast-page li strong {
+  font-weight: 600;
+}
