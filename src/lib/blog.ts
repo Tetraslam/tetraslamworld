@@ -15,6 +15,8 @@ export interface AtomEntry {
   tags?: string[];
   topics?: string[];
   series?: string;
+  /** Set for entries that link to a page of the site rather than a post. */
+  href?: string;
 }
 
 export async function fetchBlogPosts(): Promise<AtomEntry[]> {

@@ -223,7 +223,9 @@ export function BlogClient({
                   style={entranceStyle(index)}
                 >
                   <h3>
-                    <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+                    <Link href={post.href ?? `/blog/${post.slug}`}>
+                      {post.title}
+                    </Link>
                   </h3>
                   {post.summary && post.summary !== post.title && (
                     <p>{post.summary}</p>

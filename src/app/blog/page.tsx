@@ -1,5 +1,20 @@
 import { fetchBlogPosts } from "@/lib/blog";
 import { BlogClient } from "./blog-client";
+
+// Standalone pages listed alongside posts. They link out by href, so they
+// stay out of the feed, the sitemap's post list, and /blog/[id].
+const PAGES = [
+  {
+    id: "page:fast",
+    slug: "fast",
+    href: "/fast",
+    title: "Fast",
+    link: "https://www.tetraslam.world/fast",
+    published: "2026-11-22",
+    summary:
+      "Examples of people, and lately models, quickly accomplishing ambitious things in AI.",
+  },
+];
 export default async function BlogPage({
   searchParams,
 }: {
@@ -18,7 +33,10 @@ export default async function BlogPage({
   return (
     <BlogClient
       key={JSON.stringify(filter)}
-      initialPosts={posts.map(({ content: _content, ...post }) => post)}
+      initialPosts={[
+        ...PAGES,
+        ...posts.map(({ content: _content, ...post }) => post),
+      ]}
       initialFilter={filter}
       native={process.env.WRITING_SOURCE === "git"}
     />
